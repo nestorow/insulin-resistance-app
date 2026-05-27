@@ -4,10 +4,12 @@ import Link from "next/link";
 const LINKS = [
   { href: "/", label: "Начало" },
   { href: "/plan", label: "Дневен план" },
-  { href: "/education", label: "Образование" },
+  { href: "/journal", label: "Дневник" },
+  { href: "/markers", label: "Показатели" },
   { href: "/foods", label: "Храни" },
   { href: "/exercise", label: "Тренировки" },
   { href: "/fasting", label: "Гладуване" },
+  { href: "/education", label: "Образование" },
   { href: "/onboarding", label: "Тест" },
 ];
 
