@@ -3,6 +3,7 @@ import Link from "next/link";
 // Minimal shared nav across content pages until the full app shell lands.
 const LINKS = [
   { href: "/", label: "Начало" },
+  { href: "/plan", label: "Дневен план" },
   { href: "/education", label: "Образование" },
   { href: "/foods", label: "Храни" },
   { href: "/exercise", label: "Тренировки" },
