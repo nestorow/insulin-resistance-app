@@ -5,6 +5,8 @@ const LINKS = [
   { href: "/", label: "Начало" },
   { href: "/education", label: "Образование" },
   { href: "/foods", label: "Храни" },
+  { href: "/exercise", label: "Тренировки" },
+  { href: "/fasting", label: "Гладуване" },
   { href: "/onboarding", label: "Тест" },
 ];
 
