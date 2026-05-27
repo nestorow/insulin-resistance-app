@@ -1,0 +1,96 @@
+import { createClient, type Client } from "@libsql/client";
+
+// Turso (libsql) client with lazy init + idempotent migrations.
+// Pattern adapted from thyroid-rehab/src/lib/db.ts.
+
+let _db: Client | null = null;
+let _migrationPromise: Promise<void> | null = null;
+
+export function getDb(): Client {
+  if (!_db) {
+    _db = createClient({
+      url: process.env.TURSO_DATABASE_URL!,
+      authToken: process.env.TURSO_AUTH_TOKEN,
+    });
+  }
+  return _db;
+}
+
+async function ensureMigrations() {
+  if (!_migrationPromise) {
+    _migrationPromise = initializeDatabase().catch((err: unknown) => {
+      const e = err as { name?: string; message?: string; code?: string };
+      console.error(
+        "Migration error:",
+        JSON.stringify({ name: e?.name, message: e?.message, code: e?.code })
+      );
+    });
+  }
+  await _migrationPromise;
+}
+
+// Lazy proxy: avoids creating the client at import time and runs migrations
+// on the first write/query.
+export const db = new Proxy({} as Client, {
+  get(_, prop: keyof Client) {
+    const client = getDb();
+    const value = client[prop];
+    if (typeof value === "function") {
+      if (prop === "execute" || prop === "executeMultiple" || prop === "batch") {
+        return async (...args: unknown[]) => {
+          await ensureMigrations();
+          return (value as (...a: unknown[]) => unknown).apply(client, args);
+        };
+      }
+      return value.bind(client);
+    }
+    return value;
+  },
+});
+
+export async function initializeDatabase() {
+  const client = getDb();
+  await client.executeMultiple(`
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      email TEXT UNIQUE NOT NULL,
+      name TEXT,
+      image TEXT,
+      role TEXT DEFAULT 'free',
+      lens TEXT,                       -- 'medical' | 'educational' | 'biohacker'
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      last_login_at DATETIME
+    );
+
+    CREATE TABLE IF NOT EXISTS onboarding (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      lens TEXT NOT NULL,              -- chosen audience lens
+      quiz_yes_count INTEGER,          -- 0..8 from the IR self-assessment
+      quiz_answers TEXT,               -- JSON boolean[]
+      diet_tier TEXT,                  -- 'moderate' (<100g) | 'keto' (<50g)
+      tg_hdl_ratio REAL,
+      whr REAL,                        -- waist-to-hip ratio
+      recommended_sequence TEXT,       -- JSON ordering of modules for this lens
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_onboarding_user
+      ON onboarding(user_id);
+
+    CREATE TABLE IF NOT EXISTS daily_plan (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      day_number INTEGER NOT NULL,     -- 1..90
+      plan_variant TEXT NOT NULL,
+      date TEXT NOT NULL,
+      tasks_completed TEXT DEFAULT '{}',  -- JSON map
+      notes TEXT,
+      completed_at DATETIME,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_daily_plan_user_day
+      ON daily_plan(user_id, day_number);
+  `);
+}
