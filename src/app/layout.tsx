@@ -2,21 +2,20 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Инсулинова Резистентност — Пълен Справочник",
-  description: "Приложение базирано на \"Why We Get Sick\" от д-р Бенджамин Бикман. Тест за ИР, хранителен справочник, тракер за гладуване, тренировъчен план и дневен протокол.",
-  manifest: "/manifest.json",
+  title: "Инсулинова резистентност — 90-дневен протокол",
+  description:
+    "Персонализиран 90-дневен протокол за обръщане на инсулинова резистентност, базиран на работата на д-р Benjamin Bikman.",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
-    title: "ИР Справочник",
+    statusBarStyle: "default",
+    title: "ИР Протокол",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0F172A",
+  themeColor: "#1B7A6E",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
 };
 
 export default function RootLayout({
@@ -26,12 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="bg">
-      <head>
-        <link rel="apple-touch-icon" href="/icon-192.png" />
-      </head>
-      <body className="antialiased">
-        {children}
-      </body>
+      <body className="antialiased">{children}</body>
     </html>
   );
 }

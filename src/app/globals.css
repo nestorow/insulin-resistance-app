@@ -1,33 +1,43 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Nunito+Sans:wght@300;400;500;600;700&display=swap&subset=cyrillic');
 @import "tailwindcss";
 
+/* ── Light teal design system (ported from thyroid-rehab) ──────────────── */
 @theme inline {
-  --color-background: #0F172A;
-  --color-foreground: #E2E8F0;
-  --color-primary: #14B8A6;
-  --color-primary-dark: #0D9488;
-  --color-secondary: #10B981;
-  --color-accent: #22D3EE;
-  --color-surface: #1E293B;
-  --color-surface-light: #334155;
-  --color-danger: #EF4444;
-  --color-warning: #F59E0B;
-  --color-success: #10B981;
-  --color-green-food: #22C55E;
-  --color-yellow-food: #EAB308;
-  --color-red-food: #EF4444;
+  --color-background: #F0FAF6;
+  --color-foreground: #1a1a2e;
+
+  /* teal — primary brand */
+  --color-teal-50: #E8F5F0;
+  --color-teal-100: #D1EBE1;
+  --color-teal-200: #A3D7C3;
+  --color-teal-300: #75C3A5;
+  --color-teal-400: #47AF87;
+  --color-teal-500: #1B7A6E;
+  --color-teal-600: #166258;
+  --color-teal-700: #114A42;
+  --color-teal-800: #0B322C;
+  --color-teal-900: #061A16;
+  --color-primary: #1B7A6E;
+
+  /* mint surfaces + warm accent */
+  --color-mint: #E8F5F0;
+  --color-mint-light: #F0FAF6;
+  --color-warm: #F5D060;
+  --color-warm-light: #FBE99D;
+
+  /* semantic */
+  --color-surface: #FFFFFF;
+  --color-danger: #DC2626;
+  --color-warning: #D97706;
+  --color-success: #1B7A6E;
+
   --font-heading: 'Montserrat', sans-serif;
   --font-body: 'Nunito Sans', sans-serif;
 }
 
-* {
-  scrollbar-width: thin;
-  scrollbar-color: #334155 #1E293B;
-}
-
 body {
-  background: #0F172A;
-  color: #E2E8F0;
+  background: var(--color-background);
+  color: var(--color-foreground);
   font-family: 'Nunito Sans', sans-serif;
   min-height: 100dvh;
 }
@@ -36,81 +46,17 @@ h1, h2, h3, h4, h5, h6 {
   font-family: 'Montserrat', sans-serif;
 }
 
-/* Glass morphism card */
-.glass-card {
-  background: rgba(30, 41, 59, 0.7);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(51, 65, 85, 0.5);
-  border-radius: 16px;
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #A3D7C3 #E8F5F0;
 }
-
-.glass-card-glow {
-  background: rgba(30, 41, 59, 0.7);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(20, 184, 166, 0.3);
-  border-radius: 16px;
-  box-shadow: 0 0 20px rgba(20, 184, 166, 0.1);
-}
-
-/* Fasting timer circle */
-.timer-circle {
-  stroke-linecap: round;
-  transition: stroke-dashoffset 1s ease;
-}
-
-/* Heatmap cell */
-.heatmap-cell {
-  transition: all 0.2s ease;
-}
-.heatmap-cell:hover {
-  transform: scale(1.3);
-}
-
-/* Tab transition */
-.tab-content-enter {
-  opacity: 0;
-  transform: translateY(10px);
-}
-.tab-content-enter-active {
-  opacity: 1;
-  transform: translateY(0);
-  transition: all 0.3s ease;
-}
-
-/* Custom scrollbar for webkit */
 ::-webkit-scrollbar {
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #1E293B;
+  background: #E8F5F0;
 }
 ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #A3D7C3;
   border-radius: 3px;
-}
-
-/* Gauge component */
-.gauge-fill {
-  transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Body silhouette glow */
-.body-region {
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-.body-region:hover {
-  filter: drop-shadow(0 0 8px rgba(20, 184, 166, 0.6));
-}
-.body-region.active {
-  filter: drop-shadow(0 0 12px rgba(20, 184, 166, 0.8));
-}
-
-/* Pulse animation */
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 5px rgba(20, 184, 166, 0.3); }
-  50% { box-shadow: 0 0 20px rgba(20, 184, 166, 0.6); }
-}
-.pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
 }

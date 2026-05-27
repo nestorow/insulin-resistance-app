@@ -1,60 +1,38 @@
-'use client';
-
-import { useStore } from '@/store/useStore';
-import Navigation from '@/components/Navigation';
-import dynamic from 'next/dynamic';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Suspense } from 'react';
-
-const QuizModule = dynamic(() => import('@/components/quiz/QuizModule'), { ssr: false });
-const DiseaseMapModule = dynamic(() => import('@/components/diseases/DiseaseMapModule'), { ssr: false });
-const FoodModule = dynamic(() => import('@/components/food/FoodModule'), { ssr: false });
-const FastingModule = dynamic(() => import('@/components/fasting/FastingModule'), { ssr: false });
-const ExerciseModule = dynamic(() => import('@/components/exercise/ExerciseModule'), { ssr: false });
-const ProtocolModule = dynamic(() => import('@/components/protocol/ProtocolModule'), { ssr: false });
-const KnowledgeModule = dynamic(() => import('@/components/knowledge/KnowledgeModule'), { ssr: false });
-
-const modules = [
-  QuizModule,
-  DiseaseMapModule,
-  FoodModule,
-  FastingModule,
-  ExerciseModule,
-  ProtocolModule,
-  KnowledgeModule,
-];
-
-function LoadingSpinner() {
-  return (
-    <div className="flex items-center justify-center min-h-[50vh]">
-      <div className="w-10 h-10 border-2 border-teal-500/30 border-t-teal-500 rounded-full animate-spin" />
-    </div>
-  );
-}
+import Link from "next/link";
 
 export default function Home() {
-  const { activeTab } = useStore();
-  const ActiveModule = modules[activeTab];
-
   return (
-    <div className="min-h-screen bg-[#0F172A]">
-      <Navigation />
-      <main className="lg:ml-20 pb-20 lg:pb-4">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="p-4 max-w-5xl mx-auto"
+    <main className="min-h-dvh flex flex-col items-center justify-center px-6 py-16 text-center">
+      <div className="max-w-2xl">
+        <p className="mb-4 inline-block rounded-full bg-teal-100 px-4 py-1.5 text-sm font-medium text-teal-700">
+          Базирано на д-р Benjamin Bikman · „Why We Get Sick&rdquo;
+        </p>
+
+        <h1 className="text-4xl font-extrabold leading-tight text-teal-700 sm:text-5xl">
+          Обърни инсулиновата
+          <br />
+          резистентност за 90 дни
+        </h1>
+
+        <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-slate-600">
+          Персонализиран протокол с 4-те стълба на Bikman — хранене, движение,
+          гладуване и проследяване на показателите ти. Един продукт, адаптиран
+          към твоя профил.
+        </p>
+
+        <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+          <Link
+            href="/api/auth/signin"
+            className="w-full rounded-xl bg-teal-500 px-8 py-3.5 font-semibold text-white shadow-lg shadow-teal-500/20 transition-colors hover:bg-teal-600 sm:w-auto"
           >
-            <Suspense fallback={<LoadingSpinner />}>
-              <ActiveModule />
-            </Suspense>
-          </motion.div>
-        </AnimatePresence>
-      </main>
-    </div>
+            Влез / Започни
+          </Link>
+        </div>
+
+        <p className="mt-8 text-xs text-slate-400">
+          Phase 0 · информацията не е медицински съвет
+        </p>
+      </div>
+    </main>
   );
 }
