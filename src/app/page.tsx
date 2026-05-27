@@ -27,6 +27,12 @@ export default function Home() {
           >
             Започни теста (1-2 мин)
           </Link>
+          <Link
+            href="/education"
+            className="w-full rounded-xl px-8 py-3.5 font-semibold text-teal-700 ring-1 ring-teal-200 transition-colors hover:bg-teal-50 sm:w-auto"
+          >
+            Научи повече
+          </Link>
         </div>
 
         <p className="mt-8 text-xs text-slate-400">
