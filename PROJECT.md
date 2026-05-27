@@ -70,7 +70,7 @@ Onboarding-ът разклонява потребителя в режим, ко�
 
 | Phase | Цел | Статус |
 |---|---|---|
-| **0** | Audit, legacy preservation, изхвърляне на старо UI, инфра (Turso+NextAuth), светла teal основа, deploy verify, onboarding blueprint | 🔄 в ход |
+| **0** | Audit, legacy preservation, изхвърляне на старо UI, инфра (Turso+NextAuth), светла teal основа, deploy verify, onboarding blueprint | ✅ готов |
 | 1 | Onboarding flow (welcome → тест → lens + tier → day-1) | планиран |
 | 2 | Дневен план (90-дневен, прогресивен, lens-aware) | планиран |
 | 3 | Дневник симптоми + Тракер показатели (графики) | планиран |
@@ -79,6 +79,16 @@ Onboarding-ът разклонява потребителя в режим, ко�
 | 6 | Образование (заболявания + Bikman) | планиран |
 | 7 | Добавки (съдържание + evidence grading) | планиран |
 | 8+ | PWA полиране, TWA / Play Store, OG generator, custom домейн | по-късно |
+
+## Phase 0 — резултат
+
+Deploy е жив на `insulin-resistance-app.vercel.app` (landing `200`,
+`/api/health` `ok`). Webpack build + `.npmrc` legacy-peer-deps минават на Vercel.
+
+**Чака потребителско действие** (преди auth/Turso да заработят — Phase 1 prep):
+1. Turso DB: `turso db create insulin-resistance-app` → URL + token
+2. Google OAuth client (redirect: `<URL>/api/auth/callback/google`)
+3. 6-те env vars във Vercel (виж `.env.example`) → `/api/health` ще даде `db:connected`
 
 ## Извън обхвата на Phase 0
 
