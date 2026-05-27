@@ -72,17 +72,20 @@ Onboarding-ът разклонява потребителя в режим, ко�
 |---|---|---|
 | **0** | Audit, legacy preservation, изхвърляне на старо UI, инфра (Turso+NextAuth), светла teal основа, deploy verify, onboarding blueprint | ✅ готов |
 | 1 | Onboarding flow (welcome → тест → lens + tier → day-1) | ✅ UI готов* |
-| 2 | Дневен план (90-дневен, прогресивен, lens-aware) | планиран |
-| 3 | Дневник симптоми + Тракер показатели (графики) | планиран |
+| 2 | Дневен план (90-дневен, прогресивен, lens-aware) | ✅ UI готов* (tier-aware чеклист) |
+| 3 | Дневник симптоми + Тракер показатели (графики) | ✅ UI готов* (recharts) |
 | 4 | Хранителен справочник (foods.ts → DB/UI) | ✅ read-only UI |
-| 5 | Тренировки + Гладуване | планиран |
+| 5 | Тренировки + Гладуване | ✅ read-only UI |
 | 6 | Образование (заболявания + Bikman) | ✅ read-only UI |
-| 7 | Добавки (съдържание + evidence grading) | планиран |
+| 7 | Добавки (съдържание + evidence grading) | ⏸️ чака съдържание (медицинско) |
 | 8+ | PWA полиране, TWA / Play Store, OG generator, custom домейн | по-късно |
 
-\* Phase 1: целият flow работи **без логин** (`/onboarding`, резултат в
-`localStorage` зад seam-а `lib/onboarding-storage.ts`). Phase 2 ще го закачи
-към Turso + сесия и ще добави auth gate.
+\* Фази 1-3 работят **без логин** — всичко се пази в `localStorage` зад seam-ове
+(`lib/onboarding-storage.ts`, `daily-plan-storage.ts`, `tracking-storage.ts`).
+Бъдеща Turso-фаза ще ги закачи към сесия + DB и ще добави auth gate.
+
+**Остава:** (а) модул „Добавки" — иска ново медицинско съдържание (решение на
+потребителя); (б) Turso + auth wiring — иска creds.
 
 ## Phase 0 — резултат
 
