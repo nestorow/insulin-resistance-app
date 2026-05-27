@@ -71,7 +71,7 @@ Onboarding-ът разклонява потребителя в режим, ко�
 | Phase | Цел | Статус |
 |---|---|---|
 | **0** | Audit, legacy preservation, изхвърляне на старо UI, инфра (Turso+NextAuth), светла teal основа, deploy verify, onboarding blueprint | ✅ готов |
-| 1 | Onboarding flow (welcome → тест → lens + tier → day-1) | планиран |
+| 1 | Onboarding flow (welcome → тест → lens + tier → day-1) | ✅ UI готов* |
 | 2 | Дневен план (90-дневен, прогресивен, lens-aware) | планиран |
 | 3 | Дневник симптоми + Тракер показатели (графики) | планиран |
 | 4 | Хранителен справочник (foods.ts → DB/UI) | планиран |
@@ -79,6 +79,10 @@ Onboarding-ът разклонява потребителя в режим, ко�
 | 6 | Образование (заболявания + Bikman) | планиран |
 | 7 | Добавки (съдържание + evidence grading) | планиран |
 | 8+ | PWA полиране, TWA / Play Store, OG generator, custom домейн | по-късно |
+
+\* Phase 1: целият flow работи **без логин** (`/onboarding`, резултат в
+`localStorage` зад seam-а `lib/onboarding-storage.ts`). Phase 2 ще го закачи
+към Turso + сесия и ще добави auth gate.
 
 ## Phase 0 — резултат
 
