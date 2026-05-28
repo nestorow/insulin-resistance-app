@@ -6,7 +6,7 @@
 
 **Repo:** `nestorow/insulin-resistance-app` · **Deploy:** `insulin-resistance-app.vercel.app`
 **Бранд:** InsulinReset
-**Статус:** Phase 2 завършена — всичките 8 модула + onboarding в production, Google sign-in работи, DB persistence за логнати потребители (Turso), localStorage остава cache за анонимни.
+**Статус:** Phase 2 завършена + полирано — всичките 8 модула + onboarding в production, Google sign-in работи, DB persistence за логнати потребители (Turso), localStorage остава cache за анонимни. PWA manifest деплойнат и инсталируем (потвърдено живо).
 
 ---
 
@@ -108,12 +108,58 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
 **Архитектурна гаранция:** анонимният потребител не вижда auth gate; нищо
 не се чупи без env vars (server actions тихо връщат `null`).
 
-## Извън обхвата (засега)
+## Полиране (направено в Phase 2.5)
 
-- ❌ TWA / Play Store · ❌ custom domain · ❌ OG image generator
-- ❌ Тестове (jest setup не е портнат от thyroid-rehab)
-- ❌ Криптиране на чувствителни кръвни данни (thyroid-rehab има `blood_markers.encrypted_data` — преценка дали ни трябва за GDPR)
-- ❌ Email обобщения / push notifications
+- ✅ **`app/error.tsx`** — branded fallback за uncaught грешки, retry + back-to-home, показва `error.digest`
+- ✅ **`app/not-found.tsx`** — локализирана 404 страница в teal стила
+- ✅ **Empty/encouragement states** в `/journal` + `/markers` — карта с подсещане при 0/1 записа
+- ✅ **`clearAllLocalData()`** при sign-out — privacy на споделени машини
+- ✅ **`mounted` gate** за `/journal` + `/markers` — empty cards не блясват, ако имаш данни
+- ✅ **Toast при save** — минимален event-bus toast (lib/toast.ts + components/Toast.tsx), показва се при save в journal/markers
+- ✅ **PWA manifest** + apple-touch-icon — приложението е инсталируемо, **потвърдено живо**
+
+## Backlog — идеи за следващи итерации
+
+### Полиране (продължение)
+- [ ] **Form sanity** — `min={0}` + `step` на числови inputs (тегло, инсулин, HbA1c…); валидация на абсурдни стойности
+- [ ] **PNG apple-icon (180×180)** — за iOS Safari, който не приема SVG за touch icon; иска build-time rasterization (sharp script в `scripts/`)
+- [ ] **Loading skeleton CSS shimmer** — за по-дълги loads (SyncOnLogin при голяма история)
+- [ ] **Optimistic UI rollback** — при server action fail, връщай локалното състояние + покажи tiny error toast
+
+### Landing подобрения (от по-рано избор)
+- [ ] **A — 4-те стълба** под hero (🥦 🥩 🥑 ⏰ карти) — показва "какво всъщност правим"
+- [ ] **B — "Как работи за 90 дни"** в 3 стъпки (тест → план → проследяване)
+- [ ] **C — По-конкретна hero copy** — напр. „Свали инсулина си преди да стане диабет"
+
+### Социално + SEO
+- [ ] **Open Graph image** — `/api/og` route с динамично генериран social card (Next.js OG)
+- [ ] **Sitemap + robots.txt** — `app/sitemap.ts` + `app/robots.ts`
+- [ ] **Structured data** (JSON-LD) за / и /education
+
+### Съдържание / продукт
+- [ ] **Прогресивен 90-дневен план** — daily_plan ред с tier-specific вариант, постепенна сложност на правилата ден N
+- [ ] **Inferred lens** в onboarding — пред-избор на lens спрямо отговори преди потвърждение
+- [ ] **Re-test опция** — настройки → "Преоцени теста" (drop user/lens, replay onboarding)
+- [ ] **Бележки в дневник** — добавяне на свободен текст в SymptomEntry.notes (поле го има, UI липсва)
+
+### Инфраструктура
+- [ ] **Тестове** — jest setup портнат от thyroid-rehab, поне unit за tier logic + storage seams
+- [ ] **Encryption-at-rest** за blood_markers (thyroid-rehab pattern с `encrypted_data`) — преценка дали GDPR го изисква
+- [ ] **Rate limiting** — Upstash redis за server actions (thyroid-rehab има)
+- [ ] **Audit log** — кой/кога/какво update-ва onboarding/markers; за trust
+
+### Engagement
+- [ ] **Push notifications** — сутрешен reminder за чеклиста; web-push (thyroid-rehab има инфра)
+- [ ] **Email обобщения** — седмичен прогрес по симптоми/маркери (resend.com например)
+- [ ] **Streak / XP / badges** — gamification (thyroid-rehab има user_streaks, user_badges, xp_log)
+
+### Бъдещи фази (Phase 8+)
+- [ ] TWA build → Play Store
+- [ ] Custom домейн (insulin-reset.bg?)
+- [ ] CGM integration за biohacker lens
+- [ ] AI асистент за хранителни въпроси (thyroid-rehab има `food_search_cache`)
+
+## Стил на работа
 
 ## Стил на работа
 
