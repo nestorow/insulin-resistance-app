@@ -156,6 +156,16 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
 ### Per-page JSON-LD на /education
 - ✅ **`lib/education-schema.ts`** — изграждa `@graph` от 15 глави като `MedicalScholarlyArticle` (с `isPartOf` Bikman книгата + ISBN) и 30+ заболявания като `MedicalCondition` (с bilingual имена и `riskFactor`); injects-ва се през `<script type="application/ld+json">` в `/education/page.tsx`
 
+### Tier-specific правила
+- ✅ **`ChecklistItem.tiers?: DietTier[]`** — items с tier ограничение се рендерират само за съответния tier; default (omitted) = за всички
+- ✅ **Реално приложение**: `week_sweets` сега е само за `moderate`+`keto` (low risk не се нуждае); нов `week_fruit_keto` „плодове само горски, малки порции" (keto only); нов `week_grains_moderate` „зърнени само пълнозърнести, ≤1 порция/ден" (moderate only)
+- ✅ **`DailyPlanModule`** филтрира по tier паралелно с `availableFromDay`; анонимни → tier = `none`
+
+### Inferred lens в onboarding
+- ✅ **Пренареждане**: quiz сега идва **преди** lens — потребителят отговаря на въпросите ПЪРВО, после избира lens с pre-selection (`welcome → quiz → lens → result → day1`)
+- ✅ **`inferredLens(yesCount)` в `lib/onboarding.ts`** — heuristic: yesCount ≥5 → medical, 2-4 → educational, 0-1 → biohacker
+- ✅ **„Препоръчано" badge** (warm-жълто) на инферираната lens карта; pre-select се случва при изход от quiz step; user може да избере друга — не е заключено
+
 ## Backlog — идеи за следващи итерации
 
 ### Полиране (продължение)
@@ -170,8 +180,8 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
 ### Съдържание / продукт
 - [x] ~~**Re-test опция**~~ → `/settings` + `clearOnboardingAction` (Phase 2.7)
 - [x] ~~**Бележки в дневник**~~ → textarea в `SymptomJournalModule` (Phase 2.7)
-- [ ] **Tier-specific правила** — освен `carbCap`, някои items да са само за keto tier (напр. „без плодове“)
-- [ ] **Inferred lens** в onboarding — пред-избор на lens спрямо отговори преди потвърждение
+- [x] ~~**Tier-specific правила**~~ → `tiers?: DietTier[]` + 3 нови tier-specific items (Phase 2.7)
+- [x] ~~**Inferred lens** в onboarding~~ → пренареждане quiz→lens + `inferredLens()` heuristic + „Препоръчано" badge (Phase 2.7)
 
 ### Инфраструктура
 - [ ] **Тестове** — jest setup портнат от thyroid-rehab, поне unit за tier logic + storage seams
