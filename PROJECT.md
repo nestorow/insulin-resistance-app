@@ -6,7 +6,7 @@
 
 **Repo:** `nestorow/insulin-resistance-app` · **Deploy:** `insulin-resistance-app.vercel.app`
 **Бранд:** InsulinReset
-**Статус:** Phase 2 завършена + полирано + Phase 2.6 (conversion / прогресия / SEO) + Phase 2.7 (UX полиране + security) — всичките 8 модула + onboarding в production, Google sign-in работи, DB persistence за логнати потребители (Turso), localStorage остава cache за анонимни. PWA manifest + iOS PNG icons. Landing-ът има conversion scaffolding, дневният план е **прогресивен** в 4 фази, сайтът е discoverable (OG + sitemap + robots + MedicalWebPage + chapter/disease JSON-LD). Re-test опция, бележки в дневник, физиологични clamp-и, shimmer skeletons. **Blood markers са AES-256-GCM enkriptirani at rest (GDPR)**. 92 unit + component test покритие.
+**Статус:** Phase 2 завършена + полирано + Phase 2.6 (conversion / прогресия / SEO) + Phase 2.7 (UX полиране + security + engagement) — всичките 8 модула + onboarding в production, Google sign-in работи, DB persistence за логнати потребители (Turso), localStorage остава cache за анонимни. PWA manifest + iOS PNG icons. Landing-ът има conversion scaffolding, дневният план е **прогресивен** в 4 фази, сайтът е discoverable (OG + sitemap + robots + MedicalWebPage + chapter/disease JSON-LD). Re-test опция, бележки в дневник, физиологични clamp-и, shimmer skeletons. **Trust layer**: blood markers AES-256-GCM enkriptirani at rest, Upstash rate limiting (30 writes/мин), append-only audit_log. **Push notifications**: VAPID + service worker + opt-in UI + Vercel Cron сутрешен reminder. **104 unit + component test покритие.**
 
 ---
 
@@ -185,6 +185,17 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
   - `components/SettingsModule.test.tsx` (4): профил рендер, nudge, re-test happy path + cancel
 - ✅ **Bonus refactor**: storage seams (`onboarding-storage`, `daily-plan-storage`, `tracking-storage`) сега lazy-import-ват server actions — auth/DB chunks се товарят само при първи signed-in write, не на cold start за анонимни
 
+### Push notifications + сутрешен cron reminder
+- ✅ **`lib/web-push.ts`** — `sendPush(sub, payload)` wrapper над `web-push` library; VAPID lazy-config; връща `{ ok: false, gone: true }` при 404/410 за GC на stale endpoints; TTL 24h
+- ✅ **`lib/actions/push.ts`** — `getVapidPublicKeyAction`, `savePushSubscriptionAction` (rate-limited + audited), `deletePushSubscriptionAction` (user-scoped), `sendTestPushAction` (verification от Settings)
+- ✅ **DB**: нова `push_subscriptions` таблица — `endpoint` PK (globally unique), `keys_p256dh`/`keys_auth`, `user_agent` за device UX, индекс по user_id
+- ✅ **`/api/cron/morning-reminder`** route — Vercel Cron entry с Bearer token gate (deny-by-default ако `CRON_SECRET` не е set); fanout + auto-GC на stale endpoints; `runtime = "nodejs"` (web-push нужна е Node crypto); `vercel.json` schedule `0 5 * * *` UTC (≈7-8 ч BG)
+- ✅ **`public/sw.js`** — минимален service worker: `push` event показва notification с tag `insulinreset-daily` (заменя предишен вместо stack); `notificationclick` фокусира съществуващ таб или отваря /plan
+- ✅ **`components/settings/PushOptIn.tsx`** — 5 UI състояния (unsupported/denied/signed-out/off/on); lazy-import за server actions; test push бутон за verification
+- ✅ **`jest.setup.ts`** глобален mock на `next-auth/react` за component test render-ване без SessionProvider
+- ✅ **`.env.example`** документиран изцяло: ENCRYPTION_KEY, UPSTASH_*, VAPID_*, CRON_SECRET с generation команди
+- ✅ **Тестове**: 5 нови (cron auth: missing/wrong/none → 401, success → 200, stale endpoint GC)
+
 ### Rate limiting + Audit log (trust layer)
 - ✅ **`lib/rate-limit.ts`** — Upstash Redis sliding-window, два limiter-а: `write` (30/мин) и `auth` (10/мин); SDK-овете lazy-import-ват се; bypass когато env vars не са set (local dev); fail-open при network blip
 - ✅ **`lib/audit.ts`** — append-only `audit_log` таблица; `AuditAction` enum (onboarding.save/clear, markers.save, symptoms.save, plan.update); `AuditMetadata` = counts + dates only, **никога стойности**; `crypto.randomUUID()` за да не пуска ESM uuid
@@ -233,7 +244,7 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
 - [x] ~~**Audit log**~~ → append-only audit_log table, counts-only metadata (Phase 2.7)
 
 ### Engagement
-- [ ] **Push notifications** — сутрешен reminder за чеклиста; web-push (thyroid-rehab има инфра)
+- [x] ~~**Push notifications**~~ → web-push + VAPID + service worker + opt-in UI + Vercel Cron `0 5 * * *` (Phase 2.7)
 - [ ] **Email обобщения** — седмичен прогрес по симптоми/маркери (resend.com например)
 - [ ] **Streak / XP / badges** — gamification (thyroid-rehab има user_streaks, user_badges, xp_log)
 
