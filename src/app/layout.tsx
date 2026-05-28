@@ -5,10 +5,33 @@ import AuthBadge from "@/components/AuthBadge";
 import SyncOnLogin from "@/components/SyncOnLogin";
 import Toast from "@/components/Toast";
 
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  process.env.NEXTAUTH_URL ??
+  "https://insulin-resistance-app.vercel.app";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "InsulinReset — 90-дневен протокол",
   description:
     "InsulinReset — 90-дневно обръщане на инсулиновата резистентност, базирано на работата на д-р Benjamin Bikman.",
+  openGraph: {
+    type: "website",
+    locale: "bg_BG",
+    url: SITE_URL,
+    siteName: "InsulinReset",
+    title: "InsulinReset — 90-дневен протокол",
+    description:
+      "Свали инсулина си преди да стане диабет. 90-дневен научно обоснован протокол по д-р Benjamin Bikman.",
+    // The PNG is generated from app/opengraph-image.tsx — Next injects it
+    // automatically, but we declare locale/site name here for completeness.
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "InsulinReset — 90-дневен протокол",
+    description:
+      "Свали инсулина си преди да стане диабет. 90-дневен научно обоснован протокол по д-р Benjamin Bikman.",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -25,6 +48,36 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+// JSON-LD MedicalWebPage schema — helps Google understand the site is a
+// medical educational resource (not a product / shop). Conservative
+// claims only, with the "based on" attribution to Bikman's published work.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "MedicalWebPage",
+  name: "InsulinReset",
+  url: SITE_URL,
+  inLanguage: "bg-BG",
+  about: {
+    "@type": "MedicalCondition",
+    name: "Insulin resistance",
+    alternateName: "Инсулинова резистентност",
+  },
+  audience: {
+    "@type": "MedicalAudience",
+    audienceType: "Patient",
+  },
+  citation: {
+    "@type": "Book",
+    name: "Why We Get Sick",
+    author: { "@type": "Person", name: "Benjamin Bikman, PhD" },
+  },
+  publisher: {
+    "@type": "Organization",
+    name: "InsulinReset",
+    url: SITE_URL,
+  },
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -33,6 +86,11 @@ export default function RootLayout({
   return (
     <html lang="bg">
       <body className="antialiased">
+        <script
+          type="application/ld+json"
+          // schema.org JSON-LD — safe; static content from a constant above.
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <SessionProvider>
           <SyncOnLogin />
           <AuthBadge />

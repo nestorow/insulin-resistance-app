@@ -1,0 +1,29 @@
+import type { MetadataRoute } from "next";
+
+// Sitemap — lists the public read-only routes Google should crawl.
+// Excludes /journal, /markers, /plan (user-data dependent) and /onboarding
+// (entry-flow funnel, not content). API and auth routes also excluded.
+
+const BASE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  process.env.NEXTAUTH_URL ??
+  "https://insulin-resistance-app.vercel.app";
+
+const PUBLIC_ROUTES: { path: string; priority: number; changeFrequency: "weekly" | "monthly" }[] = [
+  { path: "/", priority: 1.0, changeFrequency: "weekly" },
+  { path: "/education", priority: 0.9, changeFrequency: "monthly" },
+  { path: "/foods", priority: 0.8, changeFrequency: "monthly" },
+  { path: "/exercise", priority: 0.7, changeFrequency: "monthly" },
+  { path: "/fasting", priority: 0.7, changeFrequency: "monthly" },
+  { path: "/supplements", priority: 0.7, changeFrequency: "monthly" },
+];
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  const now = new Date();
+  return PUBLIC_ROUTES.map((r) => ({
+    url: `${BASE_URL}${r.path}`,
+    lastModified: now,
+    changeFrequency: r.changeFrequency,
+    priority: r.priority,
+  }));
+}
