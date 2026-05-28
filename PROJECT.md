@@ -6,7 +6,7 @@
 
 **Repo:** `nestorow/insulin-resistance-app` · **Deploy:** `insulin-resistance-app.vercel.app`
 **Бранд:** InsulinReset
-**Статус:** Phase 2 завършена + полирано + Phase 2.6 (conversion / прогресия / SEO) + Phase 2.7 (UX полиране + security + engagement) — всичките 8 модула + onboarding в production, Google sign-in работи, DB persistence за логнати потребители (Turso), localStorage остава cache за анонимни. PWA manifest + iOS PNG icons. Landing-ът има conversion scaffolding, дневният план е **прогресивен** в 4 фази, сайтът е discoverable (OG + sitemap + robots + MedicalWebPage + chapter/disease JSON-LD). Re-test опция, бележки в дневник, физиологични clamp-и, shimmer skeletons. **Trust layer**: blood markers AES-256-GCM enkriptirani at rest, Upstash rate limiting (30 writes/мин), append-only audit_log. **Push notifications**: VAPID + service worker + opt-in UI + Vercel Cron сутрешен reminder. **Gamification**: streak/XP/badge engine с 5 badges, ProgressCard на /plan, BadgeGallery в /settings. **116 unit + component test покритие.**
+**Статус:** Phase 2 завършена + полирано + Phase 2.6 (conversion / прогресия / SEO) + Phase 2.7 (UX полиране + security + engagement) — всичките 8 модула + onboarding в production, Google sign-in работи, DB persistence за логнати потребители (Turso), localStorage остава cache за анонимни. PWA manifest + iOS PNG icons. Landing-ът има conversion scaffolding, дневният план е **прогресивен** в 4 фази, сайтът е discoverable (OG + sitemap + robots + MedicalWebPage + chapter/disease JSON-LD). Re-test опция, бележки в дневник, физиологични clamp-и, shimmer skeletons. **Trust layer**: blood markers AES-256-GCM enkriptirani at rest, Upstash rate limiting (30 writes/мин), append-only audit_log. **Push notifications**: VAPID + service worker + opt-in UI + Vercel Cron сутрешен reminder. **Email digest**: Resend + opt-in + неделен HTML email с прогрес + Vercel Cron. **Gamification**: streak/XP/badge engine с 5 badges, ProgressCard на /plan, BadgeGallery в /settings. **Optimistic rollback** при rate-limit. **136 unit + component test покритие.**
 
 ---
 
@@ -185,6 +185,21 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
   - `components/SettingsModule.test.tsx` (4): профил рендер, nudge, re-test happy path + cancel
 - ✅ **Bonus refactor**: storage seams (`onboarding-storage`, `daily-plan-storage`, `tracking-storage`) сега lazy-import-ват server actions — auth/DB chunks се товарят само при първи signed-in write, не на cold start за анонимни
 
+### Optimistic UI rollback (UX полиране)
+- ✅ **Server actions** (`saveSymptomLogAction`, `saveMarkerLogAction`) — нов discriminated return: `{ ok: true } | { ok: false; reason: 'auth' | 'rate' }`; запазва съществуващите session-gate + rate-limit семантики, но дава по-конкретен signal на client-а
+- ✅ **Storage seams** (`addSymptomLog`, `addMarkerLog`) — нов return shape `{ local: T[]; pending: Promise<'ok'|'rejected'|'offline'> }`; добавени са `removeSymptomLog` / `removeMarkerLog` като rollback inverse
+- ✅ **`SymptomJournalModule` + `MarkersModule`** save handlers — capture-ват previous list, optimistic write, await pending → ако `rejected` (rate limit hit): drop new entry + restore prior (за UPDATE cases) + tiny error toast „Сървърът отказа — записът е върнат"; `offline` outcomes остават locally (SyncOnLogin ще reconcile-не)
+- ✅ **Тестове**: обновени за новия `{ local }` shape + 2 нови случая (removeSymptomLog/Marker, skipServer→'ok' immediately)
+
+### Email обобщения (engagement)
+- ✅ **`lib/email.ts`** — Resend SDK lazy-import wrapper; `sendDigest(data)` връща discriminated outcome (`ok` / `skipped: 'no-config'` / `failed`); HTML template inline-styled в teal/mint палитрата, 3 stat tiles (Поредни дни / Ниво / Записи), conditional „Нови значки" row; `digestSubject()` избира най-интересния факт за subject-а; `escapeHtml` на user-controlled полета
+- ✅ **`lib/actions/email.ts`** — `getEmailDigestPreferenceAction` + `setEmailDigestPreferenceAction` (session-gated + rate-limited)
+- ✅ **DB**: `users.email_digest_opt_in INTEGER DEFAULT 0` чрез `ensureColumn` (opt-in default off)
+- ✅ **`/api/cron/weekly-digest`** — Bearer-gated; joins opted-in users с прогрес + 7-day symptom count + значки спечелени тази седмица; връща `{ sent, skipped, failed }`; `vercel.json` schedule `0 16 * * 0` UTC (неделя ≈ 18-19 ч BG)
+- ✅ **`EmailDigestOptIn.tsx`** в `/settings` — 3 UI състояния (signed-out/off/on); lazy-import за actions; показва email адреса на потребителя в копито
+- ✅ **`.env.example`** документиран: `RESEND_API_KEY` + `DIGEST_FROM_EMAIL` с пример
+- ✅ **Тестове**: 17 нови (email lib config gate, subject branches, HTML render + escaping + URLs; cron auth + skip vs failed counters)
+
 ### Streak / XP / badges (gamification layer)
 - ✅ **DB**: три нови таблици — `user_streaks` (1 ред/user; current_streak, longest_streak, total_xp, last_active_date), `xp_log` (append-only, recomputable), `user_badges` (UNIQUE (user_id, badge_id) — идемпотентно awarding)
 - ✅ **`lib/gamification.ts`** — engine:
@@ -240,7 +255,7 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
 - [x] ~~**Form sanity**~~ → `clampedNum()` + HTML5 min/max/step (Phase 2.7)
 - [x] ~~**PNG apple-icon (180×180)**~~ → `scripts/rasterize-icons.mjs` + sharp (Phase 2.7)
 - [x] ~~**Loading skeleton CSS shimmer**~~ → `components/ui/Skeleton.tsx`, wired в Journal+Markers (Phase 2.7)
-- [ ] **Optimistic UI rollback** — при server action fail, връщай локалното състояние + покажи tiny error toast (изисква seam-овете да върнат Promise)
+- [x] ~~**Optimistic UI rollback**~~ → `{ local, pending }` seam shape + rollback при `rejected` outcome (Phase 2.7)
 
 ### Социално + SEO
 - [x] ~~**Per-page JSON-LD**~~ → chapters като `MedicalScholarlyArticle`, diseases като `MedicalCondition` (Phase 2.7)
@@ -261,7 +276,7 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
 
 ### Engagement
 - [x] ~~**Push notifications**~~ → web-push + VAPID + service worker + opt-in UI + Vercel Cron `0 5 * * *` (Phase 2.7)
-- [ ] **Email обобщения** — седмичен прогрес по симптоми/маркери (resend.com например)
+- [x] ~~**Email обобщения**~~ → Resend + weekly cron + opt-in UI + HTML template (Phase 2.7)
 - [x] ~~**Streak / XP / badges**~~ → engine + 5 badges + ProgressCard + BadgeGallery (Phase 2.7)
 
 ### Бъдещи фази (Phase 8+)
