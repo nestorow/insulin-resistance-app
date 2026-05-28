@@ -1,4 +1,5 @@
 import type { ProgramPhaseIndex } from "@/lib/program-phases";
+import type { DietTier } from "@/lib/onboarding";
 
 export interface ChecklistItem {
   id: string;
@@ -9,6 +10,13 @@ export interface ChecklistItem {
   availableFromDay?: number;
   /** Optional per-phase rewording — pulled from `program-phases.ts` indices. */
   text_by_phase?: Partial<Record<ProgramPhaseIndex, string>>;
+  /**
+   * If set, item only renders for users whose tier is in this list.
+   * Default (omitted) = visible to everyone, regardless of tier.
+   * Used for stricter rules that only apply to high-IR-risk users —
+   * e.g. fruit limits for keto, sweet caps for moderate+.
+   */
+  tiers?: DietTier[];
 }
 
 // Items are ordered as they should appear in the UI. Progression rules:
@@ -162,6 +170,21 @@ export const checklistItems: ChecklistItem[] = [
     id: "week_sweets",
     text_bg: "Максимум 1 сладко/десерт за седмицата",
     category: "weekly",
+    // Low-risk users don't need the sweets cap; for them general
+    // mindful eating is sufficient. Moderate + keto need it.
+    tiers: ["moderate", "keto"],
+  },
+  {
+    id: "week_fruit_keto",
+    text_bg: "Плодове — само горски (малини, ягоди, боровинки), малки порции",
+    category: "weekly",
+    tiers: ["keto"], // Fruits push past 50g/day quickly; only berries.
+  },
+  {
+    id: "week_grains_moderate",
+    text_bg: "Зърнени — само пълнозърнести и не повече от 1 порция/ден",
+    category: "weekly",
+    tiers: ["moderate"], // None + keto don't need a grains-specific rule.
   },
   {
     id: "week_waist",

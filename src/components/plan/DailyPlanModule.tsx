@@ -50,10 +50,17 @@ export default function DailyPlanModule() {
   const phase = programPhase(effectiveDay);
   const milestone = dayNumber !== null ? milestoneMessage(dayNumber) : null;
 
-  // Apply progression: drop items not yet available, then resolve text.
+  // Apply progression + tier restriction:
+  // - drop items not yet unlocked (availableFromDay > today)
+  // - drop tier-specific items that don't match the user's tier
+  //   (no tier yet = anonymous; treat as "none" for visibility purposes)
+  const effectiveTier = tier?.tier ?? "none";
   function visibleItems(category: ChecklistItem["category"]) {
     return checklistItems.filter(
-      (i) => i.category === category && (i.availableFromDay ?? 1) <= effectiveDay
+      (i) =>
+        i.category === category &&
+        (i.availableFromDay ?? 1) <= effectiveDay &&
+        (i.tiers === undefined || i.tiers.includes(effectiveTier))
     );
   }
 
@@ -62,9 +69,10 @@ export default function DailyPlanModule() {
       checklistItems.filter(
         (i) =>
           ["morning", "day", "evening"].includes(i.category) &&
-          (i.availableFromDay ?? 1) <= effectiveDay
+          (i.availableFromDay ?? 1) <= effectiveDay &&
+          (i.tiers === undefined || i.tiers.includes(effectiveTier))
       ),
-    [effectiveDay]
+    [effectiveDay, effectiveTier]
   );
   const doneCount = dailyItems.filter((i) => checks[i.id]).length;
 
