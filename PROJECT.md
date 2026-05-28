@@ -6,7 +6,7 @@
 
 **Repo:** `nestorow/insulin-resistance-app` · **Deploy:** `insulin-resistance-app.vercel.app`
 **Бранд:** InsulinReset
-**Статус:** Phase 2 завършена + полирано + Phase 2.6 (conversion / прогресия / SEO) — всичките 8 модула + onboarding в production, Google sign-in работи, DB persistence за логнати потребители (Turso), localStorage остава cache за анонимни. PWA manifest деплойнат и инсталируем (потвърдено живо). Landing-ът има conversion scaffolding (hero copy + 4-те стълба + how-it-works), дневният план е **прогресивен** в 4 фази (Адаптация → Стесняване → Оптимизация → Закотвяне), сайтът е discoverable (OG card + sitemap + robots + MedicalWebPage JSON-LD).
+**Статус:** Phase 2 завършена + полирано + Phase 2.6 (conversion / прогресия / SEO) + Phase 2.7 (UX полиране) — всичките 8 модула + onboarding в production, Google sign-in работи, DB persistence за логнати потребители (Turso), localStorage остава cache за анонимни. PWA manifest деплойнат и инсталируем (потвърдено живо). Landing-ът има conversion scaffolding, дневният план е **прогресивен** в 4 фази, сайтът е discoverable (OG + sitemap + robots + MedicalWebPage + chapter/disease JSON-LD). Re-test опция, бележки в дневник, и физиологични clamp-и на всички числови inputs.
 
 ---
 
@@ -140,31 +140,38 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
 - ✅ **`app/robots.ts`** — `robots.txt` allow/disallow + sitemap pointer
 - ✅ **`layout.tsx`** — добавени `metadataBase`, `openGraph` + `twitter` метадата (bg_BG, summary_large_image), inline JSON-LD `MedicalWebPage` schema (назовава condition-а, цитира Bikman, declares medical audience)
 
+## Phase 2.7 — UX полиране (retention-driving)
+
+Тристранен следващ слой след Phase 2.6:
+
+### Re-test опция
+- ✅ **Нов `/settings` маршрут** — текущ профил (lens, quiz score, tier, начална дата) + бутон „Преоцени теста" с Radix confirm dialog; добавен и в `ModuleNav`
+- ✅ **`clearOnboardingAction()`** — session-gated DELETE на onboarding ред (за логнати); local `clearOnboarding()` се вика синхронно преди това
+- ✅ **Flow**: confirm → clear local → fire-and-forget сървър → toast → redirect към `/onboarding`; новият save презаписва ред → `completedAt = now` → нов Ден 1 / 90, Фаза 1; дневник + маркери остават нетронати
+
+### Бележки в дневник + form sanity
+- ✅ **Notes UI в `/journal`** — textarea (max 280 символа, live counter), показва се под точката на всеки запис в italic + muted; сървърното поле `notes` беше там, само UI липсваше
+- ✅ **`clampedNum()` guard** — за всеки числов input в `/journal` и `/markers`: out-of-range стойности тихо стават `undefined` (тегло 20-400 кг, талия 30-300 см, кр. захар 0-30, HOMA-IR 0-50, инсулин 0-500, HbA1c 3-20, TG 0-2000, HDL 0-200); добавени също HTML5 `min` / `max` / `step` за по-добър mobile keypad + arrow stepping
+
+### Per-page JSON-LD на /education
+- ✅ **`lib/education-schema.ts`** — изграждa `@graph` от 15 глави като `MedicalScholarlyArticle` (с `isPartOf` Bikman книгата + ISBN) и 30+ заболявания като `MedicalCondition` (с bilingual имена и `riskFactor`); injects-ва се през `<script type="application/ld+json">` в `/education/page.tsx`
+
 ## Backlog — идеи за следващи итерации
 
 ### Полиране (продължение)
-- [ ] **Form sanity** — `min={0}` + `step` на числови inputs (тегло, инсулин, HbA1c…); валидация на абсурдни стойности
+- [x] ~~**Form sanity**~~ → `clampedNum()` + HTML5 min/max/step (Phase 2.7)
 - [ ] **PNG apple-icon (180×180)** — за iOS Safari, който не приема SVG за touch icon; иска build-time rasterization (sharp script в `scripts/`)
 - [ ] **Loading skeleton CSS shimmer** — за по-дълги loads (SyncOnLogin при голяма история)
 - [ ] **Optimistic UI rollback** — при server action fail, връщай локалното състояние + покажи tiny error toast
 
-### Landing подобрения
-- [x] ~~**A — 4-те стълба** под hero~~ → `FourPillars.tsx` (Phase 2.6)
-- [x] ~~**B — "Как работи за 90 дни"** в 3 стъпки~~ → `HowItWorks.tsx` (Phase 2.6)
-- [x] ~~**C — По-конкретна hero copy**~~ → „Свали инсулина си — преди да стане диабет" (Phase 2.6)
-
 ### Социално + SEO
-- [x] ~~**Open Graph image**~~ → `app/opengraph-image.tsx` (Phase 2.6)
-- [x] ~~**Sitemap + robots.txt**~~ → `app/sitemap.ts` + `app/robots.ts` (Phase 2.6)
-- [x] ~~**Structured data** (JSON-LD)~~ → `MedicalWebPage` в layout (Phase 2.6); per-page `Article` за education глави остава
-- [ ] **Per-page JSON-LD** — `Article` schema за всяка глава в /education (10+ записа)
+- [x] ~~**Per-page JSON-LD**~~ → chapters като `MedicalScholarlyArticle`, diseases като `MedicalCondition` (Phase 2.7)
 
 ### Съдържание / продукт
-- [x] ~~**Прогресивен 90-дневен план**~~ → 4-фазна прогресия с `availableFromDay` + `text_by_phase` (Phase 2.6); next: tier-specific вариант на правилата
+- [x] ~~**Re-test опция**~~ → `/settings` + `clearOnboardingAction` (Phase 2.7)
+- [x] ~~**Бележки в дневник**~~ → textarea в `SymptomJournalModule` (Phase 2.7)
 - [ ] **Tier-specific правила** — освен `carbCap`, някои items да са само за keto tier (напр. „без плодове“)
 - [ ] **Inferred lens** в onboarding — пред-избор на lens спрямо отговори преди потвърждение
-- [ ] **Re-test опция** — настройки → "Преоцени теста" (drop user/lens, replay onboarding)
-- [ ] **Бележки в дневник** — добавяне на свободен текст в SymptomEntry.notes (поле го има, UI липсва)
 
 ### Инфраструктура
 - [ ] **Тестове** — jest setup портнат от thyroid-rehab, поне unit за tier logic + storage seams
