@@ -6,7 +6,7 @@
 
 **Repo:** `nestorow/insulin-resistance-app` · **Deploy:** `insulin-resistance-app.vercel.app`
 **Бранд:** InsulinReset
-**Статус:** Phase 2 завършена + полирано — всичките 8 модула + onboarding в production, Google sign-in работи, DB persistence за логнати потребители (Turso), localStorage остава cache за анонимни. PWA manifest деплойнат и инсталируем (потвърдено живо).
+**Статус:** Phase 2 завършена + полирано + Phase 2.6 (conversion / прогресия / SEO) — всичките 8 модула + onboarding в production, Google sign-in работи, DB persistence за логнати потребители (Turso), localStorage остава cache за анонимни. PWA manifest деплойнат и инсталируем (потвърдено живо). Landing-ът има conversion scaffolding (hero copy + 4-те стълба + how-it-works), дневният план е **прогресивен** в 4 фази (Адаптация → Стесняване → Оптимизация → Закотвяне), сайтът е discoverable (OG card + sitemap + robots + MedicalWebPage JSON-LD).
 
 ---
 
@@ -118,6 +118,28 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
 - ✅ **Toast при save** — минимален event-bus toast (lib/toast.ts + components/Toast.tsx), показва се при save в journal/markers
 - ✅ **PWA manifest** + apple-touch-icon — приложението е инсталируемо, **потвърдено живо**
 
+## Phase 2.6 — conversion + прогресия + SEO
+
+Три fokus-а от backlog-а, които заедно дават най-голям impact:
+
+### Landing conversion scaffolding (frontend-only)
+- ✅ **Hero copy** — заменено „Персонализиран асистент…“ с конкретно обещание: „Свали инсулина си — преди да стане диабет“; добавен timer hint под CTA („⏱ Тестът отнема около 3 минути“)
+- ✅ **4-те стълба** под hero-то (`components/landing/FourPillars.tsx`) — карти с lucide иконки (WheatOff / Beef / EggFried / Clock) и едноредово обяснение
+- ✅ **Как работи за 90 дни** (`components/landing/HowItWorks.tsx`) — 3-стъпкова секция с номерирани teal badge-и (Тест → План → Проследяване)
+- ✅ Reorder на страницата: hero → WHAT → HOW → WHERE (модули) → secondary CTA
+
+### Прогресивен 90-дневен план
+- ✅ **`lib/program-phases.ts`** — `programPhase(day)` връща една от 4 фази (Адаптация 1-14 / Стесняване 15-30 / Оптимизация 31-60 / Закотвяне 61-90) с `name_bg`, `range_bg`, `goal_bg`; `milestoneMessage(day)` за дни 7/14/30/60/90
+- ✅ **`data/protocol.ts`** — `ChecklistItem` разширен с `availableFromDay?` (unlock ден) и `text_by_phase?` (per-phase wording); items като пост-meal walk, fermented food, screens curfew, cold shower, 24h fast се отключват при правилния етап; гладуването и тренировките **ескалират** в текста (12h → 14h → 16h → 18h, движение → лека тренировка → силови + HIIT)
+- ✅ **`DailyPlanModule.tsx`** — нов `Фаза N · <Name>` pill в status strip-а, нова phase-explainer карта (диапазон + цел), milestone банер на точния ден; items филтрирани по `availableFromDay`, текстът разрешен през `itemText(item, phase.index)`
+- ⚠️ Бележка: `dayNumber` все още се изчислява от `onboarding.completedAt` — без миграция
+
+### SEO discoverability
+- ✅ **`app/opengraph-image.tsx`** — site-wide 1200×630 PNG card (teal gradient + hero line + Bikman attribution); Next.js auto-инжектира meta тага навсякъде
+- ✅ **`app/sitemap.ts`** — `sitemap.xml` с 6-те публични content маршрута (изключва user-data routes + onboarding funnel)
+- ✅ **`app/robots.ts`** — `robots.txt` allow/disallow + sitemap pointer
+- ✅ **`layout.tsx`** — добавени `metadataBase`, `openGraph` + `twitter` метадата (bg_BG, summary_large_image), inline JSON-LD `MedicalWebPage` schema (назовава condition-а, цитира Bikman, declares medical audience)
+
 ## Backlog — идеи за следващи итерации
 
 ### Полиране (продължение)
@@ -126,18 +148,20 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
 - [ ] **Loading skeleton CSS shimmer** — за по-дълги loads (SyncOnLogin при голяма история)
 - [ ] **Optimistic UI rollback** — при server action fail, връщай локалното състояние + покажи tiny error toast
 
-### Landing подобрения (от по-рано избор)
-- [ ] **A — 4-те стълба** под hero (🥦 🥩 🥑 ⏰ карти) — показва "какво всъщност правим"
-- [ ] **B — "Как работи за 90 дни"** в 3 стъпки (тест → план → проследяване)
-- [ ] **C — По-конкретна hero copy** — напр. „Свали инсулина си преди да стане диабет"
+### Landing подобрения
+- [x] ~~**A — 4-те стълба** под hero~~ → `FourPillars.tsx` (Phase 2.6)
+- [x] ~~**B — "Как работи за 90 дни"** в 3 стъпки~~ → `HowItWorks.tsx` (Phase 2.6)
+- [x] ~~**C — По-конкретна hero copy**~~ → „Свали инсулина си — преди да стане диабет" (Phase 2.6)
 
 ### Социално + SEO
-- [ ] **Open Graph image** — `/api/og` route с динамично генериран social card (Next.js OG)
-- [ ] **Sitemap + robots.txt** — `app/sitemap.ts` + `app/robots.ts`
-- [ ] **Structured data** (JSON-LD) за / и /education
+- [x] ~~**Open Graph image**~~ → `app/opengraph-image.tsx` (Phase 2.6)
+- [x] ~~**Sitemap + robots.txt**~~ → `app/sitemap.ts` + `app/robots.ts` (Phase 2.6)
+- [x] ~~**Structured data** (JSON-LD)~~ → `MedicalWebPage` в layout (Phase 2.6); per-page `Article` за education глави остава
+- [ ] **Per-page JSON-LD** — `Article` schema за всяка глава в /education (10+ записа)
 
 ### Съдържание / продукт
-- [ ] **Прогресивен 90-дневен план** — daily_plan ред с tier-specific вариант, постепенна сложност на правилата ден N
+- [x] ~~**Прогресивен 90-дневен план**~~ → 4-фазна прогресия с `availableFromDay` + `text_by_phase` (Phase 2.6); next: tier-specific вариант на правилата
+- [ ] **Tier-specific правила** — освен `carbCap`, някои items да са само за keto tier (напр. „без плодове“)
 - [ ] **Inferred lens** в onboarding — пред-избор на lens спрямо отговори преди потвърждение
 - [ ] **Re-test опция** — настройки → "Преоцени теста" (drop user/lens, replay onboarding)
 - [ ] **Бележки в дневник** — добавяне на свободен текст в SymptomEntry.notes (поле го има, UI липсва)
