@@ -21,6 +21,17 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
+// Clamp a parsed numeric string to a physiological range; returns undefined
+// when out-of-range/empty so the save path drops the field instead of
+// poisoning the chart with absurd values (e.g., HbA1c = 999).
+function clampedNum(raw: string, min: number, max: number): number | undefined {
+  if (!raw) return undefined;
+  const n = parseFloat(raw);
+  if (!Number.isFinite(n)) return undefined;
+  if (n < min || n > max) return undefined;
+  return n;
+}
+
 export default function MarkersModule() {
   const [mounted, setMounted] = useState(false);
   const [logs, setLogs] = useState<MarkerEntry[]>([]);
@@ -39,11 +50,11 @@ export default function MarkersModule() {
   function save() {
     const entry: MarkerEntry = {
       date,
-      homaIr: homaIr ? parseFloat(homaIr) : undefined,
-      fastingInsulin: fastingInsulin ? parseFloat(fastingInsulin) : undefined,
-      hba1c: hba1c ? parseFloat(hba1c) : undefined,
-      triglycerides: tg ? parseFloat(tg) : undefined,
-      hdl: hdl ? parseFloat(hdl) : undefined,
+      homaIr: clampedNum(homaIr, 0, 50),
+      fastingInsulin: clampedNum(fastingInsulin, 0, 500),
+      hba1c: clampedNum(hba1c, 3, 20),
+      triglycerides: clampedNum(tg, 0, 2000),
+      hdl: clampedNum(hdl, 0, 200),
     };
     setLogs(addMarkerLog(entry));
     showToast("Записано за " + date);
@@ -77,12 +88,47 @@ export default function MarkersModule() {
             />
           </Field>
           <div />
-          <Num label="HOMA-IR" value={homaIr} onChange={setHomaIr} />
-          <Num label="Инсулин на гладно (µU/mL)" value={fastingInsulin} onChange={setFastingInsulin} />
-          <Num label="HbA1c (%)" value={hba1c} onChange={setHba1c} />
+          <Num
+            label="HOMA-IR"
+            value={homaIr}
+            onChange={setHomaIr}
+            min={0}
+            max={50}
+            step={0.1}
+          />
+          <Num
+            label="Инсулин на гладно (µU/mL)"
+            value={fastingInsulin}
+            onChange={setFastingInsulin}
+            min={0}
+            max={500}
+            step={0.1}
+          />
+          <Num
+            label="HbA1c (%)"
+            value={hba1c}
+            onChange={setHba1c}
+            min={3}
+            max={20}
+            step={0.1}
+          />
           <div />
-          <Num label="Триглицериди (mg/dL)" value={tg} onChange={setTg} />
-          <Num label="HDL (mg/dL)" value={hdl} onChange={setHdl} />
+          <Num
+            label="Триглицериди (mg/dL)"
+            value={tg}
+            onChange={setTg}
+            min={0}
+            max={2000}
+            step={1}
+          />
+          <Num
+            label="HDL (mg/dL)"
+            value={hdl}
+            onChange={setHdl}
+            min={0}
+            max={200}
+            step={1}
+          />
         </div>
         <button
           onClick={save}
@@ -173,10 +219,16 @@ function Num({
   label,
   value,
   onChange,
+  min,
+  max,
+  step,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
+  min: number;
+  max: number;
+  step: number;
 }) {
   return (
     <Field label={label}>
@@ -185,6 +237,9 @@ function Num({
         inputMode="decimal"
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        min={min}
+        max={max}
+        step={step}
         className="w-full rounded-lg border border-teal-200 bg-white px-3 py-2 text-sm outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200"
       />
     </Field>

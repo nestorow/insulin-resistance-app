@@ -17,8 +17,21 @@ import {
 } from "@/lib/tracking-storage";
 import { showToast } from "@/lib/toast";
 
+const NOTES_MAX = 280;
+
 function today() {
   return new Date().toISOString().slice(0, 10);
+}
+
+// Clamp a parsed numeric string to a sane physiological range; returns
+// undefined when out-of-range or empty so the save path drops the field
+// instead of storing garbage. Keeps charts readable.
+function clampedNum(raw: string, min: number, max: number): number | undefined {
+  if (!raw) return undefined;
+  const n = parseFloat(raw);
+  if (!Number.isFinite(n)) return undefined;
+  if (n < min || n > max) return undefined;
+  return n;
 }
 
 export default function SymptomJournalModule() {
@@ -30,6 +43,7 @@ export default function SymptomJournalModule() {
   const [weight, setWeight] = useState("");
   const [waist, setWaist] = useState("");
   const [bloodSugar, setBloodSugar] = useState("");
+  const [notes, setNotes] = useState("");
 
   useEffect(() => {
     setLogs(getSymptomLogs());
@@ -37,13 +51,15 @@ export default function SymptomJournalModule() {
   }, []);
 
   function save() {
+    const trimmed = notes.trim().slice(0, NOTES_MAX);
     const entry: SymptomEntry = {
       date,
       energy,
       brainFog,
-      weight: weight ? parseFloat(weight) : undefined,
-      waist: waist ? parseFloat(waist) : undefined,
-      bloodSugar: bloodSugar ? parseFloat(bloodSugar) : undefined,
+      weight: clampedNum(weight, 20, 400),
+      waist: clampedNum(waist, 30, 300),
+      bloodSugar: clampedNum(bloodSugar, 0, 30),
+      notes: trimmed.length > 0 ? trimmed : undefined,
     };
     setLogs(addSymptomLog(entry));
     showToast("Записано за " + date);
@@ -79,10 +95,51 @@ export default function SymptomJournalModule() {
           <div />
           <Slider label={`Енергия: ${energy}`} value={energy} onChange={setEnergy} />
           <Slider label={`Brain fog: ${brainFog}`} value={brainFog} onChange={setBrainFog} />
-          <Num label="Тегло (кг)" value={weight} onChange={setWeight} />
-          <Num label="Талия (см)" value={waist} onChange={setWaist} />
-          <Num label="Кръвна захар (mmol/L)" value={bloodSugar} onChange={setBloodSugar} />
+          <Num
+            label="Тегло (кг)"
+            value={weight}
+            onChange={setWeight}
+            min={20}
+            max={400}
+            step={0.1}
+          />
+          <Num
+            label="Талия (см)"
+            value={waist}
+            onChange={setWaist}
+            min={30}
+            max={300}
+            step={0.5}
+          />
+          <Num
+            label="Кръвна захар (mmol/L)"
+            value={bloodSugar}
+            onChange={setBloodSugar}
+            min={0}
+            max={30}
+            step={0.1}
+          />
         </div>
+
+        {/* Notes — free text context for outliers */}
+        <div className="mt-4">
+          <label className="block">
+            <span className="mb-1 flex items-baseline justify-between text-xs text-slate-500">
+              <span>Бележка за деня (по избор)</span>
+              <span className="text-slate-400">
+                {notes.length} / {NOTES_MAX}
+              </span>
+            </span>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value.slice(0, NOTES_MAX))}
+              placeholder="напр. късна вечеря, стресна седмица, тренировка отпаднала…"
+              rows={2}
+              className="w-full resize-none rounded-lg border border-teal-200 bg-white px-3 py-2 text-sm outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200"
+            />
+          </label>
+        </div>
+
         <button
           onClick={save}
           className="mt-4 w-full rounded-xl bg-teal-500 py-3 font-semibold text-white transition-colors hover:bg-teal-600"
@@ -131,15 +188,22 @@ export default function SymptomJournalModule() {
             {[...logs].reverse().map((l) => (
               <div
                 key={l.date}
-                className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl border border-teal-100 bg-white p-3 text-sm"
+                className="rounded-xl border border-teal-100 bg-white p-3 text-sm"
               >
-                <span className="font-medium text-slate-700">{l.date}</span>
-                <span className="text-slate-500">Енергия {l.energy}</span>
-                <span className="text-slate-500">Фог {l.brainFog}</span>
-                {l.weight != null && <span className="text-slate-500">{l.weight} кг</span>}
-                {l.waist != null && <span className="text-slate-500">талия {l.waist}</span>}
-                {l.bloodSugar != null && (
-                  <span className="text-slate-500">захар {l.bloodSugar}</span>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                  <span className="font-medium text-slate-700">{l.date}</span>
+                  <span className="text-slate-500">Енергия {l.energy}</span>
+                  <span className="text-slate-500">Фог {l.brainFog}</span>
+                  {l.weight != null && <span className="text-slate-500">{l.weight} кг</span>}
+                  {l.waist != null && <span className="text-slate-500">талия {l.waist}</span>}
+                  {l.bloodSugar != null && (
+                    <span className="text-slate-500">захар {l.bloodSugar}</span>
+                  )}
+                </div>
+                {l.notes && (
+                  <p className="mt-1.5 border-t border-teal-50 pt-1.5 text-xs italic leading-relaxed text-slate-500">
+                    {l.notes}
+                  </p>
                 )}
               </div>
             ))}
@@ -163,10 +227,16 @@ function Num({
   label,
   value,
   onChange,
+  min,
+  max,
+  step,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
+  min: number;
+  max: number;
+  step: number;
 }) {
   return (
     <Field label={label}>
@@ -175,6 +245,9 @@ function Num({
         inputMode="decimal"
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        min={min}
+        max={max}
+        step={step}
         className="w-full rounded-lg border border-teal-200 bg-white px-3 py-2 text-sm outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200"
       />
     </Field>
