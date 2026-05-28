@@ -17,6 +17,7 @@ import {
 } from "@/lib/tracking-storage";
 import { showToast } from "@/lib/toast";
 import { clampedNum } from "@/lib/numbers";
+import { SkeletonRows } from "@/components/ui/Skeleton";
 
 function today() {
   return new Date().toISOString().slice(0, 10);
@@ -127,6 +128,14 @@ export default function MarkersModule() {
           Запиши показателите
         </button>
       </div>
+
+      {/* Hydration placeholder — see Journal for the rationale. */}
+      {!mounted && (
+        <div className="mb-8">
+          <h2 className="mb-3 text-sm font-semibold text-slate-700">Записи</h2>
+          <SkeletonRows rows={3} />
+        </div>
+      )}
 
       {/* Empty / encouragement states (until chart is meaningful) */}
       {mounted && logs.length === 0 && (
