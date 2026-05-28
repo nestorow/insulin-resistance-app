@@ -46,6 +46,23 @@ export async function saveOnboardingAction(
   return { ok: true };
 }
 
+export async function clearOnboardingAction(): Promise<{ ok: true } | null> {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) return null;
+
+  // Re-test flow — drop the onboarding row so the next save starts a fresh
+  // 90-day cycle (Day N derives from onboarding.created_at). Journal +
+  // markers + daily_plan history are intentionally preserved; only the
+  // tier + completedAt anchor are reset.
+  await db.execute({
+    sql: "DELETE FROM onboarding WHERE user_id = ?",
+    args: [session.user.id],
+  });
+  // Lens mirror on users is rewritten on the next save; leaving it stale
+  // for the brief gap between clear and re-complete is harmless.
+  return { ok: true };
+}
+
 export async function loadOnboardingAction(): Promise<OnboardingResult | null> {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return null;

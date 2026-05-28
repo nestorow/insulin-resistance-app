@@ -11,6 +11,7 @@ const LINKS = [
   { href: "/fasting", label: "Гладуване" },
   { href: "/supplements", label: "Добавки" },
   { href: "/education", label: "Образование" },
+  { href: "/settings", label: "Настройки" },
 ];
 
 export default function ModuleNav({ active }: { active: string }) {
