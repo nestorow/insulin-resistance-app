@@ -1,10 +1,17 @@
 "use client";
 
-import { setDayChecksAction } from "./actions/plan";
-
 // Daily checklist state, keyed by ISO date (YYYY-MM-DD).
 // localStorage is the primary cache; when signed in, each toggle fire-and-
 // forgets the full day's checks to Turso (UPSERT semantics).
+//
+// Server action is dynamically imported on first use — see
+// onboarding-storage.ts for the rationale.
+
+function fireDayChecks(date: string, checks: Record<string, boolean>) {
+  import("./actions/plan")
+    .then((m) => m.setDayChecksAction(date, checks))
+    .catch(() => {});
+}
 
 const KEY = "ir-daily-plan-v1";
 
@@ -47,7 +54,7 @@ export function toggleDayCheck(
   store[date] = day;
   write(store);
   // Fire-and-forget server sync: persist the full day's check set.
-  setDayChecksAction(date, day).catch(() => {});
+  fireDayChecks(date, day);
   return day;
 }
 
@@ -65,6 +72,6 @@ export function setDayChecks(
   store[date] = checks;
   write(store);
   if (!opts.skipServer) {
-    setDayChecksAction(date, checks).catch(() => {});
+    fireDayChecks(date, checks);
   }
 }

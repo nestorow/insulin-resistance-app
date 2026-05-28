@@ -2,13 +2,16 @@
 
 import type { OnboardingResult } from "./onboarding";
 import { ONBOARDING_VERSION } from "./onboarding";
-import { saveOnboardingAction } from "./actions/onboarding";
 
 // Persistence seam for onboarding results.
 // localStorage is the working cache (sync, instant). When the user is signed
 // in, writes are mirrored to Turso via a fire-and-forget server action call —
 // the action itself checks the session and silently no-ops when absent.
 // SyncOnLogin handles the initial pull/push at login time.
+//
+// Server actions are dynamically imported on first use so this module
+// stays free of next-auth (ESM) at load time — keeps SSR/tests clean and
+// lets the auth chunk lazy-load only for signed-in users.
 
 const KEY = `ir-onboarding-v${ONBOARDING_VERSION}`;
 
@@ -28,9 +31,11 @@ export function saveOnboarding(
     // storage full / disabled — non-critical for Phase 1
   }
   if (!opts.skipServer) {
-    saveOnboardingAction(result).catch(() => {
-      /* no-op; local cache is enough until next sync */
-    });
+    import("./actions/onboarding")
+      .then((m) => m.saveOnboardingAction(result))
+      .catch(() => {
+        /* no-op; local cache is enough until next sync */
+      });
   }
 }
 

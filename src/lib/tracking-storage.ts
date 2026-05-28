@@ -1,11 +1,22 @@
 "use client";
 
-import { saveSymptomLogAction } from "./actions/journal";
-import { saveMarkerLogAction } from "./actions/markers";
-
 // Symptom journal + blood marker logs.
 // localStorage is the primary cache; when signed in each write also fire-
 // and-forgets to Turso (auth.ts checks session; non-auth callers no-op).
+//
+// Server actions are dynamically imported on first write — see
+// onboarding-storage.ts for the rationale.
+
+function fireSymptomSave(entry: SymptomEntry) {
+  import("./actions/journal")
+    .then((m) => m.saveSymptomLogAction(entry))
+    .catch(() => {});
+}
+function fireMarkerSave(entry: MarkerEntry) {
+  import("./actions/markers")
+    .then((m) => m.saveMarkerLogAction(entry))
+    .catch(() => {});
+}
 
 export interface SymptomEntry {
   date: string; // YYYY-MM-DD
@@ -71,7 +82,7 @@ export function addSymptomLog(
   const next = upsertByDate(getSymptomLogs(), entry);
   writeArr(SYMPTOM_KEY, next);
   if (!opts.skipServer) {
-    saveSymptomLogAction(entry).catch(() => {});
+    fireSymptomSave(entry);
   }
   return next;
 }
@@ -87,7 +98,7 @@ export function addMarkerLog(
   const next = upsertByDate(getMarkerLogs(), entry);
   writeArr(MARKER_KEY, next);
   if (!opts.skipServer) {
-    saveMarkerLogAction(entry).catch(() => {});
+    fireMarkerSave(entry);
   }
   return next;
 }
