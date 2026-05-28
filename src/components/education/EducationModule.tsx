@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { keyFacts, fourPillars, chapters } from "@/data/knowledge";
 import { diseases, bodySystemNames } from "@/data/diseases";
+import BodySilhouette from "./BodySilhouette";
 
 const SYSTEM_ICON: Record<string, LucideIcon> = {
   heart: Heart,
@@ -90,6 +91,18 @@ export default function EducationModule() {
         <h2 className="mb-3 text-xl font-bold text-teal-700">
           Заболявания, свързани с ИР
         </h2>
+        <p className="mb-4 text-sm text-slate-500">
+          Кликни регион от тялото или избери система — за да видиш свързаните
+          заболявания.
+        </p>
+
+        {/* Interactive body map */}
+        <div className="mb-5 rounded-2xl border border-teal-100 bg-white p-4">
+          <BodySilhouette
+            activeSystem={system}
+            onRegionClick={(s) => setSystem(s)}
+          />
+        </div>
 
         {/* Filter chips */}
         <div className="mb-4 flex flex-wrap gap-2">
