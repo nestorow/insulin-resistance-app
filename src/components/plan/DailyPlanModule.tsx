@@ -2,12 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Sunrise, Sun, Moon, CalendarDays, CalendarRange } from "lucide-react";
-import { checklistItems } from "@/data/protocol";
+import { Sunrise, Sun, Moon, CalendarDays, CalendarRange, Target } from "lucide-react";
+import { checklistItems, itemText, type ChecklistItem } from "@/data/protocol";
 import { tierFromYesCount } from "@/lib/onboarding";
 import { loadOnboarding } from "@/lib/onboarding-storage";
 import type { OnboardingResult } from "@/lib/onboarding";
 import { getDayChecks, toggleDayCheck, todayKey } from "@/lib/daily-plan-storage";
+import { programPhase, milestoneMessage } from "@/lib/program-phases";
 
 const DAILY = [
   { key: "morning", label: "Сутрин", Icon: Sunrise },
@@ -44,8 +45,26 @@ export default function DailyPlanModule() {
     return Math.min(Math.max(n, 1), 90);
   }, [onboarding]);
 
-  const dailyItems = checklistItems.filter((i) =>
-    ["morning", "day", "evening"].includes(i.category)
+  // Anonymous / pre-onboarding visitors see the day-1 view (phase 1).
+  const effectiveDay = dayNumber ?? 1;
+  const phase = programPhase(effectiveDay);
+  const milestone = dayNumber !== null ? milestoneMessage(dayNumber) : null;
+
+  // Apply progression: drop items not yet available, then resolve text.
+  function visibleItems(category: ChecklistItem["category"]) {
+    return checklistItems.filter(
+      (i) => i.category === category && (i.availableFromDay ?? 1) <= effectiveDay
+    );
+  }
+
+  const dailyItems = useMemo(
+    () =>
+      checklistItems.filter(
+        (i) =>
+          ["morning", "day", "evening"].includes(i.category) &&
+          (i.availableFromDay ?? 1) <= effectiveDay
+      ),
+    [effectiveDay]
   );
   const doneCount = dailyItems.filter((i) => checks[i.id]).length;
 
@@ -64,12 +83,15 @@ export default function DailyPlanModule() {
 
       {/* Status strip */}
       {mounted && (
-        <div className="mb-6 flex flex-wrap items-center gap-2">
+        <div className="mb-4 flex flex-wrap items-center gap-2">
           {dayNumber !== null && (
             <span className="rounded-full bg-teal-500 px-3 py-1 text-sm font-semibold text-white">
               Ден {dayNumber} / 90
             </span>
           )}
+          <span className="rounded-full bg-teal-700 px-3 py-1 text-sm font-semibold text-white">
+            Фаза {phase.index} · {phase.name_bg}
+          </span>
           {tier && tier.carbCap && (
             <span className="rounded-full bg-teal-100 px-3 py-1 text-sm font-medium text-teal-700">
               Въглехидрати: под {tier.carbCap} г/ден
@@ -78,6 +100,26 @@ export default function DailyPlanModule() {
           <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-600">
             {doneCount} / {dailyItems.length} изпълнени днес
           </span>
+        </div>
+      )}
+
+      {/* Phase explainer — sets expectation for this 14-30-day window */}
+      {mounted && (
+        <div className="mb-6 flex items-start gap-3 rounded-2xl border border-teal-100 bg-white p-4">
+          <Target className="mt-0.5 h-5 w-5 shrink-0 text-teal-600" />
+          <div className="text-sm text-slate-700">
+            <div className="font-semibold text-teal-700">
+              {phase.range_bg} · {phase.name_bg}
+            </div>
+            <p className="mt-1 leading-relaxed text-slate-600">{phase.goal_bg}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Milestone celebration — only on the exact day */}
+      {mounted && milestone && (
+        <div className="mb-6 rounded-2xl border border-warm/40 bg-warm-light/40 p-4 text-sm font-medium text-slate-800">
+          {milestone}
         </div>
       )}
 
@@ -94,7 +136,7 @@ export default function DailyPlanModule() {
       {/* Daily checklist */}
       <div className="space-y-5">
         {DAILY.map(({ key, label, Icon }) => {
-          const items = checklistItems.filter((i) => i.category === key);
+          const items = visibleItems(key);
           if (items.length === 0) return null;
           return (
             <section key={key}>
@@ -105,6 +147,7 @@ export default function DailyPlanModule() {
               <ul className="space-y-1.5">
                 {items.map((i) => {
                   const done = !!checks[i.id];
+                  const text = itemText(i, phase.index);
                   return (
                     <li key={i.id}>
                       <button
@@ -122,7 +165,7 @@ export default function DailyPlanModule() {
                         >
                           {done && "✓"}
                         </span>
-                        {i.text_bg}
+                        {text}
                       </button>
                     </li>
                   );
@@ -136,7 +179,7 @@ export default function DailyPlanModule() {
       {/* Periodic reference */}
       <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
         {PERIODIC.map(({ key, label, Icon }) => {
-          const items = checklistItems.filter((i) => i.category === key);
+          const items = visibleItems(key);
           if (items.length === 0) return null;
           return (
             <section key={key} className="rounded-2xl border border-teal-100 bg-white p-4">
@@ -148,7 +191,7 @@ export default function DailyPlanModule() {
                 {items.map((i) => (
                   <li key={i.id} className="flex items-start gap-2 text-sm text-slate-600">
                     <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-teal-400" />
-                    {i.text_bg}
+                    {itemText(i, phase.index)}
                   </li>
                 ))}
               </ul>
