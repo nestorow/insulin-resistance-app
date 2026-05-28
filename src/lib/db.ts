@@ -165,6 +165,23 @@ export async function initializeDatabase() {
 
     CREATE INDEX IF NOT EXISTS idx_audit_log_user
       ON audit_log(user_id, created_at DESC);
+
+    -- Web push subscriptions. One user can have several subscriptions
+    -- (laptop + phone + work browser); the endpoint URL is globally
+    -- unique so we key on it. \`keys_p256dh\` / \`keys_auth\` are the
+    -- subscription crypto keys returned by PushManager.subscribe.
+    CREATE TABLE IF NOT EXISTS push_subscriptions (
+      endpoint TEXT PRIMARY KEY,       -- vendor push URL, unique
+      user_id TEXT NOT NULL,
+      keys_p256dh TEXT NOT NULL,
+      keys_auth TEXT NOT NULL,
+      user_agent TEXT,                 -- for the "remove on this device" UX
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      last_used_at DATETIME
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_push_subs_user
+      ON push_subscriptions(user_id);
   `);
 
   // Migration: encrypt blood markers at rest.
