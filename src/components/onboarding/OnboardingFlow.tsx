@@ -21,14 +21,17 @@ import {
   LENSES,
   QUIZ_QUESTIONS,
   tierFromYesCount,
+  inferredLens,
   DAY1_TASKS,
   LENS_DAY1_FOCUS,
   type Lens,
 } from "@/lib/onboarding";
 import { saveOnboarding, loadOnboarding } from "@/lib/onboarding-storage";
 
-type Step = "welcome" | "lens" | "quiz" | "result" | "day1";
-const STEPS: Step[] = ["welcome", "lens", "quiz", "result", "day1"];
+// Quiz comes before lens so we can pre-select the lens that matches the
+// user's quiz pattern — fewer cognitive choices, better-calibrated default.
+type Step = "welcome" | "quiz" | "lens" | "result" | "day1";
+const STEPS: Step[] = ["welcome", "quiz", "lens", "result", "day1"];
 
 const LENS_ICON: Record<Lens, typeof Stethoscope> = {
   medical: Stethoscope,
@@ -69,6 +72,7 @@ export default function OnboardingFlow() {
   const yesCount = answers.filter((a) => a === true).length;
   const allAnswered = answers.every((a) => a !== null);
   const tierInfo = useMemo(() => tierFromYesCount(yesCount), [yesCount]);
+  const suggestedLens = useMemo(() => inferredLens(yesCount), [yesCount]);
 
   const tgHdlRatio = useMemo(() => {
     const t = parseFloat(tg);
@@ -143,59 +147,9 @@ export default function OnboardingFlow() {
               <p className="mt-3 text-sm text-slate-400">
                 Информацията не е медицински съвет.
               </p>
-              <PrimaryButton onClick={() => setStep("lens")}>
+              <PrimaryButton onClick={() => setStep("quiz")}>
                 Започни <ArrowRight className="h-4 w-4" />
               </PrimaryButton>
-            </Card>
-          )}
-
-          {step === "lens" && (
-            <Card>
-              <h2 className="text-2xl font-bold text-teal-700">
-                Кое те описва най-добре?
-              </h2>
-              <p className="mt-2 text-sm text-slate-500">
-                Това настройва тона и подредбата — имаш достъп до всичко.
-              </p>
-              <div className="mt-6 space-y-3">
-                {LENSES.map((l) => {
-                  const Icon = LENS_ICON[l.id];
-                  const active = lens === l.id;
-                  return (
-                    <button
-                      key={l.id}
-                      onClick={() => setLens(l.id)}
-                      className={`flex w-full items-start gap-4 rounded-2xl border-2 p-4 text-left transition-all ${
-                        active
-                          ? "border-teal-500 bg-teal-50"
-                          : "border-teal-100 bg-white hover:border-teal-300"
-                      }`}
-                    >
-                      <span
-                        className={`mt-0.5 rounded-xl p-2 ${
-                          active ? "bg-teal-500 text-white" : "bg-teal-100 text-teal-600"
-                        }`}
-                      >
-                        <Icon className="h-5 w-5" />
-                      </span>
-                      <span>
-                        <span className="block font-semibold text-slate-800">
-                          {l.title_bg}
-                        </span>
-                        <span className="block text-sm text-slate-500">
-                          {l.blurb_bg}
-                        </span>
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="mt-6 flex items-center justify-between">
-                <BackButton onClick={() => setStep("welcome")} />
-                <PrimaryButton onClick={() => setStep("quiz")} disabled={!lens}>
-                  Към теста <ArrowRight className="h-4 w-4" />
-                </PrimaryButton>
-              </div>
             </Card>
           )}
 
@@ -249,11 +203,74 @@ export default function OnboardingFlow() {
               </details>
 
               <div className="mt-6 flex items-center justify-between">
-                <BackButton onClick={() => setStep("lens")} />
+                <BackButton onClick={() => setStep("welcome")} />
                 <PrimaryButton
-                  onClick={() => setStep("result")}
+                  onClick={() => {
+                    // Pre-select the suggested lens unless the user already
+                    // picked one (e.g. on a back-and-forth navigation).
+                    if (!lens) setLens(suggestedLens);
+                    setStep("lens");
+                  }}
                   disabled={!allAnswered}
                 >
+                  Към профила <ArrowRight className="h-4 w-4" />
+                </PrimaryButton>
+              </div>
+            </Card>
+          )}
+
+          {step === "lens" && (
+            <Card>
+              <h2 className="text-2xl font-bold text-teal-700">
+                Кое те описва най-добре?
+              </h2>
+              <p className="mt-2 text-sm text-slate-500">
+                Препоръчахме ти един въз основа на отговорите ти. Можеш
+                да избереш друг — тонът и подредбата се различават, но
+                имаш достъп до всичко.
+              </p>
+              <div className="mt-6 space-y-3">
+                {LENSES.map((l) => {
+                  const Icon = LENS_ICON[l.id];
+                  const active = lens === l.id;
+                  const recommended = l.id === suggestedLens;
+                  return (
+                    <button
+                      key={l.id}
+                      onClick={() => setLens(l.id)}
+                      className={`relative flex w-full items-start gap-4 rounded-2xl border-2 p-4 text-left transition-all ${
+                        active
+                          ? "border-teal-500 bg-teal-50"
+                          : "border-teal-100 bg-white hover:border-teal-300"
+                      }`}
+                    >
+                      {recommended && (
+                        <span className="absolute -top-2 right-3 rounded-full bg-warm px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-800">
+                          Препоръчано
+                        </span>
+                      )}
+                      <span
+                        className={`mt-0.5 rounded-xl p-2 ${
+                          active ? "bg-teal-500 text-white" : "bg-teal-100 text-teal-600"
+                        }`}
+                      >
+                        <Icon className="h-5 w-5" />
+                      </span>
+                      <span>
+                        <span className="block font-semibold text-slate-800">
+                          {l.title_bg}
+                        </span>
+                        <span className="block text-sm text-slate-500">
+                          {l.blurb_bg}
+                        </span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="mt-6 flex items-center justify-between">
+                <BackButton onClick={() => setStep("quiz")} />
+                <PrimaryButton onClick={() => setStep("result")} disabled={!lens}>
                   Виж резултата <ArrowRight className="h-4 w-4" />
                 </PrimaryButton>
               </div>
@@ -308,7 +325,7 @@ export default function OnboardingFlow() {
               )}
 
               <div className="mt-6 flex items-center justify-between">
-                <BackButton onClick={() => setStep("quiz")} />
+                <BackButton onClick={() => setStep("lens")} />
                 <PrimaryButton onClick={finishToDay1}>
                   Виж плана за Ден 1 <ArrowRight className="h-4 w-4" />
                 </PrimaryButton>

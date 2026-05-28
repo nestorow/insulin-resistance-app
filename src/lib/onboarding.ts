@@ -110,6 +110,18 @@ export const LENS_DAY1_FOCUS: Record<Lens, string> = {
     "Маркирай ден 1 като baseline. Гладуването и разходките след хранене дават най-бързия сигнал.",
 };
 
+// Heuristic: derive a default lens from the quiz score. People with many
+// "Да" tend to be in the medical bucket (more likely diagnosed / referred);
+// people with 2-4 are in the educational bucket (symptoms without a clear
+// label); people with 0-1 are likely already healthy and optimizing.
+// User can still pick a different lens — this is a pre-selection, not a
+// lock.
+export function inferredLens(yesCount: number): Lens {
+  if (yesCount >= 5) return "medical";
+  if (yesCount >= 2) return "educational";
+  return "biohacker";
+}
+
 export interface OnboardingResult {
   lens: Lens;
   quizAnswers: boolean[];
