@@ -1,8 +1,11 @@
 "use client";
 
+import { saveSymptomLogAction } from "./actions/journal";
+import { saveMarkerLogAction } from "./actions/markers";
+
 // Symptom journal + blood marker logs.
-// Phase 1 seam: localStorage. Phase 2 swaps for `symptom_log` / `blood_markers`
-// rows in Turso (the latter encrypted, per thyroid-rehab GDPR pattern).
+// localStorage is the primary cache; when signed in each write also fire-
+// and-forgets to Turso (auth.ts checks session; non-auth callers no-op).
 
 export interface SymptomEntry {
   date: string; // YYYY-MM-DD
@@ -21,6 +24,11 @@ export interface MarkerEntry {
   hba1c?: number; // %
   triglycerides?: number; // mg/dL
   hdl?: number; // mg/dL
+}
+
+interface SaveOpts {
+  /** Skip server echo — used by SyncOnLogin when hydrating from DB. */
+  skipServer?: boolean;
 }
 
 const SYMPTOM_KEY = "ir-symptom-log-v1";
@@ -45,7 +53,6 @@ function writeArr<T>(key: string, arr: T[]): void {
   }
 }
 
-// Sort ascending by date and replace any existing entry for the same date.
 function upsertByDate<T extends { date: string }>(arr: T[], entry: T): T[] {
   const next = arr.filter((e) => e.date !== entry.date);
   next.push(entry);
@@ -57,9 +64,15 @@ export function getSymptomLogs(): SymptomEntry[] {
   return readArr<SymptomEntry>(SYMPTOM_KEY);
 }
 
-export function addSymptomLog(entry: SymptomEntry): SymptomEntry[] {
+export function addSymptomLog(
+  entry: SymptomEntry,
+  opts: SaveOpts = {}
+): SymptomEntry[] {
   const next = upsertByDate(getSymptomLogs(), entry);
   writeArr(SYMPTOM_KEY, next);
+  if (!opts.skipServer) {
+    saveSymptomLogAction(entry).catch(() => {});
+  }
   return next;
 }
 
@@ -67,8 +80,14 @@ export function getMarkerLogs(): MarkerEntry[] {
   return readArr<MarkerEntry>(MARKER_KEY);
 }
 
-export function addMarkerLog(entry: MarkerEntry): MarkerEntry[] {
+export function addMarkerLog(
+  entry: MarkerEntry,
+  opts: SaveOpts = {}
+): MarkerEntry[] {
   const next = upsertByDate(getMarkerLogs(), entry);
   writeArr(MARKER_KEY, next);
+  if (!opts.skipServer) {
+    saveMarkerLogAction(entry).catch(() => {});
+  }
   return next;
 }

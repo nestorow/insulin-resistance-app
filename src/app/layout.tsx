@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import SessionProvider from "@/components/SessionProvider";
 import AuthBadge from "@/components/AuthBadge";
+import SyncOnLogin from "@/components/SyncOnLogin";
 
 export const metadata: Metadata = {
   title: "InsulinReset — 90-дневен протокол",
@@ -29,6 +30,7 @@ export default function RootLayout({
     <html lang="bg">
       <body className="antialiased">
         <SessionProvider>
+          <SyncOnLogin />
           <AuthBadge />
           {children}
         </SessionProvider>
