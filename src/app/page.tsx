@@ -1,4 +1,4 @@
-import Link from "next/link";
+import LandingCTA from "@/components/LandingCTA";
 
 export default function Home() {
   return (
@@ -21,18 +21,7 @@ export default function Home() {
         </p>
 
         <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-          <Link
-            href="/onboarding"
-            className="w-full rounded-xl bg-teal-500 px-8 py-3.5 font-semibold text-white shadow-lg shadow-teal-500/20 transition-colors hover:bg-teal-600 sm:w-auto"
-          >
-            Започни теста (1-2 мин)
-          </Link>
-          <Link
-            href="/education"
-            className="w-full rounded-xl px-8 py-3.5 font-semibold text-teal-700 ring-1 ring-teal-200 transition-colors hover:bg-teal-50 sm:w-auto"
-          >
-            Научи повече
-          </Link>
+          <LandingCTA />
         </div>
 
         <p className="mt-8 text-xs text-slate-400">

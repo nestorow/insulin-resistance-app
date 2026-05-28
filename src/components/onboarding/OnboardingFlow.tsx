@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Stethoscope,
@@ -24,7 +25,7 @@ import {
   LENS_DAY1_FOCUS,
   type Lens,
 } from "@/lib/onboarding";
-import { saveOnboarding } from "@/lib/onboarding-storage";
+import { saveOnboarding, loadOnboarding } from "@/lib/onboarding-storage";
 
 type Step = "welcome" | "lens" | "quiz" | "result" | "day1";
 const STEPS: Step[] = ["welcome", "lens", "quiz", "result", "day1"];
@@ -42,6 +43,11 @@ const PERIODS = [
 ] as const;
 
 export default function OnboardingFlow() {
+  const router = useRouter();
+  // Onboarding is a one-time setup. If the user already completed it,
+  // bounce them to the daily plan instead of letting them re-take here.
+  // `checking` prevents a flash of the welcome screen during the redirect.
+  const [checking, setChecking] = useState(true);
   const [step, setStep] = useState<Step>("welcome");
   const [lens, setLens] = useState<Lens | null>(null);
   const [answers, setAnswers] = useState<(boolean | null)[]>(
@@ -51,6 +57,14 @@ export default function OnboardingFlow() {
   const [hdl, setHdl] = useState("");
   const [waist, setWaist] = useState("");
   const [hip, setHip] = useState("");
+
+  useEffect(() => {
+    if (loadOnboarding()) {
+      router.replace("/plan");
+    } else {
+      setChecking(false);
+    }
+  }, [router]);
 
   const yesCount = answers.filter((a) => a === true).length;
   const allAnswered = answers.every((a) => a !== null);
@@ -77,6 +91,8 @@ export default function OnboardingFlow() {
       return next;
     });
   }
+
+  if (checking) return null;
 
   function finishToDay1() {
     if (!lens) return;
