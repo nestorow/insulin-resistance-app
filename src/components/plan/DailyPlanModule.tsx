@@ -9,6 +9,7 @@ import { loadOnboarding } from "@/lib/onboarding-storage";
 import type { OnboardingResult } from "@/lib/onboarding";
 import { getDayChecks, toggleDayCheck, todayKey } from "@/lib/daily-plan-storage";
 import { programPhase, milestoneMessage } from "@/lib/program-phases";
+import ProgressCard from "@/components/plan/ProgressCard";
 
 const DAILY = [
   { key: "morning", label: "Сутрин", Icon: Sunrise },
@@ -123,6 +124,9 @@ export default function DailyPlanModule() {
           </div>
         </div>
       )}
+
+      {/* Gamification — streak / level / badges (signed-in only) */}
+      <ProgressCard />
 
       {/* Milestone celebration — only on the exact day */}
       {mounted && milestone && (

@@ -10,6 +10,7 @@ import { tierFromYesCount, LENSES } from "@/lib/onboarding";
 import type { OnboardingResult } from "@/lib/onboarding";
 import { showToast } from "@/lib/toast";
 import PushOptIn from "@/components/settings/PushOptIn";
+import BadgeGallery from "@/components/settings/BadgeGallery";
 
 export default function SettingsModule() {
   const router = useRouter();
@@ -101,6 +102,9 @@ export default function SettingsModule() {
           </dl>
         )}
       </section>
+
+      {/* Badge gallery */}
+      <BadgeGallery />
 
       {/* Push notifications opt-in */}
       <PushOptIn />
