@@ -16,20 +16,10 @@ import {
   type MarkerEntry,
 } from "@/lib/tracking-storage";
 import { showToast } from "@/lib/toast";
+import { clampedNum } from "@/lib/numbers";
 
 function today() {
   return new Date().toISOString().slice(0, 10);
-}
-
-// Clamp a parsed numeric string to a physiological range; returns undefined
-// when out-of-range/empty so the save path drops the field instead of
-// poisoning the chart with absurd values (e.g., HbA1c = 999).
-function clampedNum(raw: string, min: number, max: number): number | undefined {
-  if (!raw) return undefined;
-  const n = parseFloat(raw);
-  if (!Number.isFinite(n)) return undefined;
-  if (n < min || n > max) return undefined;
-  return n;
 }
 
 export default function MarkersModule() {

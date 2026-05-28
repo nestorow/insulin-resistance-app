@@ -16,22 +16,12 @@ import {
   type SymptomEntry,
 } from "@/lib/tracking-storage";
 import { showToast } from "@/lib/toast";
+import { clampedNum } from "@/lib/numbers";
 
 const NOTES_MAX = 280;
 
 function today() {
   return new Date().toISOString().slice(0, 10);
-}
-
-// Clamp a parsed numeric string to a sane physiological range; returns
-// undefined when out-of-range or empty so the save path drops the field
-// instead of storing garbage. Keeps charts readable.
-function clampedNum(raw: string, min: number, max: number): number | undefined {
-  if (!raw) return undefined;
-  const n = parseFloat(raw);
-  if (!Number.isFinite(n)) return undefined;
-  if (n < min || n > max) return undefined;
-  return n;
 }
 
 export default function SymptomJournalModule() {
