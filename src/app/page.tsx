@@ -15,6 +15,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import LandingCTA from "@/components/LandingCTA";
+import Logo from "@/components/Logo";
 import { keyFacts } from "@/data/knowledge";
 
 const FACT_ICON: Record<string, LucideIcon> = {
@@ -37,6 +38,8 @@ export default function Home() {
       {/* Hero */}
       <section className="flex min-h-[85vh] flex-col items-center justify-center px-6 py-16 text-center">
         <div className="max-w-2xl">
+          <Logo size={56} className="mx-auto mb-6" />
+
           <p className="mb-4 inline-block rounded-full bg-teal-100 px-4 py-1.5 text-sm font-medium text-teal-700">
             Базирано на д-р Benjamin Bikman · „Why We Get Sick&rdquo;
           </p>
