@@ -292,6 +292,14 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
 - ✅ **Sitemap**: добавени с priority 0.3, yearly change frequency
 - ✅ Build: /privacy + /terms по 176 B (почти server-only)
 
+## Phase 8 — Custom domain prep + security headers
+- ✅ **`lib/site-url.ts`** — single `siteUrl()` helper с documented resolution chain (`NEXT_PUBLIC_SITE_URL → NEXTAUTH_URL → fallback`); strips trailing slashes; migration recipe в header коментар
+- ✅ **Refactor**: 5 call sites (layout, sitemap, robots, weekly-digest, education-schema) → еднa import line; canonical URL change = единствен env var swap
+- ✅ **`next.config.ts`** site-wide security headers: HSTS (1y + subdomains), X-Content-Type-Options nosniff, Referrer-Policy strict-origin-when-cross-origin, Permissions-Policy disables camera/mic/geo/FLoC, X-Frame-Options DENY
+- ✅ **`layout.tsx`** `metadata.alternates.canonical = "/"` — Google няма да dual-индексира двата URL-а по време на migration window
+- ✅ **`.env.example`** — `NEXT_PUBLIC_SITE_URL` документиран най-отгоре като canonical-URL knob
+- ✅ **Тестове** (7): resolution priority, fallback chain, trailing slash normalization, concat safety
+
 ## Phase 8 — AI multi-turn conversation
 - ✅ **`lib/anthropic.ts`**: `askClaude(query, tier, history?)` сега приема optional `ChatTurn[]` array; нов `MAX_CONVERSATION_TURNS = 10` cap (throws ако се надвиши)
 - ✅ **`lib/actions/food-ai.ts`**: `askFoodAssistantAction(query, history)` приема history параметър; **cache strategy**: само single-turn (празно history) се cache-ва — multi-turn винаги вика Claude fresh (отговорите зависят от context); rate-limit все още се прилага на всеки Claude call
