@@ -10,6 +10,7 @@ import { tierFromYesCount, LENSES } from "@/lib/onboarding";
 import type { OnboardingResult } from "@/lib/onboarding";
 import { showToast } from "@/lib/toast";
 import PushOptIn from "@/components/settings/PushOptIn";
+import EmailDigestOptIn from "@/components/settings/EmailDigestOptIn";
 import BadgeGallery from "@/components/settings/BadgeGallery";
 
 export default function SettingsModule() {
@@ -108,6 +109,9 @@ export default function SettingsModule() {
 
       {/* Push notifications opt-in */}
       <PushOptIn />
+
+      {/* Weekly email digest opt-in */}
+      <EmailDigestOptIn />
 
       {/* Re-test */}
       <section className="rounded-2xl border border-teal-100 bg-white p-5">
