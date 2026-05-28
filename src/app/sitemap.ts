@@ -9,13 +9,15 @@ const BASE_URL =
   process.env.NEXTAUTH_URL ??
   "https://insulin-resistance-app.vercel.app";
 
-const PUBLIC_ROUTES: { path: string; priority: number; changeFrequency: "weekly" | "monthly" }[] = [
+const PUBLIC_ROUTES: { path: string; priority: number; changeFrequency: "weekly" | "monthly" | "yearly" }[] = [
   { path: "/", priority: 1.0, changeFrequency: "weekly" },
   { path: "/education", priority: 0.9, changeFrequency: "monthly" },
   { path: "/foods", priority: 0.8, changeFrequency: "monthly" },
   { path: "/exercise", priority: 0.7, changeFrequency: "monthly" },
   { path: "/fasting", priority: 0.7, changeFrequency: "monthly" },
   { path: "/supplements", priority: 0.7, changeFrequency: "monthly" },
+  { path: "/privacy", priority: 0.3, changeFrequency: "yearly" },
+  { path: "/terms", priority: 0.3, changeFrequency: "yearly" },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

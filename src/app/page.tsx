@@ -53,10 +53,6 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="border-t border-teal-100 px-6 py-6 text-center text-xs text-slate-400">
-        ⚕️ Информацията е с образователна цел и не е медицински съвет.
-        Консултирай се с лекар.
-      </footer>
     </main>
   );
 }

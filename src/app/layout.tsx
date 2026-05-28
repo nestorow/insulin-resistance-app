@@ -4,6 +4,7 @@ import SessionProvider from "@/components/SessionProvider";
 import AuthBadge from "@/components/AuthBadge";
 import SyncOnLogin from "@/components/SyncOnLogin";
 import Toast from "@/components/Toast";
+import GlobalFooter from "@/components/GlobalFooter";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ??
@@ -87,7 +88,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="bg">
-      <body className="antialiased">
+      <body className="flex min-h-dvh flex-col antialiased">
         <script
           type="application/ld+json"
           // schema.org JSON-LD — safe; static content from a constant above.
@@ -96,7 +97,8 @@ export default function RootLayout({
         <SessionProvider>
           <SyncOnLogin />
           <AuthBadge />
-          {children}
+          <div className="flex-1">{children}</div>
+          <GlobalFooter />
           <Toast />
         </SessionProvider>
       </body>
