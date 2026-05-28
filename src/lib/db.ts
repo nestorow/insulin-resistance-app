@@ -92,5 +92,45 @@ export async function initializeDatabase() {
 
     CREATE INDEX IF NOT EXISTS idx_daily_plan_user_day
       ON daily_plan(user_id, day_number);
+
+    CREATE TABLE IF NOT EXISTS symptom_log (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      date TEXT NOT NULL,
+      energy INTEGER CHECK(energy BETWEEN 1 AND 10),
+      brain_fog INTEGER CHECK(brain_fog BETWEEN 1 AND 10),
+      weight REAL,
+      waist REAL,
+      blood_sugar REAL,
+      notes TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(user_id, date)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_symptom_log_user_date
+      ON symptom_log(user_id, date DESC);
+
+    CREATE TABLE IF NOT EXISTS blood_markers (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      date TEXT NOT NULL,
+      homa_ir REAL,
+      fasting_insulin REAL,
+      hba1c REAL,
+      triglycerides REAL,
+      hdl REAL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(user_id, date)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_blood_markers_user_date
+      ON blood_markers(user_id, date DESC);
+
+    CREATE TABLE IF NOT EXISTS food_bookmarks (
+      user_id TEXT NOT NULL,
+      food_id TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (user_id, food_id)
+    );
   `);
 }
