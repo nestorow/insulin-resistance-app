@@ -150,6 +150,21 @@ export async function initializeDatabase() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       PRIMARY KEY (user_id, food_id)
     );
+
+    -- Append-only audit log for sensitive writes. Records the fact of
+    -- a change + identifiers; never stores medical values. See
+    -- src/lib/audit.ts for the writer + the AuditAction enum.
+    CREATE TABLE IF NOT EXISTS audit_log (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      action TEXT NOT NULL,
+      target_id TEXT,
+      metadata TEXT,                   -- JSON (counts/dates only, no PHI)
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_audit_log_user
+      ON audit_log(user_id, created_at DESC);
   `);
 
   // Migration: encrypt blood markers at rest.
