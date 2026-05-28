@@ -292,6 +292,12 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
 - ✅ **Sitemap**: добавени с priority 0.3, yearly change frequency
 - ✅ Build: /privacy + /terms по 176 B (почти server-only)
 
+## Phase 8 — AI multi-turn conversation
+- ✅ **`lib/anthropic.ts`**: `askClaude(query, tier, history?)` сега приема optional `ChatTurn[]` array; нов `MAX_CONVERSATION_TURNS = 10` cap (throws ако се надвиши)
+- ✅ **`lib/actions/food-ai.ts`**: `askFoodAssistantAction(query, history)` приема history параметър; **cache strategy**: само single-turn (празно history) се cache-ва — multi-turn винаги вика Claude fresh (отговорите зависят от context); rate-limit все още се прилага на всеки Claude call
+- ✅ **`FoodAiAssistant.tsx`** chat UI: scrollable history (max 420px), user/assistant bubbles с icons, optimistic render + rollback при server fail, auto-scroll, „Започни нов" button, turn counter „Разговор · 3/10", persistent disclaimer под conversation
+- ✅ **Тест**: bounds check за MAX_CONVERSATION_TURNS
+
 ## Phase 8 — AI асистент за храни
 - ✅ **`lib/anthropic.ts`** — Claude SDK lazy-import wrapper; `askClaude(query, tier)`; system prompt е bilingual (English с инструкции, Bulgarian output), tier-aware (включва конкретния carb cap), 3-5 sentence limit, Bikman 4-pillar reference, refuses medical diagnosis; `queryCacheKey(raw, tier)` sha256 на `tier|normalized`
 - ✅ **`lib/food-cache.ts`** — `food_search_cache` table reader/writer; INSERT OR IGNORE race-safe; hit counter bump fire-and-forget
