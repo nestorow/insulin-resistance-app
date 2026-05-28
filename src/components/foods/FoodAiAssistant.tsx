@@ -267,7 +267,7 @@ function friendlyError(
   reason:
     | "auth"
     | "rate"
-    | "config"
+    | "no-key"
     | "too-long"
     | "too-many-turns"
     | "error",
@@ -278,8 +278,11 @@ function friendlyError(
       return "Влез в акаунта си, за да използваш асистента.";
     case "rate":
       return "Твърде много заявки — изчакай малко и опитай отново.";
-    case "config":
-      return "AI асистентът не е конфигуриран на сървъра.";
+    case "no-key":
+      return (
+        message ??
+        "Добави Anthropic API key в Настройки, за да задаваш нови въпроси."
+      );
     case "too-long":
       return message ?? "Въпросът е твърде дълъг.";
     case "too-many-turns":

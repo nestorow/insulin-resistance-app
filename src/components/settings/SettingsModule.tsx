@@ -12,6 +12,7 @@ import { showToast } from "@/lib/toast";
 import PushOptIn from "@/components/settings/PushOptIn";
 import EmailDigestOptIn from "@/components/settings/EmailDigestOptIn";
 import BadgeGallery from "@/components/settings/BadgeGallery";
+import AnthropicKeyCard from "@/components/settings/AnthropicKeyCard";
 
 export default function SettingsModule() {
   const router = useRouter();
@@ -112,6 +113,9 @@ export default function SettingsModule() {
 
       {/* Weekly email digest opt-in */}
       <EmailDigestOptIn />
+
+      {/* Anthropic API key (BYOK for AI food assistant) */}
+      <AnthropicKeyCard />
 
       {/* Re-test */}
       <section className="rounded-2xl border border-teal-100 bg-white p-5">
