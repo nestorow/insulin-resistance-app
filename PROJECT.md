@@ -5,7 +5,8 @@
 > Research-backed, peer-reviewed, медицински сериозен тон. Bulgarian UI.
 
 **Repo:** `nestorow/insulin-resistance-app` · **Deploy:** `insulin-resistance-app.vercel.app`
-**Статус:** Phase 0 (пренаписване от MVP скелет към Phase-based продукт)
+**Бранд:** InsulinReset
+**Статус:** Phase 2 завършена — всичките 8 модула + onboarding в production, Google sign-in работи, DB persistence за логнати потребители (Turso), localStorage остава cache за анонимни.
 
 ---
 
@@ -43,7 +44,7 @@ Onboarding-ът разклонява потребителя в режим, ко�
 | Styling | Tailwind v4 (CSS-first `@theme`) | палитра портната от thyroid-rehab v3 |
 | DB | Turso (libsql) `@libsql/client` | lazy proxy + идемпотентни миграции |
 | Auth | NextAuth v4 — Google OAuth | патърн от thyroid-rehab |
-| State | server (Turso) — **без** zustand/localStorage | |
+| State | localStorage (cache) + Turso (DB при логнат) | dual-mode през seam-ове + SyncOnLogin merge |
 
 > **Решение за stack (Phase 0):** thyroid-rehab е на Next 14 / Tailwind v3 /
 > React 18. insulin-app е вече на Next 15 / Tailwind v4 / React 19 и kickoff-ът
@@ -80,34 +81,39 @@ Onboarding-ът разклонява потребителя в режим, ко�
 | 7 | Добавки (съдържание + evidence grading) | ✅ UI готов (консервативно съдържание, прегледано) |
 | 8+ | PWA полиране, TWA / Play Store, OG generator, custom домейн | по-късно |
 
-\* Фази 1-3 работят **без логин** — всичко се пази в `localStorage` зад seam-ове
-(`lib/onboarding-storage.ts`, `daily-plan-storage.ts`, `tracking-storage.ts`).
-Бъдеща Turso-фаза ще ги закачи към сесия + DB и ще добави auth gate.
+\* Фази 1-3 работят **и за анонимни, и за логнати потребители**: localStorage
+е primary cache; при логнат потребител writes се mirror-ват към Turso
+fire-and-forget, а `SyncOnLogin` прави bidirectional merge при login.
+Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
+`tracking-storage.ts` — всеки с `{skipServer}` опция за hydration пътя.
 
-**Всичките 8 модула + onboarding са живи** (UI/localStorage).
+## Phase 2 — резултат
 
-**Phase 2 (DB + auth) — в ход:**
-- ✅ Turso DB създадена, schema мигрирана (6 таблици), prod `/api/health → db:connected`
-- ✅ Google OAuth client създаден; SessionProvider + AuthBadge в layout-а
-- ✅ Env vars (TURSO_*, NEXTAUTH_*, GOOGLE_*) във Vercel (production + development)
-- ⏳ Server actions за persistence (onboarding → DB, daily_plan, symptom_log, blood_markers)
-- ⏳ Session-aware storage seams (dual-write: localStorage + DB при логнат потребител)
+Цялата DB + auth верига е жива и потвърдена end-to-end:
 
-## Phase 0 — резултат
+- ✅ **Turso DB** активна с 6 таблици (`users, onboarding, daily_plan,
+  symptom_log, blood_markers, food_bookmarks`); миграциите са идемпотентни
+  и се пускат лениво при първа заявка.
+- ✅ **Google OAuth** работи на production; user upsert в `users` при първи
+  login, `last_login_at` се обновява при следващи.
+- ✅ **6-те env vars** са настроени във Vercel (production + development).
+- ✅ **Server actions** (`src/lib/actions/*`) за всичките 4 типа данни —
+  всички с `getServerSession` gate и UPSERT-by-(user_id, date) семантика.
+- ✅ **SyncOnLogin** — еднократен bidirectional sync при логин (server →
+  localStorage за hydration, после localStorage → server за всичко само
+  локално налично).
+- ✅ **lens mirror на users.lens** — onboarding writes го синхронизират
+  към session JWT (бърз достъп без join).
 
-Deploy е жив на `insulin-resistance-app.vercel.app` (landing `200`,
-`/api/health` `ok`). Webpack build + `.npmrc` legacy-peer-deps минават на Vercel.
+**Архитектурна гаранция:** анонимният потребител не вижда auth gate; нищо
+не се чупи без env vars (server actions тихо връщат `null`).
 
-**Чака потребителско действие** (преди auth/Turso да заработят — Phase 1 prep):
-1. Turso DB: `turso db create insulin-resistance-app` → URL + token
-2. Google OAuth client (redirect: `<URL>/api/auth/callback/google`)
-3. 6-те env vars във Vercel (виж `.env.example`) → `/api/health` ще даде `db:connected`
+## Извън обхвата (засега)
 
-## Извън обхвата на Phase 0
-
-- ❌ Съдържание на 7-те модула (само инфраструктура)
 - ❌ TWA / Play Store · ❌ custom domain · ❌ OG image generator
-- ❌ тестове за legacy код (само за новото)
+- ❌ Тестове (jest setup не е портнат от thyroid-rehab)
+- ❌ Криптиране на чувствителни кръвни данни (thyroid-rehab има `blood_markers.encrypted_data` — преценка дали ни трябва за GDPR)
+- ❌ Email обобщения / push notifications
 
 ## Стил на работа
 
@@ -120,7 +126,7 @@ Deploy е жив на `insulin-resistance-app.vercel.app` (landing `200`,
 ```
 TURSO_DATABASE_URL=        # libsql://...turso.io
 TURSO_AUTH_TOKEN=
-NEXTAUTH_URL=              # http://localhost:3001 (dev) / https://...vercel.app
+NEXTAUTH_URL=              # http://localhost:3000 (dev) / https://insulin-resistance-app.vercel.app (prod)
 NEXTAUTH_SECRET=          # openssl rand -base64 32
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
