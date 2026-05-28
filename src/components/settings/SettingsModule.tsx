@@ -9,6 +9,7 @@ import { clearOnboardingAction } from "@/lib/actions/onboarding";
 import { tierFromYesCount, LENSES } from "@/lib/onboarding";
 import type { OnboardingResult } from "@/lib/onboarding";
 import { showToast } from "@/lib/toast";
+import PushOptIn from "@/components/settings/PushOptIn";
 
 export default function SettingsModule() {
   const router = useRouter();
@@ -100,6 +101,9 @@ export default function SettingsModule() {
           </dl>
         )}
       </section>
+
+      {/* Push notifications opt-in */}
+      <PushOptIn />
 
       {/* Re-test */}
       <section className="rounded-2xl border border-teal-100 bg-white p-5">

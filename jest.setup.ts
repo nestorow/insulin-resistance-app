@@ -17,3 +17,14 @@ jest.mock("@libsql/client", () => ({
     batch: jest.fn(async () => []),
   }),
 }));
+
+// next-auth/react's useSession needs a <SessionProvider> ancestor. Most
+// component tests don't wrap one — the components only check signed-in
+// vs not. Default to "unauthenticated" here; individual tests can
+// jest.mock("next-auth/react", ...) at the file level to override.
+jest.mock("next-auth/react", () => ({
+  useSession: () => ({ data: null, status: "unauthenticated" }),
+  signIn: jest.fn(),
+  signOut: jest.fn(),
+  SessionProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
