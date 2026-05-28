@@ -84,9 +84,14 @@ Onboarding-ът разклонява потребителя в режим, ко�
 (`lib/onboarding-storage.ts`, `daily-plan-storage.ts`, `tracking-storage.ts`).
 Бъдеща Turso-фаза ще ги закачи към сесия + DB и ще добави auth gate.
 
-**Всичките 8 модула + onboarding са живи** (UI/localStorage). **Остава само:**
-Turso + NextAuth wiring — закача всички seam-ове към сесия + DB и добавя auth
-gate. Иска creds (Turso DB + Google OAuth + 6 env vars).
+**Всичките 8 модула + onboarding са живи** (UI/localStorage).
+
+**Phase 2 (DB + auth) — в ход:**
+- ✅ Turso DB създадена, schema мигрирана (6 таблици), prod `/api/health → db:connected`
+- ✅ Google OAuth client създаден; SessionProvider + AuthBadge в layout-а
+- ✅ Env vars (TURSO_*, NEXTAUTH_*, GOOGLE_*) във Vercel (production + development)
+- ⏳ Server actions за persistence (onboarding → DB, daily_plan, symptom_log, blood_markers)
+- ⏳ Session-aware storage seams (dual-write: localStorage + DB при логнат потребител)
 
 ## Phase 0 — резултат
 
