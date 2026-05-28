@@ -15,12 +15,14 @@ import {
   addMarkerLog,
   type MarkerEntry,
 } from "@/lib/tracking-storage";
+import { showToast } from "@/lib/toast";
 
 function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
 export default function MarkersModule() {
+  const [mounted, setMounted] = useState(false);
   const [logs, setLogs] = useState<MarkerEntry[]>([]);
   const [date, setDate] = useState(today());
   const [homaIr, setHomaIr] = useState("");
@@ -31,6 +33,7 @@ export default function MarkersModule() {
 
   useEffect(() => {
     setLogs(getMarkerLogs());
+    setMounted(true);
   }, []);
 
   function save() {
@@ -43,6 +46,7 @@ export default function MarkersModule() {
       hdl: hdl ? parseFloat(hdl) : undefined,
     };
     setLogs(addMarkerLog(entry));
+    showToast("Записано за " + date);
   }
 
   const chartData = logs.map((l) => ({
@@ -89,13 +93,13 @@ export default function MarkersModule() {
       </div>
 
       {/* Empty / encouragement states (until chart is meaningful) */}
-      {logs.length === 0 && (
+      {mounted && logs.length === 0 && (
         <div className="mb-8 rounded-2xl border border-teal-100 bg-teal-50/40 p-5 text-center text-sm text-slate-600">
           🧪 Въведи първите си показатели — обикновено месечно. Графиката се
           активира след втория запис.
         </div>
       )}
-      {logs.length === 1 && (
+      {mounted && logs.length === 1 && (
         <div className="mb-4 rounded-xl border border-teal-100 bg-teal-50/40 p-4 text-center text-sm text-slate-600">
           Имаш baseline. Запиши още един месец, за да видиш тренда.
         </div>

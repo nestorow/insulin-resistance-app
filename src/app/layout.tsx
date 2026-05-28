@@ -3,6 +3,7 @@ import "./globals.css";
 import SessionProvider from "@/components/SessionProvider";
 import AuthBadge from "@/components/AuthBadge";
 import SyncOnLogin from "@/components/SyncOnLogin";
+import Toast from "@/components/Toast";
 
 export const metadata: Metadata = {
   title: "InsulinReset — 90-дневен протокол",
@@ -12,6 +13,9 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "default",
     title: "InsulinReset",
+  },
+  icons: {
+    apple: { url: "/icon.svg", type: "image/svg+xml" },
   },
 };
 
@@ -33,6 +37,7 @@ export default function RootLayout({
           <SyncOnLogin />
           <AuthBadge />
           {children}
+          <Toast />
         </SessionProvider>
       </body>
     </html>
