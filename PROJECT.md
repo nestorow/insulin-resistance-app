@@ -6,7 +6,7 @@
 
 **Repo:** `nestorow/insulin-resistance-app` · **Deploy:** `insulin-resistance-app.vercel.app`
 **Бранд:** InsulinReset
-**Статус:** Phase 2 завършена + полирано + Phase 2.6 (conversion / прогресия / SEO) + Phase 2.7 (UX полиране + security + engagement) — всичките 8 модула + onboarding в production, Google sign-in работи, DB persistence за логнати потребители (Turso), localStorage остава cache за анонимни. PWA manifest + iOS PNG icons. Landing-ът има conversion scaffolding, дневният план е **прогресивен** в 4 фази, сайтът е discoverable (OG + sitemap + robots + MedicalWebPage + chapter/disease JSON-LD). Re-test опция, бележки в дневник, физиологични clamp-и, shimmer skeletons. **Trust layer**: blood markers AES-256-GCM enkriptirani at rest, Upstash rate limiting (30 writes/мин), append-only audit_log. **Push notifications**: VAPID + service worker + opt-in UI + Vercel Cron сутрешен reminder. **Email digest**: Resend + opt-in + неделен HTML email с прогрес + Vercel Cron. **Gamification**: streak/XP/badge engine с 5 badges, ProgressCard на /plan, BadgeGallery в /settings. **Optimistic rollback** при rate-limit. **136 unit + component test покритие.**
+**Статус:** Phase 2 завършена + полирано + Phase 2.6 (conversion / прогресия / SEO) + Phase 2.7 (UX полиране + security + engagement) — всичките 8 модула + onboarding в production, Google sign-in работи, DB persistence за логнати потребители (Turso), localStorage остава cache за анонимни. PWA manifest + iOS PNG icons. Landing-ът има conversion scaffolding, дневният план е **прогресивен** в 4 фази, сайтът е discoverable (OG + sitemap + robots + MedicalWebPage + chapter/disease JSON-LD). Re-test опция, бележки в дневник, физиологични clamp-и, shimmer skeletons. **Trust layer**: blood markers AES-256-GCM enkriptirani at rest, Upstash rate limiting (30 writes/мин), append-only audit_log. **Push notifications**: VAPID + service worker + opt-in UI + Vercel Cron сутрешен reminder. **Email digest**: Resend + opt-in + неделен HTML email с прогрес + Vercel Cron. **Gamification**: streak/XP/badge engine с 5 badges, ProgressCard на /plan, BadgeGallery в /settings. **Optimistic rollback** при rate-limit. **Phase 8 започната**: AI food assistant (Claude Haiku 4.5, per-tier cache, 5/мин rate limit) в /foods. **150 unit + component test покритие.**
 
 ---
 
@@ -283,7 +283,18 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
 - [ ] TWA build → Play Store
 - [ ] Custom домейн (insulin-reset.bg?)
 - [ ] CGM integration за biohacker lens
-- [ ] AI асистент за хранителни въпроси (thyroid-rehab има `food_search_cache`)
+- [x] ~~AI асистент за хранителни въпроси~~ → Claude Haiku 4.5 + per-{tier, query} cache + 5/min rate limit, /foods (Phase 8)
+
+## Phase 8 — AI асистент за храни
+- ✅ **`lib/anthropic.ts`** — Claude SDK lazy-import wrapper; `askClaude(query, tier)`; system prompt е bilingual (English с инструкции, Bulgarian output), tier-aware (включва конкретния carb cap), 3-5 sentence limit, Bikman 4-pillar reference, refuses medical diagnosis; `queryCacheKey(raw, tier)` sha256 на `tier|normalized`
+- ✅ **`lib/food-cache.ts`** — `food_search_cache` table reader/writer; INSERT OR IGNORE race-safe; hit counter bump fire-and-forget
+- ✅ **`lib/actions/food-ai.ts`** — `askFoodAssistantAction(query)` с layered cost defense: cache lookup първо (cheapest), rate-limit прилаган само на misses, max_tokens 500, max query 200 chars
+- ✅ **Rate limit** нов kind `ai`: 5/мин/user (най-тесният — всеки call е реални пари към Anthropic)
+- ✅ **DB**: `food_search_cache` таблица — query_hash PK, query, tier, response, model, hits, last_hit_at
+- ✅ **`components/foods/FoodAiAssistant.tsx`** — single-turn Q&A в /foods; 200-char limit; 3 suggestion chips; loader spinner; cached hint badge; lazy-import за server action
+- ✅ **Anonymous state** — sign-in CTA banner (value prop виден дори преди login)
+- ✅ **.env.example**: `ANTHROPIC_API_KEY` с console URL
+- ✅ **Тестове**: 14 нови (queryCacheKey stability/whitespace/tier-split, system prompt tier carb cap + Bulgarian + medical guard + Bikman ref, MAX constants bounds, food-cache miss/hit/race-safe write)
 
 ## Стил на работа
 
