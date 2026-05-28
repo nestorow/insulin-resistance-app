@@ -56,16 +56,40 @@ natural fats, fasting. Bulgarian foods (баница, шопска, кисело
 кашкавал, ракия) come up often — handle them naturally.`;
 }
 
-/** Stable lowercase + whitespace-normalized query, hashed with tier. */
-export function queryCacheKey(rawQuery: string, tier: DietTier): {
-  hash: string;
-  normalized: string;
-} {
-  const normalized = rawQuery.trim().toLowerCase().replace(/\s+/g, " ");
+/**
+ * Stable lowercase + whitespace-normalized query, hashed with tier AND
+ * any prior conversation turns. Two identical conversations from
+ * different users (same tier, same exchange) hit the same cache row —
+ * the second user saves their API budget AND the answer stays consistent.
+ *
+ * Hash composition:
+ *   - Single-turn: `${tier}|${query}`   (unchanged from previous design)
+ *   - Multi-turn:  `${tier}|${historyJoined}|${query}`
+ *
+ * History entries are normalized the same way as the query so subtle
+ * casing or whitespace differences don't fragment the cache.
+ */
+export function queryCacheKey(
+  rawQuery: string,
+  tier: DietTier,
+  history: ChatTurn[] = []
+): { hash: string; normalized: string } {
+  const norm = (s: string) => s.trim().toLowerCase().replace(/\s+/g, " ");
+  const normalized = norm(rawQuery);
+
+  const historySegment = history
+    .map((t) => `${t.role}:${norm(t.content)}`)
+    .join("\n");
+
+  const composite = historySegment
+    ? `${tier}|${historySegment}|${normalized}`
+    : `${tier}|${normalized}`;
+
   const hash = crypto
     .createHash("sha256")
-    .update(`${tier}|${normalized}`)
+    .update(composite)
     .digest("hex");
+
   return { hash, normalized };
 }
 
@@ -86,14 +110,17 @@ export interface ChatTurn {
 export const MAX_CONVERSATION_TURNS = 10;
 
 /**
- * Ask Claude with optional prior conversation context. Single-turn is
- * the most common path (one question → answer + caching at the server
- * action layer); multi-turn passes the prior turns so follow-ups
- * ("а с орехово масло?") resolve coherently.
+ * Ask Claude with optional prior conversation context.
+ *
+ * **BYOK**: the apiKey is passed explicitly — no env-var fallback in
+ * production runtime. The caller (server action) decrypts the user's
+ * stored key and provides it here. This keeps key handling centralized
+ * at the action layer and makes this function trivially testable.
  *
  * Validates: latest user message length, total turn count.
  */
 export async function askClaude(
+  apiKey: string,
   latestUserMessage: string,
   tier: DietTier,
   history: ChatTurn[] = []
@@ -107,9 +134,8 @@ export async function askClaude(
       `Conversation too long (>${MAX_CONVERSATION_TURNS} turns) — започни нов разговор`
     );
   }
-  const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    throw new Error("ANTHROPIC_API_KEY not configured");
+    throw new Error("No Anthropic API key provided");
   }
 
   // Lazy-load the SDK so the chunk doesn't load on every request to /foods.

@@ -224,6 +224,17 @@ export async function initializeDatabase() {
   // for the cron job, instead of a separate table that'd require joins.
   await ensureColumn(client, "users", "email_digest_opt_in", "INTEGER DEFAULT 0");
 
+  // Migration (Phase 8 BYOK): each user supplies their own Anthropic API
+  // key for the food AI assistant. Stored as the same AES-256-GCM blob
+  // format as blood markers (iv:ct:tag hex). Null = user hasn't
+  // configured AI — assistant shows a CTA to /settings.
+  await ensureColumn(
+    client,
+    "users",
+    "anthropic_api_key_encrypted",
+    "TEXT"
+  );
+
   // Food AI assistant cache. Keyed on a normalized hash of the query so
   // semantically-identical questions ("банан keto?" vs "Банан keto") hit
   // the same row. Caching is essential: Anthropic calls cost money + are

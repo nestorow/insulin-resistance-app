@@ -29,6 +29,45 @@ describe("queryCacheKey", () => {
     const b = queryCacheKey("Мога ли да ям ябълка?", "keto");
     expect(a.hash).not.toBe(b.hash);
   });
+
+  it("empty history matches the single-turn key shape (back-compat)", () => {
+    const withEmpty = queryCacheKey("Мога ли да ям банан?", "keto", []);
+    const withoutArg = queryCacheKey("Мога ли да ям банан?", "keto");
+    expect(withEmpty.hash).toBe(withoutArg.hash);
+  });
+
+  it("history changes the hash (multi-turn cache key)", () => {
+    const single = queryCacheKey("А с фъстъчено масло?", "keto", []);
+    const withCtx = queryCacheKey("А с фъстъчено масло?", "keto", [
+      { role: "user", content: "Мога ли да ям банан?" },
+      { role: "assistant", content: "Не за keto — ~24g въглехидрати." },
+    ]);
+    expect(single.hash).not.toBe(withCtx.hash);
+  });
+
+  it("same conversation → same hash (cross-user cache hit)", () => {
+    const userA = queryCacheKey("А с фъстъчено масло?", "keto", [
+      { role: "user", content: "Мога ли да ям банан?" },
+      { role: "assistant", content: "Не за keto — ~24g въглехидрати." },
+    ]);
+    const userB = queryCacheKey("А с фъстъчено масло?", "keto", [
+      { role: "user", content: "Мога ли да ям банан?" },
+      { role: "assistant", content: "Не за keto — ~24g въглехидрати." },
+    ]);
+    expect(userA.hash).toBe(userB.hash);
+  });
+
+  it("different history orders → different hashes", () => {
+    const a = queryCacheKey("X?", "keto", [
+      { role: "user", content: "А?" },
+      { role: "assistant", content: "Б." },
+    ]);
+    const b = queryCacheKey("X?", "keto", [
+      { role: "user", content: "Б?" },
+      { role: "assistant", content: "А." },
+    ]);
+    expect(a.hash).not.toBe(b.hash);
+  });
 });
 
 describe("systemPrompt", () => {
