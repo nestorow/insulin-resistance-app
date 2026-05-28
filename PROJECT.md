@@ -172,23 +172,32 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
 - ✅ **npm scripts**: `test`, `test:watch`
 - ✅ **Dev deps**: jest 30, jest-environment-jsdom 30, @types/jest 30, @testing-library/jest-dom 6
 - ✅ **Refactor**: `clampedNum()` extract-нат от journal+markers в `src/lib/numbers.ts` — single source of truth
-- ✅ **66 теста / 7 suite-а / 5s runtime** (включително component tests):
-  - `lib/onboarding.test.ts` (11): `tierFromYesCount` boundaries, `inferredLens` heuristic, QUIZ_QUESTIONS shape
-  - `lib/program-phases.test.ts` (17): phase boundaries (14/15, 30/31, 60/61, 90), day clamping, PROGRAM_PHASES contiguity, milestoneMessage on/off days
-  - `lib/numbers.test.ts` (8): `clampedNum` edge cases (NaN, Infinity, out-of-range, real-world HbA1c)
-  - `data/protocol.test.ts` (9): id uniqueness, category whitelist, `tiers` ⊆ DietTier, `itemText` resolver fallback/override
-  - `components/DailyPlanModule.test.tsx` (12): day/phase derivation, progression unlocks (day-15 items, dinner-window evolution), tier filtering, milestone banner
-  - `components/OnboardingFlow.test.tsx` (5): step order, redirect when onboarding exists, inferred lens pre-selection с „Препоръчано" badge за 3 tier-а
-  - `components/SettingsModule.test.tsx` (4): профил рендер, nudge при липса, re-test happy path + cancel
+- ✅ **86 теста / 10 suite-а / 5.3s runtime**:
+  - `lib/onboarding.test.ts` (11): `tierFromYesCount`, `inferredLens`, QUIZ_QUESTIONS shape
+  - `lib/program-phases.test.ts` (17): phase boundaries, day clamping, PROGRAM_PHASES contiguity, milestoneMessage
+  - `lib/numbers.test.ts` (8): `clampedNum` edge cases
+  - `lib/onboarding-storage.test.ts` (6): round-trip, versioned key, corrupted payload recovery, overwrite
+  - `lib/daily-plan-storage.test.ts` (6): toggle, per-date isolation, setDayChecks, todayKey, corruption recovery
+  - `lib/tracking-storage.test.ts` (8): symptom/marker upsert-by-date, ascending sort, notes preservation, log isolation
+  - `data/protocol.test.ts` (9): id uniqueness, category whitelist, `tiers` ⊆ DietTier, `itemText` resolver
+  - `components/DailyPlanModule.test.tsx` (12): day/phase derivation, progression unlocks, tier filtering, milestone banner
+  - `components/OnboardingFlow.test.tsx` (5): step order, redirect, inferred lens „Препоръчано" badge
+  - `components/SettingsModule.test.tsx` (4): профил рендер, nudge, re-test happy path + cancel
 - ✅ **Bonus refactor**: storage seams (`onboarding-storage`, `daily-plan-storage`, `tracking-storage`) сега lazy-import-ват server actions — auth/DB chunks се товарят само при първи signed-in write, не на cold start за анонимни
+
+### PWA icons + UI hydration polish
+- ✅ **`scripts/rasterize-icons.mjs`** — sharp script: чете `src/app/icon.svg`, пише `public/apple-icon-180.png` (180×180, iOS standard) и `public/icon-192.png` (192×192, legacy Android); density 384 за crisp curve рендеринг
+- ✅ **`layout.tsx`** + **`manifest.ts`** wired към PNG-тата (iOS home-screen install вече показва бранд иконата, не page screenshot)
+- ✅ **`components/ui/Skeleton.tsx`** — `<SkeletonRows rows={n}>` + `<SkeletonBar>`; shimmer keyframe в `globals.css` (teal-50 base, 1.4s loop)
+- ✅ **Wired в Journal + Markers** — преди `mounted` рендерира 3 placeholder rows; премахва „blank → suddenly full" flash при hydration / SyncOnLogin
 
 ## Backlog — идеи за следващи итерации
 
 ### Полиране (продължение)
 - [x] ~~**Form sanity**~~ → `clampedNum()` + HTML5 min/max/step (Phase 2.7)
-- [ ] **PNG apple-icon (180×180)** — за iOS Safari, който не приема SVG за touch icon; иска build-time rasterization (sharp script в `scripts/`)
-- [ ] **Loading skeleton CSS shimmer** — за по-дълги loads (SyncOnLogin при голяма история)
-- [ ] **Optimistic UI rollback** — при server action fail, връщай локалното състояние + покажи tiny error toast
+- [x] ~~**PNG apple-icon (180×180)**~~ → `scripts/rasterize-icons.mjs` + sharp (Phase 2.7)
+- [x] ~~**Loading skeleton CSS shimmer**~~ → `components/ui/Skeleton.tsx`, wired в Journal+Markers (Phase 2.7)
+- [ ] **Optimistic UI rollback** — при server action fail, връщай локалното състояние + покажи tiny error toast (изисква seam-овете да върнат Promise)
 
 ### Социално + SEO
 - [x] ~~**Per-page JSON-LD**~~ → chapters като `MedicalScholarlyArticle`, diseases като `MedicalCondition` (Phase 2.7)
@@ -200,9 +209,9 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
 - [x] ~~**Inferred lens** в onboarding~~ → пренареждане quiz→lens + `inferredLens()` heuristic + „Препоръчано" badge (Phase 2.7)
 
 ### Инфраструктура
-- [x] ~~**Тестове**~~ → jest 30 + `next/jest` setup, **66 теста / 7 suite-а** (Phase 2.7)
+- [x] ~~**Тестове**~~ → jest 30 + `next/jest` setup, **86 теста / 10 suite-а** (Phase 2.7)
 - [x] ~~**Component tests**~~ → DailyPlanModule (12), OnboardingFlow (5), SettingsModule (4) — Phase 2.7
-- [ ] **Storage seam tests** — daily-plan-storage, onboarding-storage, tracking-storage (с jsdom localStorage mock) — pure unit tests, не component
+- [x] ~~**Storage seam tests**~~ → onboarding-storage (6), daily-plan-storage (6), tracking-storage (8) — Phase 2.7
 - [ ] **Encryption-at-rest** за blood_markers (thyroid-rehab pattern с `encrypted_data`) — преценка дали GDPR го изисква
 - [ ] **Rate limiting** — Upstash redis за server actions (thyroid-rehab има)
 - [ ] **Audit log** — кой/кога/какво update-ва onboarding/markers; за trust
