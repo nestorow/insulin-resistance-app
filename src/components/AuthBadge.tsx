@@ -2,6 +2,7 @@
 
 import { useSession, signIn, signOut } from "next-auth/react";
 import { LogIn, LogOut } from "lucide-react";
+import { clearAllLocalData } from "@/lib/local-data";
 
 // Floating top-right auth pill: shows "Влез" when signed out, name+logout when in.
 // Hidden while session is loading to avoid flicker.
@@ -30,7 +31,12 @@ export default function AuthBadge() {
     <div className={`${base} bg-teal-500 text-white`}>
       <span className="max-w-[120px] truncate">{name}</span>
       <button
-        onClick={() => signOut({ callbackUrl: "/" })}
+        onClick={() => {
+          // Wipe the cache so a different user on the same browser doesn't
+          // pick up the previous user's residual entries on next login.
+          clearAllLocalData();
+          signOut({ callbackUrl: "/" });
+        }}
         aria-label="Излез"
         className="ml-1 rounded-full bg-teal-600 p-1 hover:bg-teal-700"
       >

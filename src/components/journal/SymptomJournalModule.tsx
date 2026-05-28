@@ -87,6 +87,19 @@ export default function SymptomJournalModule() {
         </button>
       </div>
 
+      {/* Empty / encouragement states (until chart is meaningful) */}
+      {logs.length === 0 && (
+        <div className="mb-8 rounded-2xl border border-teal-100 bg-teal-50/40 p-5 text-center text-sm text-slate-600">
+          📈 Запиши първия си ден отгоре — графиката на тренда ще се появи след
+          втория запис.
+        </div>
+      )}
+      {logs.length === 1 && (
+        <div className="mb-4 rounded-xl border border-teal-100 bg-teal-50/40 p-4 text-center text-sm text-slate-600">
+          Чудесно начало! Запиши още поне един ден, за да видиш тренда.
+        </div>
+      )}
+
       {/* Trend chart */}
       {chartData.length > 1 && (
         <div className="mb-8 rounded-2xl border border-teal-100 bg-white p-4">
