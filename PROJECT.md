@@ -77,15 +77,16 @@ Onboarding-ът разклонява потребителя в режим, ко�
 | 4 | Хранителен справочник (foods.ts → DB/UI) | ✅ read-only UI |
 | 5 | Тренировки + Гладуване | ✅ read-only UI |
 | 6 | Образование (заболявания + Bikman) | ✅ read-only UI |
-| 7 | Добавки (съдържание + evidence grading) | ⏸️ чака съдържание (медицинско) |
+| 7 | Добавки (съдържание + evidence grading) | ✅ UI готов (консервативно съдържание, прегледано) |
 | 8+ | PWA полиране, TWA / Play Store, OG generator, custom домейн | по-късно |
 
 \* Фази 1-3 работят **без логин** — всичко се пази в `localStorage` зад seam-ове
 (`lib/onboarding-storage.ts`, `daily-plan-storage.ts`, `tracking-storage.ts`).
 Бъдеща Turso-фаза ще ги закачи към сесия + DB и ще добави auth gate.
 
-**Остава:** (а) модул „Добавки" — иска ново медицинско съдържание (решение на
-потребителя); (б) Turso + auth wiring — иска creds.
+**Всичките 8 модула + onboarding са живи** (UI/localStorage). **Остава само:**
+Turso + NextAuth wiring — закача всички seam-ове към сесия + DB и добавя auth
+gate. Иска creds (Turso DB + Google OAuth + 6 env vars).
 
 ## Phase 0 — резултат
 
