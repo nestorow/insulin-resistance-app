@@ -6,7 +6,7 @@
 
 **Repo:** `nestorow/insulin-resistance-app` · **Deploy:** `insulin-resistance-app.vercel.app`
 **Бранд:** InsulinReset
-**Статус:** Phase 2 завършена + полирано + Phase 2.6 (conversion / прогресия / SEO) + Phase 2.7 (UX полиране + security + engagement) — всичките 8 модула + onboarding в production, Google sign-in работи, DB persistence за логнати потребители (Turso), localStorage остава cache за анонимни. PWA manifest + iOS PNG icons. Landing-ът има conversion scaffolding, дневният план е **прогресивен** в 4 фази, сайтът е discoverable (OG + sitemap + robots + MedicalWebPage + chapter/disease JSON-LD). Re-test опция, бележки в дневник, физиологични clamp-и, shimmer skeletons. **Trust layer**: blood markers AES-256-GCM enkriptirani at rest, Upstash rate limiting (30 writes/мин), append-only audit_log. **Push notifications**: VAPID + service worker + opt-in UI + Vercel Cron сутрешен reminder. **104 unit + component test покритие.**
+**Статус:** Phase 2 завършена + полирано + Phase 2.6 (conversion / прогресия / SEO) + Phase 2.7 (UX полиране + security + engagement) — всичките 8 модула + onboarding в production, Google sign-in работи, DB persistence за логнати потребители (Turso), localStorage остава cache за анонимни. PWA manifest + iOS PNG icons. Landing-ът има conversion scaffolding, дневният план е **прогресивен** в 4 фази, сайтът е discoverable (OG + sitemap + robots + MedicalWebPage + chapter/disease JSON-LD). Re-test опция, бележки в дневник, физиологични clamp-и, shimmer skeletons. **Trust layer**: blood markers AES-256-GCM enkriptirani at rest, Upstash rate limiting (30 writes/мин), append-only audit_log. **Push notifications**: VAPID + service worker + opt-in UI + Vercel Cron сутрешен reminder. **Gamification**: streak/XP/badge engine с 5 badges, ProgressCard на /plan, BadgeGallery в /settings. **116 unit + component test покритие.**
 
 ---
 
@@ -185,6 +185,22 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
   - `components/SettingsModule.test.tsx` (4): профил рендер, nudge, re-test happy path + cancel
 - ✅ **Bonus refactor**: storage seams (`onboarding-storage`, `daily-plan-storage`, `tracking-storage`) сега lazy-import-ват server actions — auth/DB chunks се товарят само при първи signed-in write, не на cold start за анонимни
 
+### Streak / XP / badges (gamification layer)
+- ✅ **DB**: три нови таблици — `user_streaks` (1 ред/user; current_streak, longest_streak, total_xp, last_active_date), `xp_log` (append-only, recomputable), `user_badges` (UNIQUE (user_id, badge_id) — идемпотентно awarding)
+- ✅ **`lib/gamification.ts`** — engine:
+  - `POINTS` registry: plan.check=1, plan.dayComplete=10, symptom.save=5, marker.save=20
+  - `PLAN_CHECK_DAILY_CAP=15` за да не може checkbox-mashing да фарми XP
+  - Level curve: `level = floor(sqrt(xp/30)) + 1` (gentle, frequent level-ups)
+  - 5 badges: first_check, first_marker, week_streak (7), month_streak (30), ninety_streak (90)
+  - `bumpStreak()` логика: same-day no-op, gap=1 → +1, gap>1 → reset, out-of-order ignored
+  - `recordEvent()` fire-and-forget от server actions; swallows errors
+  - `getProgress()` single read за UI
+- ✅ **`lib/actions/gamification.ts`** → `getProgressAction()` session-gated
+- ✅ **Wire-нати в 3 server actions**: plan.setDayChecksAction (XP × checkedCount), symptom.save (5 XP), marker.save (20 XP)
+- ✅ **`components/plan/ProgressCard.tsx`** — 3-stat tile (streak / level + XP bar / badges count) под phase explainer-а; lazy-import за gamification action; крие се за anonymous + при totalXp=0+streak=0
+- ✅ **`components/settings/BadgeGallery.tsx`** — 5-card grid в `/settings`; earned glow teal, unearned slate
+- ✅ **Тестове**: 12 нови (level curve inverses, streak math 4 случая, XP cap edge cases, error swallow, getProgress composition)
+
 ### Push notifications + сутрешен cron reminder
 - ✅ **`lib/web-push.ts`** — `sendPush(sub, payload)` wrapper над `web-push` library; VAPID lazy-config; връща `{ ok: false, gone: true }` при 404/410 за GC на stale endpoints; TTL 24h
 - ✅ **`lib/actions/push.ts`** — `getVapidPublicKeyAction`, `savePushSubscriptionAction` (rate-limited + audited), `deletePushSubscriptionAction` (user-scoped), `sendTestPushAction` (verification от Settings)
@@ -246,7 +262,7 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
 ### Engagement
 - [x] ~~**Push notifications**~~ → web-push + VAPID + service worker + opt-in UI + Vercel Cron `0 5 * * *` (Phase 2.7)
 - [ ] **Email обобщения** — седмичен прогрес по симптоми/маркери (resend.com например)
-- [ ] **Streak / XP / badges** — gamification (thyroid-rehab има user_streaks, user_badges, xp_log)
+- [x] ~~**Streak / XP / badges**~~ → engine + 5 badges + ProgressCard + BadgeGallery (Phase 2.7)
 
 ### Бъдещи фази (Phase 8+)
 - [ ] TWA build → Play Store
