@@ -292,6 +292,17 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
 - ✅ **Sitemap**: добавени с priority 0.3, yearly change frequency
 - ✅ Build: /privacy + /terms по 176 B (почти server-only)
 
+## Phase 8 — BYOK (bring-your-own-key) за AI асистента
+- ✅ **DB**: нова колона `users.anthropic_api_key_encrypted` (AES-256-GCM blob, същия scheme като blood markers)
+- ✅ **`actions/anthropic-key.ts`** — `setAnthropicKeyAction` (format check + encrypt + write), `hasAnthropicKeyAction`, `maskedAnthropicKeyAction` (deriva mask от blob tail без decrypt), `clearAnthropicKeyAction`
+- ✅ **`anthropic.ts`** — `askClaude(apiKey, ...)` приема explicit apiKey param; **премахнат** env-var fallback в production runtime
+- ✅ **Multi-turn caching**: `queryCacheKey()` сега включва normalized history в hash-а — same conversation между users → cache hit; single-turn back-compat (празно history дава стария hash format)
+- ✅ **`food-ai.ts`** — нов outcome `no-key`; flow: **cache lookup ПЪРВО** (без да изисква user key) → ако miss, изисква user-encrypted key, decrypt, call Claude, write to cache for всички future users
+- ✅ **`AnthropicKeyCard.tsx`** в /settings — password input с client format check, masked badge при configured state, link към console.anthropic.com + бележка за monthly spend cap
+- ✅ **Privacy policy** обновен: т.2 mention за encrypted API key storage, т.5 уточнение че Anthropic вижда queries само при cache miss и че user-ът плаща директно
+- ✅ **`.env.example`** — ANTHROPIC_API_KEY помечен deprecated (per-user сега в DB)
+- ✅ **Тестове** (+15): queryCacheKey back-compat + multi-turn split + cross-user same-conversation hit, anthropic-key actions (format check, encrypt round-trip, mask shape, clear UPDATE)
+
 ## Phase 8 — Custom domain prep + security headers
 - ✅ **`lib/site-url.ts`** — single `siteUrl()` helper с documented resolution chain (`NEXT_PUBLIC_SITE_URL → NEXTAUTH_URL → fallback`); strips trailing slashes; migration recipe в header коментар
 - ✅ **Refactor**: 5 call sites (layout, sitemap, robots, weekly-digest, education-schema) → еднa import line; canonical URL change = единствен env var swap
