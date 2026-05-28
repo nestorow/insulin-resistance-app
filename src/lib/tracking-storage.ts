@@ -1,22 +1,21 @@
 "use client";
 
 // Symptom journal + blood marker logs.
-// localStorage is the primary cache; when signed in each write also fire-
-// and-forgets to Turso (auth.ts checks session; non-auth callers no-op).
+// localStorage is the primary cache; when signed in each write also fires
+// to Turso via a dynamically-imported server action.
 //
-// Server actions are dynamically imported on first write — see
-// onboarding-storage.ts for the rationale.
+// `addSymptomLog` / `addMarkerLog` return both the synchronous new local
+// state AND a `pending` promise resolving to the server outcome:
+//   - 'ok'        — server accepted (or no server because anonymous)
+//   - 'rejected'  — server explicitly refused (rate-limited; will never
+//                   land server-side → caller should revert local)
+//   - 'offline'   — transient error (network blip); SyncOnLogin will
+//                   reconcile, so the local cache is kept
+//
+// This is the foundation for optimistic UI rollback on the journal +
+// markers entry forms.
 
-function fireSymptomSave(entry: SymptomEntry) {
-  import("./actions/journal")
-    .then((m) => m.saveSymptomLogAction(entry))
-    .catch(() => {});
-}
-function fireMarkerSave(entry: MarkerEntry) {
-  import("./actions/markers")
-    .then((m) => m.saveMarkerLogAction(entry))
-    .catch(() => {});
-}
+export type SaveOutcome = "ok" | "rejected" | "offline";
 
 export interface SymptomEntry {
   date: string; // YYYY-MM-DD
@@ -40,6 +39,17 @@ export interface MarkerEntry {
 interface SaveOpts {
   /** Skip server echo — used by SyncOnLogin when hydrating from DB. */
   skipServer?: boolean;
+}
+
+interface AddResult<T> {
+  /** New list after the upsert; already written to localStorage. */
+  local: T[];
+  /**
+   * Resolves when the server roundtrip finishes. On 'rejected' the
+   * caller should remove the entry from local state (rollback) — see
+   * `removeSymptomLog` / `removeMarkerLog` for the inverse operation.
+   */
+  pending: Promise<SaveOutcome>;
 }
 
 const SYMPTOM_KEY = "ir-symptom-log-v1";
@@ -71,6 +81,11 @@ function upsertByDate<T extends { date: string }>(arr: T[], entry: T): T[] {
   return next;
 }
 
+function removeByDate<T extends { date: string }>(arr: T[], date: string): T[] {
+  return arr.filter((e) => e.date !== date);
+}
+
+// ── Symptom log ─────────────────────────────────────────────────────
 export function getSymptomLogs(): SymptomEntry[] {
   return readArr<SymptomEntry>(SYMPTOM_KEY);
 }
@@ -78,15 +93,35 @@ export function getSymptomLogs(): SymptomEntry[] {
 export function addSymptomLog(
   entry: SymptomEntry,
   opts: SaveOpts = {}
-): SymptomEntry[] {
+): AddResult<SymptomEntry> {
   const next = upsertByDate(getSymptomLogs(), entry);
   writeArr(SYMPTOM_KEY, next);
-  if (!opts.skipServer) {
-    fireSymptomSave(entry);
+
+  if (opts.skipServer) {
+    return { local: next, pending: Promise.resolve("ok") };
   }
+
+  const pending = import("./actions/journal")
+    .then((m) => m.saveSymptomLogAction(entry))
+    .then((res): SaveOutcome => {
+      if (res.ok) return "ok";
+      // 'auth' outcome happens for anonymous users — we never expected
+      // a server commit, so the local-only write is correct as-is.
+      return res.reason === "rate" ? "rejected" : "ok";
+    })
+    .catch((): SaveOutcome => "offline");
+
+  return { local: next, pending };
+}
+
+/** Rollback inverse of addSymptomLog — remove the entry for `date`. */
+export function removeSymptomLog(date: string): SymptomEntry[] {
+  const next = removeByDate(getSymptomLogs(), date);
+  writeArr(SYMPTOM_KEY, next);
   return next;
 }
 
+// ── Marker log ──────────────────────────────────────────────────────
 export function getMarkerLogs(): MarkerEntry[] {
   return readArr<MarkerEntry>(MARKER_KEY);
 }
@@ -94,11 +129,27 @@ export function getMarkerLogs(): MarkerEntry[] {
 export function addMarkerLog(
   entry: MarkerEntry,
   opts: SaveOpts = {}
-): MarkerEntry[] {
+): AddResult<MarkerEntry> {
   const next = upsertByDate(getMarkerLogs(), entry);
   writeArr(MARKER_KEY, next);
-  if (!opts.skipServer) {
-    fireMarkerSave(entry);
+
+  if (opts.skipServer) {
+    return { local: next, pending: Promise.resolve("ok") };
   }
+
+  const pending = import("./actions/markers")
+    .then((m) => m.saveMarkerLogAction(entry))
+    .then((res): SaveOutcome => {
+      if (res.ok) return "ok";
+      return res.reason === "rate" ? "rejected" : "ok";
+    })
+    .catch((): SaveOutcome => "offline");
+
+  return { local: next, pending };
+}
+
+export function removeMarkerLog(date: string): MarkerEntry[] {
+  const next = removeByDate(getMarkerLogs(), date);
+  writeArr(MARKER_KEY, next);
   return next;
 }

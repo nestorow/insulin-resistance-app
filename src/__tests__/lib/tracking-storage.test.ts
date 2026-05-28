@@ -1,8 +1,10 @@
 import {
   getSymptomLogs,
   addSymptomLog,
+  removeSymptomLog,
   getMarkerLogs,
   addMarkerLog,
+  removeMarkerLog,
 } from "@/lib/tracking-storage";
 
 beforeEach(() => {
@@ -14,14 +16,14 @@ describe("symptom log", () => {
     expect(getSymptomLogs()).toEqual([]);
   });
 
-  it("addSymptomLog appends and persists", () => {
-    addSymptomLog(
+  it("addSymptomLog appends and persists (skipServer)", () => {
+    const { local } = addSymptomLog(
       { date: "2026-01-15", energy: 7, brainFog: 3 },
       { skipServer: true }
     );
-    const logs = getSymptomLogs();
-    expect(logs).toHaveLength(1);
-    expect(logs[0]).toMatchObject({ date: "2026-01-15", energy: 7 });
+    expect(local).toHaveLength(1);
+    expect(local[0]).toMatchObject({ date: "2026-01-15", energy: 7 });
+    expect(getSymptomLogs()).toHaveLength(1);
   });
 
   it("upserts by date — same date overwrites, not appended", () => {
@@ -29,14 +31,13 @@ describe("symptom log", () => {
       { date: "2026-01-15", energy: 5, brainFog: 5 },
       { skipServer: true }
     );
-    addSymptomLog(
+    const { local } = addSymptomLog(
       { date: "2026-01-15", energy: 8, brainFog: 2 },
       { skipServer: true }
     );
-    const logs = getSymptomLogs();
-    expect(logs).toHaveLength(1);
-    expect(logs[0].energy).toBe(8);
-    expect(logs[0].brainFog).toBe(2);
+    expect(local).toHaveLength(1);
+    expect(local[0].energy).toBe(8);
+    expect(local[0].brainFog).toBe(2);
   });
 
   it("keeps logs sorted ascending by date", () => {
@@ -48,11 +49,11 @@ describe("symptom log", () => {
       { date: "2026-01-15", energy: 5, brainFog: 5 },
       { skipServer: true }
     );
-    addSymptomLog(
+    const { local } = addSymptomLog(
       { date: "2026-01-17", energy: 5, brainFog: 5 },
       { skipServer: true }
     );
-    expect(getSymptomLogs().map((l) => l.date)).toEqual([
+    expect(local.map((l) => l.date)).toEqual([
       "2026-01-15",
       "2026-01-17",
       "2026-01-20",
@@ -66,6 +67,28 @@ describe("symptom log", () => {
     );
     expect(getSymptomLogs()[0].notes).toBe("късна вечеря");
   });
+
+  it("removeSymptomLog drops by date (rollback path)", () => {
+    addSymptomLog(
+      { date: "2026-01-15", energy: 5, brainFog: 5 },
+      { skipServer: true }
+    );
+    addSymptomLog(
+      { date: "2026-01-16", energy: 6, brainFog: 4 },
+      { skipServer: true }
+    );
+    const next = removeSymptomLog("2026-01-15");
+    expect(next).toHaveLength(1);
+    expect(next[0].date).toBe("2026-01-16");
+  });
+
+  it("skipServer pending resolves to 'ok' immediately", async () => {
+    const { pending } = addSymptomLog(
+      { date: "2026-01-15", energy: 7, brainFog: 3 },
+      { skipServer: true }
+    );
+    await expect(pending).resolves.toBe("ok");
+  });
 });
 
 describe("marker log", () => {
@@ -78,13 +101,21 @@ describe("marker log", () => {
       { date: "2026-01-15", homaIr: 4.2, hba1c: 5.7 },
       { skipServer: true }
     );
-    addMarkerLog(
+    const { local } = addMarkerLog(
       { date: "2026-01-15", homaIr: 3.8, hba1c: 5.5 },
       { skipServer: true }
     );
-    const logs = getMarkerLogs();
-    expect(logs).toHaveLength(1);
-    expect(logs[0].homaIr).toBe(3.8);
+    expect(local).toHaveLength(1);
+    expect(local[0].homaIr).toBe(3.8);
+  });
+
+  it("removeMarkerLog drops by date", () => {
+    addMarkerLog(
+      { date: "2026-01-15", homaIr: 4.2 },
+      { skipServer: true }
+    );
+    const next = removeMarkerLog("2026-01-15");
+    expect(next).toHaveLength(0);
   });
 
   it("isolates symptom + marker logs (different keys)", () => {

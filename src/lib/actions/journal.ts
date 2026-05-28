@@ -11,14 +11,18 @@ import type { SymptomEntry } from "@/lib/tracking-storage";
 
 // Symptom journal — upsert-by-date (UNIQUE (user_id, date)).
 
+export type SaveOutcome =
+  | { ok: true }
+  | { ok: false; reason: "auth" | "rate" };
+
 export async function saveSymptomLogAction(
   entry: SymptomEntry
-): Promise<{ ok: true } | null> {
+): Promise<SaveOutcome> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return null;
+  if (!session?.user?.id) return { ok: false, reason: "auth" };
 
   const rate = await checkRateLimit("write", session.user.id);
-  if (!rate.ok) return null;
+  if (!rate.ok) return { ok: false, reason: "rate" };
 
   const existing = await db.execute({
     sql: "SELECT id FROM symptom_log WHERE user_id = ? AND date = ?",

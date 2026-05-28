@@ -13,6 +13,7 @@ import {
 import {
   getMarkerLogs,
   addMarkerLog,
+  removeMarkerLog,
   type MarkerEntry,
 } from "@/lib/tracking-storage";
 import { showToast } from "@/lib/toast";
@@ -47,8 +48,28 @@ export default function MarkersModule() {
       triglycerides: clampedNum(tg, 0, 2000),
       hdl: clampedNum(hdl, 0, 200),
     };
-    setLogs(addMarkerLog(entry));
+    const previous = logs;
+    const { local, pending } = addMarkerLog(entry);
+    setLogs(local);
     showToast("Записано за " + date);
+
+    pending.then((outcome) => {
+      if (outcome === "rejected") {
+        setLogs(removeMarkerLog(date));
+        const prior = previous.find((e) => e.date === date);
+        if (prior) {
+          const restored = [...removeMarkerLog(date), prior].sort((a, b) =>
+            a.date.localeCompare(b.date)
+          );
+          window.localStorage.setItem(
+            "ir-marker-log-v1",
+            JSON.stringify(restored)
+          );
+          setLogs(restored);
+        }
+        showToast("Сървърът отказа (твърде много заявки) — записът е върнат.");
+      }
+    });
   }
 
   const chartData = logs.map((l) => ({

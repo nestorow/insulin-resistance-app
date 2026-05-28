@@ -13,6 +13,7 @@ import {
 import {
   getSymptomLogs,
   addSymptomLog,
+  removeSymptomLog,
   type SymptomEntry,
 } from "@/lib/tracking-storage";
 import { showToast } from "@/lib/toast";
@@ -52,8 +53,37 @@ export default function SymptomJournalModule() {
       bloodSugar: clampedNum(bloodSugar, 0, 30),
       notes: trimmed.length > 0 ? trimmed : undefined,
     };
-    setLogs(addSymptomLog(entry));
+
+    // Capture previous list for potential rollback before the optimistic
+    // write replaces it.
+    const previous = logs;
+    const { local, pending } = addSymptomLog(entry);
+    setLogs(local);
     showToast("Записано за " + date);
+
+    // If the server explicitly refused (rate-limited), reverse the
+    // optimistic write so the chart + list match what's actually
+    // persisted server-side.
+    pending.then((outcome) => {
+      if (outcome === "rejected") {
+        setLogs(removeSymptomLog(date));
+        // If the date had a prior entry, restore it. (Edge case for
+        // re-saves: the rate-limit kicked in on an UPDATE, so the
+        // earlier version is still on server.)
+        const prior = previous.find((e) => e.date === date);
+        if (prior) {
+          const restored = [...removeSymptomLog(date), prior].sort((a, b) =>
+            a.date.localeCompare(b.date)
+          );
+          window.localStorage.setItem(
+            "ir-symptom-log-v1",
+            JSON.stringify(restored)
+          );
+          setLogs(restored);
+        }
+        showToast("Сървърът отказа (твърде много заявки) — записът е върнат.");
+      }
+    });
   }
 
   const chartData = logs.map((l) => ({
