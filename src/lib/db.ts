@@ -48,6 +48,24 @@ export const db = new Proxy({} as Client, {
   },
 });
 
+/**
+ * Add `column` (with `type` declaration) to `table` if it doesn't already
+ * exist. SQLite has no `ALTER TABLE ... ADD COLUMN IF NOT EXISTS`, so we
+ * inspect PRAGMA table_info first. Idempotent.
+ */
+async function ensureColumn(
+  client: Client,
+  table: string,
+  column: string,
+  type: string
+): Promise<void> {
+  const info = await client.execute(`PRAGMA table_info(${table})`);
+  const has = info.rows.some((r) => String(r.name) === column);
+  if (!has) {
+    await client.execute(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`);
+  }
+}
+
 export async function initializeDatabase() {
   const client = getDb();
   await client.executeMultiple(`
@@ -133,4 +151,11 @@ export async function initializeDatabase() {
       PRIMARY KEY (user_id, food_id)
     );
   `);
+
+  // Migration: encrypt blood markers at rest.
+  // The plaintext columns (homa_ir, fasting_insulin, hba1c, triglycerides,
+  // hdl) remain so legacy rows continue to read; on the next save they get
+  // re-written as an encrypted JSON blob in `encrypted_data` and the
+  // plaintext columns are nulled out.
+  await ensureColumn(client, "blood_markers", "encrypted_data", "TEXT");
 }
