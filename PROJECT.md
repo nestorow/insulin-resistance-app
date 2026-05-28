@@ -6,7 +6,7 @@
 
 **Repo:** `nestorow/insulin-resistance-app` · **Deploy:** `insulin-resistance-app.vercel.app`
 **Бранд:** InsulinReset
-**Статус:** Phase 2 завършена + полирано + Phase 2.6 (conversion / прогресия / SEO) + Phase 2.7 (UX полиране) — всичките 8 модула + onboarding в production, Google sign-in работи, DB persistence за логнати потребители (Turso), localStorage остава cache за анонимни. PWA manifest деплойнат и инсталируем (потвърдено живо). Landing-ът има conversion scaffolding, дневният план е **прогресивен** в 4 фази, сайтът е discoverable (OG + sitemap + robots + MedicalWebPage + chapter/disease JSON-LD). Re-test опция, бележки в дневник, и физиологични clamp-и на всички числови inputs.
+**Статус:** Phase 2 завършена + полирано + Phase 2.6 (conversion / прогресия / SEO) + Phase 2.7 (UX полиране + security) — всичките 8 модула + onboarding в production, Google sign-in работи, DB persistence за логнати потребители (Turso), localStorage остава cache за анонимни. PWA manifest + iOS PNG icons. Landing-ът има conversion scaffolding, дневният план е **прогресивен** в 4 фази, сайтът е discoverable (OG + sitemap + robots + MedicalWebPage + chapter/disease JSON-LD). Re-test опция, бележки в дневник, физиологични clamp-и, shimmer skeletons. **Blood markers са AES-256-GCM enkriptirani at rest (GDPR)**. 92 unit + component test покритие.
 
 ---
 
@@ -185,6 +185,14 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
   - `components/SettingsModule.test.tsx` (4): профил рендер, nudge, re-test happy path + cancel
 - ✅ **Bonus refactor**: storage seams (`onboarding-storage`, `daily-plan-storage`, `tracking-storage`) сега lazy-import-ват server actions — auth/DB chunks се товарят само при първи signed-in write, не на cold start за анонимни
 
+### Encryption-at-rest за blood markers (GDPR)
+- ✅ **`lib/encryption.ts`** — AES-256-GCM, 12-byte IV, authenticated; формат `iv:ct:tag` hex; ENCRYPTION_KEY от env (64-char hex)
+- ✅ **DB миграция**: нов `ensureColumn()` helper (PRAGMA + idempotent ADD COLUMN); `blood_markers.encrypted_data TEXT` се добавя автоматично при първи DB hit
+- ✅ **`saveMarkerLogAction`**: enkriptiraną JSON payload {homaIr, …} → `encrypted_data`; UPDATE-ите wipе-ват plaintext колоните (lazy migration на legacy редове)
+- ✅ **`getMarkerLogsAction`**: чете encrypted-first, fallback към plaintext за legacy редове
+- ✅ **Тестове**: 6 case-а (round-trip, fresh IV, wire format, GCM tamper detection, malformed input)
+- ✅ **jest.setup.ts** seed-ва детерминистичен test key (`a`×64)
+
 ### PWA icons + UI hydration polish
 - ✅ **`scripts/rasterize-icons.mjs`** — sharp script: чете `src/app/icon.svg`, пише `public/apple-icon-180.png` (180×180, iOS standard) и `public/icon-192.png` (192×192, legacy Android); density 384 за crisp curve рендеринг
 - ✅ **`layout.tsx`** + **`manifest.ts`** wired към PNG-тата (iOS home-screen install вече показва бранд иконата, не page screenshot)
@@ -212,7 +220,7 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
 - [x] ~~**Тестове**~~ → jest 30 + `next/jest` setup, **86 теста / 10 suite-а** (Phase 2.7)
 - [x] ~~**Component tests**~~ → DailyPlanModule (12), OnboardingFlow (5), SettingsModule (4) — Phase 2.7
 - [x] ~~**Storage seam tests**~~ → onboarding-storage (6), daily-plan-storage (6), tracking-storage (8) — Phase 2.7
-- [ ] **Encryption-at-rest** за blood_markers (thyroid-rehab pattern с `encrypted_data`) — преценка дали GDPR го изисква
+- [x] ~~**Encryption-at-rest** за blood_markers~~ → AES-256-GCM в `encrypted_data` (Phase 2.7)
 - [ ] **Rate limiting** — Upstash redis за server actions (thyroid-rehab има)
 - [ ] **Audit log** — кой/кога/какво update-ва onboarding/markers; за trust
 
