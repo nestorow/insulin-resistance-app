@@ -19,19 +19,12 @@ export default function LandingCTA() {
   const isDone = done === true;
 
   return (
-    <>
-      <Link
-        href={isDone ? "/plan" : "/onboarding"}
-        className="w-full rounded-xl bg-teal-500 px-8 py-3.5 font-semibold text-white shadow-lg shadow-teal-500/20 transition-colors hover:bg-teal-600 sm:w-auto"
-      >
-        {isDone ? "Към дневния план" : "Започни теста (1-2 мин)"}
-      </Link>
-      <Link
-        href="/education"
-        className="w-full rounded-xl px-8 py-3.5 font-semibold text-teal-700 ring-1 ring-teal-200 transition-colors hover:bg-teal-50 sm:w-auto"
-      >
-        Научи повече
-      </Link>
-    </>
+    <Link
+      href={isDone ? "/plan" : "/onboarding"}
+      className="inline-flex items-center gap-2 rounded-2xl bg-teal-500 px-8 py-4 text-lg font-semibold text-white shadow-lg shadow-teal-500/20 transition-all hover:scale-105 hover:bg-teal-600"
+    >
+      {isDone ? "Към дневния план" : "Започни 90-дневния протокол"}
+      <span className="text-xl">→</span>
+    </Link>
   );
 }
