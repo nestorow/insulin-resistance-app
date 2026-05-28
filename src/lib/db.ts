@@ -219,6 +219,11 @@ export async function initializeDatabase() {
     );
   `);
 
+  // Migration: weekly email digest opt-in.
+  // Stored as a column on users so a single SELECT joins email + opt-in
+  // for the cron job, instead of a separate table that'd require joins.
+  await ensureColumn(client, "users", "email_digest_opt_in", "INTEGER DEFAULT 0");
+
   // Migration: encrypt blood markers at rest.
   // The plaintext columns (homa_ir, fasting_insulin, hba1c, triglycerides,
   // hdl) remain so legacy rows continue to read; on the next save they get
