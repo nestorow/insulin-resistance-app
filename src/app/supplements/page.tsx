@@ -3,7 +3,7 @@ import SupplementsModule from "@/components/supplements/SupplementsModule";
 import ModuleNav from "@/components/ModuleNav";
 
 export const metadata: Metadata = {
-  title: "Добавки — Инсулинова резистентност",
+  title: "Добавки — InsulinReset",
   description: "Evidence-graded справочник за добавки, подпомагащи инсулиновата чувствителност. Не е медицински съвет.",
 };
 

@@ -3,7 +3,7 @@ import SymptomJournalModule from "@/components/journal/SymptomJournalModule";
 import ModuleNav from "@/components/ModuleNav";
 
 export const metadata: Metadata = {
-  title: "Дневник на симптомите — Инсулинова резистентност",
+  title: "Дневник на симптомите — InsulinReset",
   description: "Проследявай енергия, brain fog, тегло, талия и кръвна захар през 90-те дни.",
 };
 

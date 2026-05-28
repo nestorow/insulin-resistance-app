@@ -3,7 +3,7 @@ import FastingModule from "@/components/fasting/FastingModule";
 import ModuleNav from "@/components/ModuleNav";
 
 export const metadata: Metadata = {
-  title: "Гладуване — Инсулинова резистентност",
+  title: "Гладуване — InsulinReset",
   description: "Интервално гладуване: фазите в тялото и 90-дневна прогресия от 12ч към 24ч.",
 };
 

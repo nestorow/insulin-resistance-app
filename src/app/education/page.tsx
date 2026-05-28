@@ -3,7 +3,7 @@ import EducationModule from "@/components/education/EducationModule";
 import ModuleNav from "@/components/ModuleNav";
 
 export const metadata: Metadata = {
-  title: "Образование — Инсулинова резистентност",
+  title: "Образование — InsulinReset",
   description:
     "Заболявания, свързани с инсулинова резистентност, и 4-те стълба по д-р Benjamin Bikman.",
 };

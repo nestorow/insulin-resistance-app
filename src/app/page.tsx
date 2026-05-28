@@ -12,7 +12,7 @@ export default function Home() {
         <Logo size={120} className="mb-6 drop-shadow-sm" />
 
         <h1 className="mb-4 text-4xl font-bold text-teal-700 md:text-5xl">
-          ИР Протокол
+          InsulinReset
         </h1>
         <p className="mb-2 max-w-xl text-xl text-slate-600 md:text-2xl">
           Персонализиран асистент за

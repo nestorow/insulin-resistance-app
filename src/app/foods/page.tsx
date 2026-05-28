@@ -3,7 +3,7 @@ import FoodsModule from "@/components/foods/FoodsModule";
 import ModuleNav from "@/components/ModuleNav";
 
 export const metadata: Metadata = {
-  title: "Хранителен справочник — Инсулинова резистентност",
+  title: "Хранителен справочник — InsulinReset",
   description:
     "Гликемичен товар и макроси за често срещани храни, ферментирали продукти, подсладители и мазнини.",
 };

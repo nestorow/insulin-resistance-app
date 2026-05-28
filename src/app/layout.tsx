@@ -4,13 +4,13 @@ import SessionProvider from "@/components/SessionProvider";
 import AuthBadge from "@/components/AuthBadge";
 
 export const metadata: Metadata = {
-  title: "Инсулинова резистентност — 90-дневен протокол",
+  title: "InsulinReset — 90-дневен протокол",
   description:
-    "Персонализиран 90-дневен протокол за обръщане на инсулинова резистентност, базиран на работата на д-р Benjamin Bikman.",
+    "InsulinReset — 90-дневно обръщане на инсулиновата резистентност, базирано на работата на д-р Benjamin Bikman.",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "ИР Протокол",
+    title: "InsulinReset",
   },
 };
 

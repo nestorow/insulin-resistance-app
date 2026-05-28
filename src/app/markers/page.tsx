@@ -3,7 +3,7 @@ import MarkersModule from "@/components/markers/MarkersModule";
 import ModuleNav from "@/components/ModuleNav";
 
 export const metadata: Metadata = {
-  title: "Тракер на показатели — Инсулинова резистентност",
+  title: "Тракер на показатели — InsulinReset",
   description: "HOMA-IR, инсулин на гладно, HbA1c и TG/HDL през 90-те дни.",
 };
 
