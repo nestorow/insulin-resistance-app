@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import SessionProvider from "@/components/SessionProvider";
+import AuthBadge from "@/components/AuthBadge";
 
 export const metadata: Metadata = {
   title: "Инсулинова резистентност — 90-дневен протокол",
@@ -25,7 +27,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="bg">
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <SessionProvider>
+          <AuthBadge />
+          {children}
+        </SessionProvider>
+      </body>
     </html>
   );
 }
