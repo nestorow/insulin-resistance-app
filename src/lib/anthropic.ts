@@ -74,17 +74,38 @@ export interface AskResult {
   model: string;
 }
 
+/** A turn in the conversation — same shape Claude expects. */
+export interface ChatTurn {
+  role: "user" | "assistant";
+  content: string;
+}
+
+// Multi-turn cap. The cache hits hardest on single-turn questions
+// (Phase 8 default), so we explicitly want users to start fresh
+// conversations occasionally rather than building unbounded context.
+export const MAX_CONVERSATION_TURNS = 10;
+
 /**
- * Ask Claude. Throws on input violations; returns text + model on success.
- * The actual rate-limit / cache plumbing lives in the server action;
- * this is the thin SDK adapter.
+ * Ask Claude with optional prior conversation context. Single-turn is
+ * the most common path (one question → answer + caching at the server
+ * action layer); multi-turn passes the prior turns so follow-ups
+ * ("а с орехово масло?") resolve coherently.
+ *
+ * Validates: latest user message length, total turn count.
  */
 export async function askClaude(
-  query: string,
-  tier: DietTier
+  latestUserMessage: string,
+  tier: DietTier,
+  history: ChatTurn[] = []
 ): Promise<AskResult> {
-  if (query.length > MAX_QUERY_LENGTH) {
+  if (latestUserMessage.length > MAX_QUERY_LENGTH) {
     throw new Error(`Query too long (>${MAX_QUERY_LENGTH} chars)`);
+  }
+  // history doesn't include the latest user message; +1 accounts for it.
+  if (history.length + 1 > MAX_CONVERSATION_TURNS * 2) {
+    throw new Error(
+      `Conversation too long (>${MAX_CONVERSATION_TURNS} turns) — започни нов разговор`
+    );
   }
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -99,11 +120,12 @@ export async function askClaude(
     model: MODEL,
     max_tokens: MAX_TOKENS,
     system: systemPrompt(tier),
-    messages: [{ role: "user", content: query }],
+    messages: [
+      ...history.map((t) => ({ role: t.role, content: t.content })),
+      { role: "user" as const, content: latestUserMessage },
+    ],
   });
 
-  // Concatenate all text blocks (Claude may return multiple). Skip
-  // non-text blocks defensively.
   const text = res.content
     .flatMap((b) => (b.type === "text" ? [b.text] : []))
     .join("\n")
@@ -117,4 +139,5 @@ export const _internal = {
   MODEL,
   MAX_TOKENS,
   MAX_QUERY_LENGTH,
+  MAX_CONVERSATION_TURNS,
 };

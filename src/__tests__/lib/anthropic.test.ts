@@ -73,4 +73,9 @@ describe("constants", () => {
   it("model is a Haiku 4.5 variant (cheap + fast)", () => {
     expect(_internal.MODEL).toMatch(/haiku-4-5/);
   });
+
+  it("MAX_CONVERSATION_TURNS caps multi-turn cost growth", () => {
+    expect(_internal.MAX_CONVERSATION_TURNS).toBeGreaterThanOrEqual(5);
+    expect(_internal.MAX_CONVERSATION_TURNS).toBeLessThanOrEqual(20);
+  });
 });
