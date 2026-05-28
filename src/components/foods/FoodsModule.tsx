@@ -9,6 +9,7 @@ import {
   fatGuides,
   type Food,
 } from "@/data/foods";
+import FoodAiAssistant from "@/components/foods/FoodAiAssistant";
 
 type Category = "all" | Food["category"];
 
@@ -45,6 +46,9 @@ export default function FoodsModule() {
           яж свободно, жълто умерено, червено избягвай.
         </p>
       </header>
+
+      {/* AI assistant — tier-aware Q&A for foods not in the directory */}
+      <FoodAiAssistant />
 
       {/* Search */}
       <div className="relative mb-3">
