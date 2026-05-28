@@ -185,6 +185,14 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
   - `components/SettingsModule.test.tsx` (4): профил рендер, nudge, re-test happy path + cancel
 - ✅ **Bonus refactor**: storage seams (`onboarding-storage`, `daily-plan-storage`, `tracking-storage`) сега lazy-import-ват server actions — auth/DB chunks се товарят само при първи signed-in write, не на cold start за анонимни
 
+### Rate limiting + Audit log (trust layer)
+- ✅ **`lib/rate-limit.ts`** — Upstash Redis sliding-window, два limiter-а: `write` (30/мин) и `auth` (10/мин); SDK-овете lazy-import-ват се; bypass когато env vars не са set (local dev); fail-open при network blip
+- ✅ **`lib/audit.ts`** — append-only `audit_log` таблица; `AuditAction` enum (onboarding.save/clear, markers.save, symptoms.save, plan.update); `AuditMetadata` = counts + dates only, **никога стойности**; `crypto.randomUUID()` за да не пуска ESM uuid
+- ✅ **DB миграция**: нова таблица `audit_log` с индекс по (user_id, created_at DESC)
+- ✅ **Wire-нати във всеки sensitive write**: 4-те server actions проверяват rate limit (тихо връщат null при exceeded) + логват audit ред след успешен write
+- ✅ **`jest.setup.ts`** глобален mock на `@libsql/client` за тестове, които транзитивно тоVa-чат db
+- ✅ **Тестове**: 3 за rate-limit (bypass behavior), 4 за audit (INSERT shape, JSON metadata, null когато omitted, swallows DB errors)
+
 ### Encryption-at-rest за blood markers (GDPR)
 - ✅ **`lib/encryption.ts`** — AES-256-GCM, 12-byte IV, authenticated; формат `iv:ct:tag` hex; ENCRYPTION_KEY от env (64-char hex)
 - ✅ **DB миграция**: нов `ensureColumn()` helper (PRAGMA + idempotent ADD COLUMN); `blood_markers.encrypted_data TEXT` се добавя автоматично при първи DB hit
@@ -221,8 +229,8 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
 - [x] ~~**Component tests**~~ → DailyPlanModule (12), OnboardingFlow (5), SettingsModule (4) — Phase 2.7
 - [x] ~~**Storage seam tests**~~ → onboarding-storage (6), daily-plan-storage (6), tracking-storage (8) — Phase 2.7
 - [x] ~~**Encryption-at-rest** за blood_markers~~ → AES-256-GCM в `encrypted_data` (Phase 2.7)
-- [ ] **Rate limiting** — Upstash redis за server actions (thyroid-rehab има)
-- [ ] **Audit log** — кой/кога/какво update-ва onboarding/markers; за trust
+- [x] ~~**Rate limiting**~~ → Upstash sliding-window, 30 writes/мин (Phase 2.7)
+- [x] ~~**Audit log**~~ → append-only audit_log table, counts-only metadata (Phase 2.7)
 
 ### Engagement
 - [ ] **Push notifications** — сутрешен reminder за чеклиста; web-push (thyroid-rehab има инфра)
