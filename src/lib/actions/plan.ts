@@ -6,6 +6,7 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { logAudit } from "@/lib/audit";
+import { recordEvent } from "@/lib/gamification";
 
 // Daily plan checks — one row per (user, date), tasks_completed is a JSON
 // map of checklist itemId -> boolean.
@@ -66,6 +67,12 @@ export async function setDayChecksAction(
     targetId,
     metadata: { date, fieldsPresent: checkedCount },
   });
+
+  // Gamification: award 1 XP per checked item (engine caps daily) +
+  // streak bump. Fire-and-forget; the engine swallows its own errors.
+  if (checkedCount > 0) {
+    await recordEvent(session.user.id, "plan.check", date, checkedCount);
+  }
 
   return { ok: true };
 }

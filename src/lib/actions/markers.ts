@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { encrypt, decrypt } from "@/lib/encryption";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { logAudit } from "@/lib/audit";
+import { recordEvent } from "@/lib/gamification";
 import type { MarkerEntry } from "@/lib/tracking-storage";
 
 // Blood markers — upsert-by-date (UNIQUE (user_id, date)).
@@ -86,6 +87,8 @@ export async function saveMarkerLogAction(
     targetId,
     metadata: { date: entry.date, fieldsPresent },
   });
+
+  await recordEvent(session.user.id, "marker.save", entry.date);
 
   return { ok: true };
 }

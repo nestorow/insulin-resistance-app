@@ -6,6 +6,7 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { logAudit } from "@/lib/audit";
+import { recordEvent } from "@/lib/gamification";
 import type { SymptomEntry } from "@/lib/tracking-storage";
 
 // Symptom journal — upsert-by-date (UNIQUE (user_id, date)).
@@ -73,6 +74,8 @@ export async function saveSymptomLogAction(
     targetId,
     metadata: { date: entry.date, fieldsPresent },
   });
+
+  await recordEvent(session.user.id, "symptom.save", entry.date);
 
   return { ok: true };
 }
