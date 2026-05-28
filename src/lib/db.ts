@@ -182,6 +182,41 @@ export async function initializeDatabase() {
 
     CREATE INDEX IF NOT EXISTS idx_push_subs_user
       ON push_subscriptions(user_id);
+
+    -- ── Gamification (Phase 2.7) ─────────────────────────────────────
+    -- One row per user; single source of truth for the streak number
+    -- shown in the UI. Engine updates on every check-in.
+    CREATE TABLE IF NOT EXISTS user_streaks (
+      user_id TEXT PRIMARY KEY,
+      current_streak INTEGER DEFAULT 0,    -- consecutive days with activity
+      longest_streak INTEGER DEFAULT 0,
+      last_active_date TEXT,               -- YYYY-MM-DD; null = never
+      total_xp INTEGER DEFAULT 0,          -- denormalized sum of xp_log for fast reads
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Append-only XP event log. Audit-style; recomputable into total_xp
+    -- on demand. Each kind has a fixed point value defined in
+    -- src/lib/gamification.ts so the table is value-stable.
+    CREATE TABLE IF NOT EXISTS xp_log (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      event_kind TEXT NOT NULL,            -- 'plan.check' | 'symptom.save' | ...
+      points INTEGER NOT NULL,
+      date TEXT NOT NULL,                  -- YYYY-MM-DD the event credits
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_xp_log_user_date
+      ON xp_log(user_id, date DESC);
+
+    -- One row per (user, badge) — earning is idempotent via UNIQUE.
+    CREATE TABLE IF NOT EXISTS user_badges (
+      user_id TEXT NOT NULL,
+      badge_id TEXT NOT NULL,              -- matches BADGES[].id
+      earned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (user_id, badge_id)
+    );
   `);
 
   // Migration: encrypt blood markers at rest.
