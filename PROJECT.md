@@ -166,6 +166,18 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
 - ✅ **`inferredLens(yesCount)` в `lib/onboarding.ts`** — heuristic: yesCount ≥5 → medical, 2-4 → educational, 0-1 → biohacker
 - ✅ **„Препоръчано" badge** (warm-жълто) на инферираната lens карта; pre-select се случва при изход от quiz step; user може да избере друга — не е заключено
 
+### Тестово покритие (jest setup от thyroid-rehab)
+- ✅ **`jest.config.ts`** — `next/jest` wrapper, jsdom env, `@/` path alias; SWC transforms (без ts-jest)
+- ✅ **`jest.setup.ts`** — `@testing-library/jest-dom`
+- ✅ **npm scripts**: `test`, `test:watch`
+- ✅ **Dev deps**: jest 30, jest-environment-jsdom 30, @types/jest 30, @testing-library/jest-dom 6
+- ✅ **Refactor**: `clampedNum()` extract-нат от journal+markers в `src/lib/numbers.ts` — single source of truth
+- ✅ **45 теста / 4 suite-а / 0.9s runtime**:
+  - `lib/onboarding.test.ts` (11): `tierFromYesCount` boundaries, `inferredLens` heuristic, QUIZ_QUESTIONS shape
+  - `lib/program-phases.test.ts` (17): phase boundaries (14/15, 30/31, 60/61, 90), day clamping, PROGRAM_PHASES contiguity, milestoneMessage on/off days
+  - `lib/numbers.test.ts` (8): `clampedNum` edge cases (NaN, Infinity, out-of-range, real-world HbA1c)
+  - `data/protocol.test.ts` (9): id uniqueness, category whitelist, `tiers` ⊆ DietTier, `itemText` resolver fallback/override
+
 ## Backlog — идеи за следващи итерации
 
 ### Полиране (продължение)
@@ -184,7 +196,9 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
 - [x] ~~**Inferred lens** в onboarding~~ → пренареждане quiz→lens + `inferredLens()` heuristic + „Препоръчано" badge (Phase 2.7)
 
 ### Инфраструктура
-- [ ] **Тестове** — jest setup портнат от thyroid-rehab, поне unit за tier logic + storage seams
+- [x] ~~**Тестове**~~ → jest 30 + `next/jest` setup, 45 unit теста / 4 suite-а (Phase 2.7); next: component tests + storage seam tests
+- [ ] **Component tests** — SettingsModule (re-test flow), DailyPlanModule (filter behavior), OnboardingFlow (step transitions)
+- [ ] **Storage seam tests** — daily-plan-storage, onboarding-storage, tracking-storage (с jsdom localStorage mock)
 - [ ] **Encryption-at-rest** за blood_markers (thyroid-rehab pattern с `encrypted_data`) — преценка дали GDPR го изисква
 - [ ] **Rate limiting** — Upstash redis за server actions (thyroid-rehab има)
 - [ ] **Audit log** — кой/кога/какво update-ва onboarding/markers; за trust
