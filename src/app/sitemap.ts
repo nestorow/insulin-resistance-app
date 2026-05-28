@@ -1,13 +1,11 @@
 import type { MetadataRoute } from "next";
+import { siteUrl } from "@/lib/site-url";
 
 // Sitemap — lists the public read-only routes Google should crawl.
 // Excludes /journal, /markers, /plan (user-data dependent) and /onboarding
 // (entry-flow funnel, not content). API and auth routes also excluded.
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ??
-  process.env.NEXTAUTH_URL ??
-  "https://insulin-resistance-app.vercel.app";
+const BASE_URL = siteUrl();
 
 const PUBLIC_ROUTES: { path: string; priority: number; changeFrequency: "weekly" | "monthly" | "yearly" }[] = [
   { path: "/", priority: 1.0, changeFrequency: "weekly" },

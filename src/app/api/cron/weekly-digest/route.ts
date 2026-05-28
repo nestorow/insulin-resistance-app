@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { sendDigest, type DigestData } from "@/lib/email";
 import { getProgress } from "@/lib/gamification";
 import { BADGES } from "@/lib/gamification";
+import { siteUrl } from "@/lib/site-url";
 
 // Weekly digest cron — runs Sundays at 16:00 UTC (≈ 18-19 BG).
 // Same bearer-token gate as the morning push cron; deny-by-default
@@ -10,10 +11,7 @@ import { BADGES } from "@/lib/gamification";
 
 export const runtime = "nodejs"; // resend SDK + db client want Node
 
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ??
-  process.env.NEXTAUTH_URL ??
-  "https://insulin-resistance-app.vercel.app";
+const SITE_URL = siteUrl();
 
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");

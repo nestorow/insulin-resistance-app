@@ -1,5 +1,6 @@
 import { chapters } from "@/data/knowledge";
 import { diseases, bodySystemNames } from "@/data/diseases";
+import { siteUrl } from "@/lib/site-url";
 
 // JSON-LD generator for /education — emits a schema.org @graph that
 // declares each Bikman chapter as a MedicalScholarlyArticle and each
@@ -8,10 +9,7 @@ import { diseases, bodySystemNames } from "@/data/diseases";
 // 2 diabetes, PCOS, NAFLD) — important for an educational health
 // resource competing with mainstream content.
 
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ??
-  process.env.NEXTAUTH_URL ??
-  "https://insulin-resistance-app.vercel.app";
+const SITE_URL = siteUrl();
 
 const BIKMAN_BOOK = {
   "@type": "Book",

@@ -5,14 +5,18 @@ import AuthBadge from "@/components/AuthBadge";
 import SyncOnLogin from "@/components/SyncOnLogin";
 import Toast from "@/components/Toast";
 import GlobalFooter from "@/components/GlobalFooter";
+import { siteUrl } from "@/lib/site-url";
 
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ??
-  process.env.NEXTAUTH_URL ??
-  "https://insulin-resistance-app.vercel.app";
+const SITE_URL = siteUrl();
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  alternates: {
+    // Canonical URL hint — keeps Google from indexing
+    // insulin-resistance-app.vercel.app once a custom domain is set
+    // (just update NEXT_PUBLIC_SITE_URL and it follows).
+    canonical: "/",
+  },
   title: "InsulinReset — 90-дневен протокол",
   description:
     "InsulinReset — 90-дневно обръщане на инсулиновата резистентност, базирано на работата на д-р Benjamin Bikman.",
