@@ -285,6 +285,13 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
 - [ ] CGM integration за biohacker lens
 - [x] ~~AI асистент за хранителни въпроси~~ → Claude Haiku 4.5 + per-{tier, query} cache + 5/min rate limit, /foods (Phase 8)
 
+## Phase 8 — Privacy Policy + Terms of Use
+- ✅ **`/privacy`** — 12 секции на български: кои сме, какви данни събираме (с encryption mention), как ги ползваме, кои трети страни (Google, Turso, Vercel, Anthropic, Resend, Upstash, push providers), security posture, retention, GDPR права (вкл. жалба до КЗЛД), cookies, възраст, контакт; кратка версия card в началото
+- ✅ **`/terms`** — медицински дисклеймер в **warning-colored card в началото** (списък с условията, при които потребителят ТРЯБВА да се консултира с лекар); 11 секции: скоуп, точност, акаунт, допустимо ползване, IP, AS IS отговорност, прекратяване, българско право
+- ✅ **`components/GlobalFooter.tsx`** — site-wide footer от layout.tsx; sticky-footer behavior с `flex min-h-dvh flex-col`; премахнат стария inline footer от landing
+- ✅ **Sitemap**: добавени с priority 0.3, yearly change frequency
+- ✅ Build: /privacy + /terms по 176 B (почти server-only)
+
 ## Phase 8 — AI асистент за храни
 - ✅ **`lib/anthropic.ts`** — Claude SDK lazy-import wrapper; `askClaude(query, tier)`; system prompt е bilingual (English с инструкции, Bulgarian output), tier-aware (включва конкретния carb cap), 3-5 sentence limit, Bikman 4-pillar reference, refuses medical diagnosis; `queryCacheKey(raw, tier)` sha256 на `tier|normalized`
 - ✅ **`lib/food-cache.ts`** — `food_search_cache` table reader/writer; INSERT OR IGNORE race-safe; hit counter bump fire-and-forget
