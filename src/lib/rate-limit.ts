@@ -7,7 +7,7 @@
 // this module stays jest-friendly and the chunks don't load unless rate
 // limiting is actually active in production.
 
-type LimiterKind = "write" | "auth";
+type LimiterKind = "write" | "auth" | "ai";
 
 interface LimiterConfig {
   tokens: number;
@@ -20,6 +20,10 @@ interface LimiterConfig {
 const LIMITS: Record<LimiterKind, LimiterConfig> = {
   write: { tokens: 30, window: "1m" },
   auth: { tokens: 10, window: "1m" },
+  // AI is the tightest by far — each request costs real money and Claude
+  // latency is several seconds. 5/min lets a curious user explore
+  // without burning the API budget on accidental refresh loops.
+  ai: { tokens: 5, window: "1m" },
 };
 
 // Cached limiters keyed by kind. `null` = not configured; we cache that

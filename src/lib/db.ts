@@ -224,6 +224,23 @@ export async function initializeDatabase() {
   // for the cron job, instead of a separate table that'd require joins.
   await ensureColumn(client, "users", "email_digest_opt_in", "INTEGER DEFAULT 0");
 
+  // Food AI assistant cache. Keyed on a normalized hash of the query so
+  // semantically-identical questions ("банан keto?" vs "Банан keto") hit
+  // the same row. Caching is essential: Anthropic calls cost money + are
+  // slow, and food advice doesn't change.
+  await client.executeMultiple(`
+    CREATE TABLE IF NOT EXISTS food_search_cache (
+      query_hash TEXT PRIMARY KEY,
+      query TEXT NOT NULL,
+      tier TEXT NOT NULL,                  -- 'none' | 'moderate' | 'keto'
+      response TEXT NOT NULL,
+      model TEXT NOT NULL,
+      hits INTEGER DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      last_hit_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
   // Migration: encrypt blood markers at rest.
   // The plaintext columns (homa_ir, fasting_insulin, hba1c, triglycerides,
   // hdl) remain so legacy rows continue to read; on the next save they get
