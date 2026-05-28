@@ -5,6 +5,8 @@ import { v4 as uuid } from "uuid";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { encrypt, decrypt } from "@/lib/encryption";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { logAudit } from "@/lib/audit";
 import type { MarkerEntry } from "@/lib/tracking-storage";
 
 // Blood markers — upsert-by-date (UNIQUE (user_id, date)).
@@ -40,14 +42,20 @@ export async function saveMarkerLogAction(
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return null;
 
-  const blob = encrypt(JSON.stringify(toPayload(entry)));
+  const rate = await checkRateLimit("write", session.user.id);
+  if (!rate.ok) return null;
+
+  const payload = toPayload(entry);
+  const blob = encrypt(JSON.stringify(payload));
 
   const existing = await db.execute({
     sql: "SELECT id FROM blood_markers WHERE user_id = ? AND date = ?",
     args: [session.user.id, entry.date],
   });
 
+  let targetId: string;
   if (existing.rows.length > 0) {
+    targetId = existing.rows[0].id as string;
     // UPDATE also wipes the plaintext columns so a successful save is the
     // moment a legacy row stops leaking medical data via the schema.
     await db.execute({
@@ -56,16 +64,28 @@ export async function saveMarkerLogAction(
                   homa_ir = NULL, fasting_insulin = NULL, hba1c = NULL,
                   triglycerides = NULL, hdl = NULL
             WHERE id = ?`,
-      args: [blob, existing.rows[0].id as string],
+      args: [blob, targetId],
     });
   } else {
+    targetId = uuid();
     await db.execute({
       sql: `INSERT INTO blood_markers
               (id, user_id, date, encrypted_data)
             VALUES (?, ?, ?, ?)`,
-      args: [uuid(), session.user.id, entry.date, blob],
+      args: [targetId, session.user.id, entry.date, blob],
     });
   }
+
+  // Audit: record the fact + counts only — never the values themselves.
+  const fieldsPresent = Object.values(payload).filter(
+    (v) => v !== undefined
+  ).length;
+  await logAudit({
+    userId: session.user.id,
+    action: "markers.save",
+    targetId,
+    metadata: { date: entry.date, fieldsPresent },
+  });
 
   return { ok: true };
 }

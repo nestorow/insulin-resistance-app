@@ -4,6 +4,8 @@ import { getServerSession } from "next-auth/next";
 import { v4 as uuid } from "uuid";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { logAudit } from "@/lib/audit";
 import type { Lens, DietTier, OnboardingResult } from "@/lib/onboarding";
 
 // Phase 2b — server-side persistence for the IR self-assessment.
@@ -15,6 +17,9 @@ export async function saveOnboardingAction(
 ): Promise<{ ok: true } | null> {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return null;
+
+  const rate = await checkRateLimit("write", session.user.id);
+  if (!rate.ok) return null;
 
   // One onboarding row per user — replace any previous result.
   await db.execute({
@@ -43,12 +48,22 @@ export async function saveOnboardingAction(
     args: [result.lens, session.user.id],
   });
 
+  // Audit: record the save without storing the answers themselves.
+  await logAudit({
+    userId: session.user.id,
+    action: "onboarding.save",
+    metadata: { tier: result.tier },
+  });
+
   return { ok: true };
 }
 
 export async function clearOnboardingAction(): Promise<{ ok: true } | null> {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return null;
+
+  const rate = await checkRateLimit("write", session.user.id);
+  if (!rate.ok) return null;
 
   // Re-test flow — drop the onboarding row so the next save starts a fresh
   // 90-day cycle (Day N derives from onboarding.created_at). Journal +
@@ -60,6 +75,12 @@ export async function clearOnboardingAction(): Promise<{ ok: true } | null> {
   });
   // Lens mirror on users is rewritten on the next save; leaving it stale
   // for the brief gap between clear and re-complete is harmless.
+
+  await logAudit({
+    userId: session.user.id,
+    action: "onboarding.clear",
+  });
+
   return { ok: true };
 }
 

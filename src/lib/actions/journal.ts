@@ -4,6 +4,8 @@ import { getServerSession } from "next-auth/next";
 import { v4 as uuid } from "uuid";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { logAudit } from "@/lib/audit";
 import type { SymptomEntry } from "@/lib/tracking-storage";
 
 // Symptom journal — upsert-by-date (UNIQUE (user_id, date)).
@@ -14,12 +16,17 @@ export async function saveSymptomLogAction(
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return null;
 
+  const rate = await checkRateLimit("write", session.user.id);
+  if (!rate.ok) return null;
+
   const existing = await db.execute({
     sql: "SELECT id FROM symptom_log WHERE user_id = ? AND date = ?",
     args: [session.user.id, entry.date],
   });
 
+  let targetId: string;
   if (existing.rows.length > 0) {
+    targetId = existing.rows[0].id as string;
     await db.execute({
       sql: `UPDATE symptom_log
               SET energy = ?, brain_fog = ?, weight = ?, waist = ?,
@@ -32,17 +39,18 @@ export async function saveSymptomLogAction(
         entry.waist ?? null,
         entry.bloodSugar ?? null,
         entry.notes ?? null,
-        existing.rows[0].id as string,
+        targetId,
       ],
     });
   } else {
+    targetId = uuid();
     await db.execute({
       sql: `INSERT INTO symptom_log
               (id, user_id, date, energy, brain_fog, weight, waist,
                blood_sugar, notes)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
-        uuid(),
+        targetId,
         session.user.id,
         entry.date,
         entry.energy,
@@ -54,6 +62,17 @@ export async function saveSymptomLogAction(
       ],
     });
   }
+
+  // Audit: counts only (which numeric fields were populated), never values.
+  const fieldsPresent = [entry.weight, entry.waist, entry.bloodSugar].filter(
+    (v) => v != null
+  ).length;
+  await logAudit({
+    userId: session.user.id,
+    action: "symptoms.save",
+    targetId,
+    metadata: { date: entry.date, fieldsPresent },
+  });
 
   return { ok: true };
 }
