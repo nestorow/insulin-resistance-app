@@ -13,6 +13,7 @@ import PushOptIn from "@/components/settings/PushOptIn";
 import EmailDigestOptIn from "@/components/settings/EmailDigestOptIn";
 import BadgeGallery from "@/components/settings/BadgeGallery";
 import AnthropicKeyCard from "@/components/settings/AnthropicKeyCard";
+import DataExportCard from "@/components/settings/DataExportCard";
 
 export default function SettingsModule() {
   const router = useRouter();
@@ -116,6 +117,9 @@ export default function SettingsModule() {
 
       {/* Anthropic API key (BYOK for AI food assistant) */}
       <AnthropicKeyCard />
+
+      {/* Data export (GDPR Article 20) */}
+      <DataExportCard />
 
       {/* Re-test */}
       <section className="rounded-2xl border border-teal-100 bg-white p-5">

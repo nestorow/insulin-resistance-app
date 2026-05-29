@@ -102,13 +102,23 @@ export default function TrendsModule() {
 
   return (
     <div className="mx-auto w-full max-w-4xl px-5 py-10">
-      <header className="mb-6">
-        <h1 className="text-3xl font-extrabold text-teal-700">Тренд</h1>
-        <p className="mt-2 text-slate-600">
-          90-дневна времева линия на всички модули. Маркерите идват редки и
-          точкови; симптомите ежедневни; CGM подава дневна агрегация (TIR /
-          средно / вариативност); планът — % изпълнение за деня.
-        </p>
+      <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-extrabold text-teal-700">Тренд</h1>
+          <p className="mt-2 text-slate-600">
+            90-дневна времева линия на всички модули. Маркерите идват редки и
+            точкови; симптомите ежедневни; CGM подава дневна агрегация (TIR /
+            средно / вариативност); планът — % изпълнение за деня.
+          </p>
+        </div>
+        {!isEmpty && (
+          <a
+            href="/trends/print"
+            className="mt-1 shrink-0 rounded-full border border-teal-200 px-3 py-1.5 text-xs font-medium text-teal-700 hover:bg-teal-50"
+          >
+            PDF за лекар →
+          </a>
+        )}
       </header>
 
       {isEmpty ? (

@@ -15,7 +15,8 @@ export type AuditAction =
   | "symptoms.save"
   | "plan.update"
   | "cgm.save"
-  | "cgm.clear";
+  | "cgm.clear"
+  | "data.export";
 
 export interface AuditMetadata {
   /** Target date for date-keyed writes (markers, symptoms, plan). */
