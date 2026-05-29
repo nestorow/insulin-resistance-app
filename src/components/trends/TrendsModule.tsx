@@ -8,6 +8,7 @@ import { computeInsights } from "@/lib/trend-insights";
 import { SkeletonRows } from "@/components/ui/Skeleton";
 import TrendsHero from "./TrendsHero";
 import TrendsInsights from "./TrendsInsights";
+import TrendsPhaseCard from "./TrendsPhaseCard";
 
 // SparkGrid loads recharts (~80kB). Splitting it out keeps the initial
 // /trends paint cheap — hero + insights stream first, the chart grid
@@ -121,6 +122,7 @@ export default function TrendsModule() {
         </div>
       ) : (
         <>
+          <TrendsPhaseCard />
           <TrendsHero summary={data!.summary} />
           <TrendsInsights insights={insights} />
           <TrendsSparkGrid days={data!.days} />
