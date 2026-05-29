@@ -54,6 +54,18 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+
+  async rewrites() {
+    return [
+      {
+        // Digital Asset Links for the Android TWA. Served from an
+        // env-driven route so the signing fingerprint isn't committed.
+        // See docs/twa-playstore.md.
+        source: "/.well-known/assetlinks.json",
+        destination: "/api/assetlinks",
+      },
+    ];
+  },
 };
 
 export default nextConfig;

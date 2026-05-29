@@ -280,7 +280,7 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
 - [x] ~~**Streak / XP / badges**~~ → engine + 5 badges + ProgressCard + BadgeGallery (Phase 2.7)
 
 ### Бъдещи фази (Phase 8+)
-- [ ] TWA build → Play Store
+- [ ] TWA build → Play Store — assetlinks endpoint готов (`/.well-known/assetlinks.json`, env-driven); останалото е Android-side (Bubblewrap + signing + Play Console); чеклист: `docs/twa-playstore.md`
 - [ ] Custom домейн → **insulin-reset.bg** (apex канон, www→apex) — cutover-ът е account-side (registrar + Vercel + Google OAuth); чеклист: `docs/custom-domain-cutover.md`
 - [x] ~~CGM integration за biohacker lens~~ → /cgm + LibreView/Dexcom CSV parsers, AGP analytics, meal-annotated spikes (Phase 8)
 - [x] ~~AI асистент за хранителни въпроси~~ → Claude Haiku 4.5 + per-{tier, query} cache + 5/min rate limit, /foods (Phase 8)
