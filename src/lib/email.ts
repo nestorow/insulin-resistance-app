@@ -68,15 +68,15 @@ export async function sendDigest(data: DigestData): Promise<SendResult> {
 /** Subject changes based on the most-interesting fact about the week. */
 function digestSubject(d: DigestData): string {
   if (d.newBadges.length > 0) {
-    return `InsulinReset · ${d.newBadges.length === 1 ? "Нова значка" : "Нови значки"} тази седмица 🏆`;
+    return `InsulinReset · ${d.newBadges.length === 1 ? "Нова значка" : "Нови значки"} тази седмица`;
   }
   // CGM users get glycemic framing when the data is in range — it's
   // the most actionable feedback we can give a biohacker.
   if (d.cgm && d.cgm.tirPct >= 80) {
-    return `InsulinReset · TIR ${d.cgm.tirPct}% тази седмица 📈`;
+    return `InsulinReset · TIR ${d.cgm.tirPct}% тази седмица`;
   }
   if (d.currentStreak >= 7) {
-    return `InsulinReset · ${d.currentStreak} дни в ред 🔥`;
+    return `InsulinReset · ${d.currentStreak} дни в ред`;
   }
   return "InsulinReset · Твоят седмичен преглед";
 }
@@ -92,7 +92,7 @@ function digestHtml(d: DigestData): string {
       <tr>
         <td style="padding: 16px 24px; background: #E8F5F0;">
           <p style="margin: 0 0 8px; font-size: 14px; font-weight: 600; color: #114A42;">
-            🏆 Нови значки
+            Нови значки
           </p>
           <p style="margin: 0; font-size: 14px; color: #166258;">
             ${d.newBadges.map(escapeHtml).join(" · ")}
@@ -116,7 +116,7 @@ function digestHtml(d: DigestData): string {
             : "#FFE4E6"
         };">
           <p style="margin: 0 0 8px; font-size: 14px; font-weight: 600; color: #114A42;">
-            📈 CGM · последните 7 дни
+            CGM · последните 7 дни
           </p>
           <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
             <tr>
@@ -162,7 +162,7 @@ function digestHtml(d: DigestData): string {
           <tr>
             <td style="padding: 28px 24px 8px;">
               <h1 style="margin: 0 0 12px; font-size: 22px; font-weight: 700; color: #114A42; line-height: 1.25;">
-                ${greeting} 👋
+                ${greeting}
               </h1>
               <p style="margin: 0; font-size: 15px; line-height: 1.5; color: #475569;">
                 Ето как премина седмицата ти в 90-дневния протокол.
@@ -221,7 +221,7 @@ function digestHtml(d: DigestData): string {
               <p style="margin: 0; font-size: 11px; line-height: 1.5; color: #94a3b8;">
                 Получаваш това писмо, защото си включил седмичен преглед в
                 <a href="${escapeAttr(d.appUrl)}/settings" style="color: #1B7A6E; text-decoration: underline;">Настройки</a>.<br/>
-                ⚕️ Информацията е с образователна цел и не е медицински съвет.
+                Информацията е с образователна цел и не е медицински съвет.
               </p>
             </td>
           </tr>

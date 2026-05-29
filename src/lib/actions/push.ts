@@ -115,7 +115,7 @@ export async function sendTestPushAction(): Promise<{
         },
         {
           title: "InsulinReset",
-          body: "✅ Push известията работят. Очаквай сутрешен reminder в 8:00.",
+          body: "Push известията работят. Очаквай сутрешен reminder в 8:00.",
           url: "/plan",
         }
       );

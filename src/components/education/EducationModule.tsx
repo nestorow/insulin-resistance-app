@@ -15,11 +15,23 @@ import {
   Search,
   X,
   Lightbulb,
+  WheatOff,
+  Beef,
+  EggFried,
+  Clock,
   type LucideIcon,
 } from "lucide-react";
 import { keyFacts, fourPillars, chapters } from "@/data/knowledge";
 import { diseases, bodySystemNames } from "@/data/diseases";
 import { buildSearchBlob, matchesQuery } from "@/lib/education-search";
+
+// Pillar icons mirror the landing FourPillars set, keyed by pillar number.
+const PILLAR_ICONS: Record<number, LucideIcon> = {
+  1: WheatOff,
+  2: Beef,
+  3: EggFried,
+  4: Clock,
+};
 import BodySilhouette from "./BodySilhouette";
 
 const SYSTEM_ICON: Record<string, LucideIcon> = {
@@ -147,21 +159,30 @@ export default function EducationModule() {
       <section className="mb-10">
         <h2 className="mb-3 text-xl font-bold text-teal-700">4-те стълба</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {fourPillars.map((p) => (
-            <div
-              key={p.number}
-              className="rounded-2xl border border-teal-100 bg-white p-4"
-              style={{ borderLeftColor: p.color, borderLeftWidth: 4 }}
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">{p.icon}</span>
-                <span className="font-semibold text-slate-800">
-                  {p.number}. {p.title_bg}
-                </span>
+          {fourPillars.map((p) => {
+            const Icon = PILLAR_ICONS[p.number];
+            return (
+              <div
+                key={p.number}
+                className="rounded-2xl border border-teal-100 bg-white p-4"
+                style={{ borderLeftColor: p.color, borderLeftWidth: 4 }}
+              >
+                <div className="flex items-center gap-2">
+                  {Icon && (
+                    <Icon
+                      className="h-5 w-5 shrink-0"
+                      style={{ color: p.color }}
+                      strokeWidth={1.8}
+                    />
+                  )}
+                  <span className="font-semibold text-slate-800">
+                    {p.number}. {p.title_bg}
+                  </span>
+                </div>
+                <p className="mt-1.5 text-sm text-slate-600">{p.description_bg}</p>
               </div>
-              <p className="mt-1.5 text-sm text-slate-600">{p.description_bg}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
       </>}

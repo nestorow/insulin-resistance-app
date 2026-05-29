@@ -74,7 +74,7 @@ describe("digestHtml — content + escaping", () => {
 
   it("falls back to bare 'Здравей' when name is null", () => {
     const html = _internal.digestHtml(sample({ name: null }));
-    expect(html).toContain("Здравей 👋");
+    expect(html).toContain("Здравей");
   });
 
   it("renders the streak + level + entry counts", () => {

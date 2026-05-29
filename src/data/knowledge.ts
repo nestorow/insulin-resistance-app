@@ -212,28 +212,24 @@ export const chapters: ChapterSummary[] = [
 export const fourPillars = [
   {
     number: 1,
-    icon: '🥦',
     title_bg: 'Контролирай въглехидратите',
     description_bg: 'Ограничи до 50-100g/ден в зависимост от нивото на ИР. Яж ВХ последни.',
     color: '#22C55E',
   },
   {
     number: 2,
-    icon: '🥩',
     title_bg: 'Приоритизирай протеина',
     description_bg: '1-1.5 г/кг телесно тегло. Месо, риба, яйца, сирене.',
     color: '#EF4444',
   },
   {
     number: 3,
-    icon: '🥑',
     title_bg: 'Запълни с мазнини',
     description_bg: 'Естествени мазнини: масло, зехтин, кокосово. Избягвай семенни олиа.',
     color: '#EAB308',
   },
   {
     number: 4,
-    icon: '⏰',
     title_bg: 'Следи часовника',
     description_bg: '12ч ежедневно, 18ч 2-3x/седмица, 24ч 1x/месец.',
     color: '#14B8A6',
