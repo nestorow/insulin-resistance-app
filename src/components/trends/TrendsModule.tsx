@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import type { TrendsData } from "@/lib/trends";
+import { computeInsights } from "@/lib/trend-insights";
 import { SkeletonRows } from "@/components/ui/Skeleton";
 import TrendsHero from "./TrendsHero";
+import TrendsInsights from "./TrendsInsights";
 import TrendsSparkGrid from "./TrendsSparkGrid";
 
 // Top-level container — handles auth gating, data fetch, loading + empty
@@ -16,6 +18,14 @@ export default function TrendsModule() {
   const { status } = useSession();
   const [data, setData] = useState<TrendsData | null>(null);
   const [loaded, setLoaded] = useState(false);
+
+  // Hoisted above the early returns to satisfy rules-of-hooks; it's a
+  // cheap pure call so the wasted work on the unauth/loading paths is
+  // negligible.
+  const insights = useMemo(
+    () => (data ? computeInsights(data.days) : []),
+    [data]
+  );
 
   useEffect(() => {
     if (status !== "authenticated") {
@@ -92,6 +102,7 @@ export default function TrendsModule() {
       ) : (
         <>
           <TrendsHero summary={data!.summary} />
+          <TrendsInsights insights={insights} />
           <TrendsSparkGrid days={data!.days} />
         </>
       )}
