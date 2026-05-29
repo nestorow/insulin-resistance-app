@@ -10,6 +10,7 @@ const LINKS = [
   { href: "/exercise", label: "Тренировки" },
   { href: "/fasting", label: "Гладуване" },
   { href: "/supplements", label: "Добавки" },
+  { href: "/cgm", label: "CGM" },
   { href: "/education", label: "Образование" },
   { href: "/settings", label: "Настройки" },
 ];
