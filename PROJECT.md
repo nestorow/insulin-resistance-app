@@ -6,7 +6,7 @@
 
 **Repo:** `nestorow/insulin-resistance-app` · **Deploy:** `insulin-resistance-app.vercel.app`
 **Бранд:** InsulinReset
-**Статус:** Phase 2 завършена + полирано + Phase 2.6 (conversion / прогресия / SEO) + Phase 2.7 (UX полиране + security + engagement) — всичките 8 модула + onboarding в production, Google sign-in работи, DB persistence за логнати потребители (Turso), localStorage остава cache за анонимни. PWA manifest + iOS PNG icons. Landing-ът има conversion scaffolding, дневният план е **прогресивен** в 4 фази, сайтът е discoverable (OG + sitemap + robots + MedicalWebPage + chapter/disease JSON-LD). Re-test опция, бележки в дневник, физиологични clamp-и, shimmer skeletons. **Trust layer**: blood markers AES-256-GCM enkriptirani at rest, Upstash rate limiting (30 writes/мин), append-only audit_log. **Push notifications**: VAPID + service worker + opt-in UI + Vercel Cron сутрешен reminder. **Email digest**: Resend + opt-in + неделен HTML email с прогрес + Vercel Cron. **Gamification**: streak/XP/badge engine с 5 badges, ProgressCard на /plan, BadgeGallery в /settings. **Optimistic rollback** при rate-limit. **Phase 8 започната**: AI food assistant (Claude Haiku 4.5, per-tier cache, 5/мин rate limit) в /foods. **150 unit + component test покритие.**
+**Статус:** Phase 2 завършена + полирано + Phase 2.6 (conversion / прогресия / SEO) + Phase 2.7 (UX полиране + security + engagement) — всичките 8 модула + onboarding в production, Google sign-in работи, DB persistence за логнати потребители (Turso), localStorage остава cache за анонимни. PWA manifest + iOS PNG icons. Landing-ът има conversion scaffolding, дневният план е **прогресивен** в 4 фази, сайтът е discoverable (OG + sitemap + robots + MedicalWebPage + chapter/disease JSON-LD). Re-test опция, бележки в дневник, физиологични clamp-и, shimmer skeletons. **Trust layer**: blood markers AES-256-GCM enkriptirani at rest, Upstash rate limiting (30 writes/мин), append-only audit_log. **Push notifications**: VAPID + service worker + opt-in UI + Vercel Cron сутрешен reminder. **Email digest**: Resend + opt-in + неделен HTML email с прогрес + Vercel Cron. **Gamification**: streak/XP/badge engine с 5 badges, ProgressCard на /plan, BadgeGallery в /settings. **Optimistic rollback** при rate-limit. **Phase 8 в ход**: AI food assistant (Claude Haiku 4.5 BYOK + multi-turn + per-tier cache, 5/мин rate limit) в /foods; legal pages (/privacy + /terms); custom-domain prep + security headers; **CGM integration в /cgm — LibreView + Dexcom Clarity CSV import, AGP analytics (TIR + CV + GMI + 24h profile), auto spike detection с meal labels, encrypted at rest**. **213 unit + component test покритие.**
 
 ---
 
@@ -282,8 +282,24 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
 ### Бъдещи фази (Phase 8+)
 - [ ] TWA build → Play Store
 - [ ] Custom домейн (insulin-reset.bg?)
-- [ ] CGM integration за biohacker lens
+- [x] ~~CGM integration за biohacker lens~~ → /cgm + LibreView/Dexcom CSV parsers, AGP analytics, meal-annotated spikes (Phase 8)
 - [x] ~~AI асистент за хранителни въпроси~~ → Claude Haiku 4.5 + per-{tier, query} cache + 5/min rate limit, /foods (Phase 8)
+
+## Phase 8 — CGM integration (biohacker lens)
+
+- ✅ **`lib/cgm.ts`** — `CgmReading { ts, mgdl, source }` тип + AGP константи (TIR_LOW=70, TIR_HIGH=180, MGDL_MIN/MAX); `mmolToMgdl` (×18.0182)
+- ✅ **`lib/cgm-parser.ts`** — sniff + parse за FreeStyle LibreView (EU `DD-MM-YYYY` + US `MM-DD-YYYY hh:mm AM/PM`, Record Type 0+1 only) и Dexcom Clarity (ISO-8601, EGV само, dropва literal `High`/`Low`); unit-aware (mg/dL vs mmol/L); квазит RFC-4180 quoted-fields splitter; dedupe по ts (scan beat-ва historic)
+- ✅ **`lib/cgm-stats.ts`** — TIR breakdown (5 зони: <54, 54-69, 70-180, 181-250, >250); вариативност (mean, sample SD, CV%, GMI по Bergenstal 2018); 24-час AGP profile с p10/p25/p50/p75/p90 linear-interpolation percentile-и; spike detector (≥40 mg/dL rise над 60-min trough + 90-min cooldown)
+- ✅ **DB**: `cgm_readings` таблица (id, user_id, date UTC, encrypted_payload, count, source, updated_at, UNIQUE(user_id, date)) — AES-256-GCM blob per ден; `cgm_annotations` (1 ред/user, encrypted blob с `{peakTs → label}`)
+- ✅ **`actions/cgm.ts`** — `saveCgmBatchAction`: groups by day → decrypt+merge+encrypt → UPSERT; 1 rate-limit check per CSV upload; `source: 'mixed'` когато денят има readings от >1 device; audit: `cgm.save` с daysWritten/readingCount (counts, не values)
+- ✅ **`actions/cgm-annotations.ts`** — single-row-per-user blob; read-modify-write; празен note = delete
+- ✅ **`lib/cgm-storage.ts`** — localStorage seam `ir-cgm-readings-v1`, capped at 12K readings (~90 дни × 12/h), oldest evicted; `mergeReadings(existing, incoming)` exposed за testing
+- ✅ **`lib/cgm-annotations.ts`** — `ir-cgm-annotations-v1` seam с MAX_NOTE_LEN=80, trim+slice
+- ✅ **`/cgm` route** + `ModuleNav` entry: 30-дневен rolling window (AGP consensus minimum за clinical interpretation); `CgmUploader` файлово picker с 20MB cap; `CgmStatsCards` — 4 stat карти (TIR / CV / GMI / count) с AGP-consensus threshold colors (TIR≥70 → teal, ≥50 amber, <50 rose; CV≤36 → teal); 5-зонов stacked TIR bar; `CgmAgpChart` (recharts) — p10-p90 + p25-p75 ribbon-и (invisible-base + visible-band stacked-area trick) + медиана линия + 70-180 reference band; `CgmSpikeList` с inline label editor (Enter/Esc, autoFocus), severity badges (+80 rose, +60 amber, иначе teal)
+- ✅ **SyncOnLogin**: 2 нови sync функции — CGM readings (push local-only ts, dedupe server-side) + annotations (server wins на ключови колизии)
+- ✅ **Privacy policy** обновен с нова т.2 секция за CGM данните (CSV се обработва в браузъра, не качваме сурови файлове; readings+notes криптирани at rest)
+- ✅ **`local-data.ts`** — двата нови localStorage ключа добавени към `clearAllLocalData()` за wipe-on-signOut
+- ✅ **Тестове** (+40): parser format dispatch + unit conversion + EU/US dates + dedupe (10); stats: TIR 5-zone + variability + AGP buckets + spike threshold/cooldown (13); storage merge/cap/idempotency (10); annotations trim/cap/empty-delete (6); +1 dispatch test
 
 ## Phase 8 — Privacy Policy + Terms of Use
 - ✅ **`/privacy`** — 12 секции на български: кои сме, какви данни събираме (с encryption mention), как ги ползваме, кои трети страни (Google, Turso, Vercel, Anthropic, Resend, Upstash, push providers), security posture, retention, GDPR права (вкл. жалба до КЗЛД), cookies, възраст, контакт; кратка версия card в началото

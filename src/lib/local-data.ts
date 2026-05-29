@@ -9,6 +9,8 @@ const KEYS = [
   "ir-daily-plan-v1",
   "ir-symptom-log-v1",
   "ir-marker-log-v1",
+  "ir-cgm-readings-v1",
+  "ir-cgm-annotations-v1",
 ];
 
 export function clearAllLocalData(): void {
