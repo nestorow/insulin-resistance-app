@@ -38,7 +38,7 @@ const SYSTEM_ORDER = Object.keys(bodySystemNames);
 // gets a single concatenated, normalised text field that the query
 // scans against.
 const DISEASE_BLOBS = diseases.map((d) =>
-  buildSearchBlob([d.name_bg, d.description_bg, ...d.keyStats])
+  buildSearchBlob([d.name_bg, d.name_en, d.description_bg, ...d.keyStats])
 );
 const CHAPTER_BLOBS = chapters.map((c) =>
   buildSearchBlob([c.title_bg, c.funFact ?? "", ...c.takeaways])
