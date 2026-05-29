@@ -11,6 +11,7 @@ import {
 import { showToast } from "@/lib/toast";
 import { clampedNum } from "@/lib/numbers";
 import { SkeletonRows } from "@/components/ui/Skeleton";
+import { FlaskConical } from "lucide-react";
 
 // Same lazy pattern as JournalTrendChart — defer recharts until after
 // the form + entry list paint.
@@ -161,9 +162,12 @@ export default function MarkersModule() {
 
       {/* Empty / encouragement states (until chart is meaningful) */}
       {mounted && logs.length === 0 && (
-        <div className="mb-8 rounded-2xl border border-teal-100 bg-teal-50/40 p-5 text-center text-sm text-slate-600">
-          🧪 Въведи първите си показатели — обикновено месечно. Графиката се
-          активира след втория запис.
+        <div className="mb-8 flex flex-col items-center gap-2 rounded-2xl border border-teal-100 bg-teal-50/40 p-5 text-center text-sm text-slate-600">
+          <FlaskConical className="h-6 w-6 text-teal-400" />
+          <span>
+            Въведи първите си показатели — обикновено месечно. Графиката се
+            активира след втория запис.
+          </span>
         </div>
       )}
       {mounted && logs.length === 1 && (

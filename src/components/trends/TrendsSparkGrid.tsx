@@ -72,7 +72,7 @@ const METRICS: MetricDef[] = [
   {
     key: "brainFog",
     title: "Brain fog",
-    unit: "/10 ↑=по-зле",
+    unit: "/10 · по-високо = по-зле",
     color: "#f97316",
     fmt: (v) => `${v}/10`,
   },

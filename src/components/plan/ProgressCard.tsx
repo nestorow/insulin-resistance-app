@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { Flame, Trophy, type LucideIcon } from "lucide-react";
+import { CalendarCheck, Gauge, Award, type LucideIcon } from "lucide-react";
 
 interface Snapshot {
   currentStreak: number;
@@ -61,7 +61,7 @@ export default function ProgressCard() {
     <div className="mb-6 grid gap-3 sm:grid-cols-3">
       {/* Streak */}
       <Stat
-        Icon={Flame}
+        Icon={CalendarCheck}
         label="Поредни дни"
         primary={`${snap.currentStreak}`}
         secondary={
@@ -74,7 +74,7 @@ export default function ProgressCard() {
 
       {/* Level + XP */}
       <Stat
-        Icon={Trophy}
+        Icon={Gauge}
         label={`Ниво ${snap.level}`}
         primary={`${snap.totalXp} XP`}
         secondary={
@@ -88,10 +88,10 @@ export default function ProgressCard() {
 
       {/* Badges count */}
       <Stat
-        Icon={Trophy}
+        Icon={Award}
         label="Значки"
         primary={`${snap.badgesEarned.length}`}
-        secondary="Виж в Настройки →"
+        secondary="Виж в Настройки"
         accent="teal"
       />
     </div>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AlertTriangle, ArrowLeft } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Условия за ползване — InsulinReset",
@@ -14,8 +15,11 @@ export default function TermsPage() {
   return (
     <main className="mx-auto w-full max-w-3xl px-5 py-12">
       <header className="mb-8">
-        <Link href="/" className="text-sm text-teal-600 hover:text-teal-700">
-          ← Към началото
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1 text-sm text-teal-600 hover:text-teal-700"
+        >
+          <ArrowLeft className="h-4 w-4" /> Към началото
         </Link>
         <h1 className="mt-4 text-3xl font-extrabold text-teal-700">
           Условия за ползване
@@ -29,7 +33,8 @@ export default function TermsPage() {
           card — this is the single most important thing on the page. */}
       <section className="mb-8 rounded-2xl border-2 border-warning/40 bg-warm-light/50 p-5">
         <h2 className="mb-3 flex items-center gap-2 text-base font-bold text-warning">
-          ⚠️ Медицински дисклеймер — прочети първо
+          <AlertTriangle className="h-5 w-5 shrink-0" />
+          Медицински дисклеймер — прочети първо
         </h2>
         <div className="space-y-3 text-sm leading-relaxed text-slate-800">
           <p>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { X } from "lucide-react";
 import {
   AnnotationMap,
   MAX_ANNOTATION_LEN,
@@ -122,7 +123,7 @@ export default function TrendsAnnotationsEditor({ onChange }: Props) {
               <span className="font-medium">{d.slice(5)}</span>
               <span>·</span>
               <span>{text}</span>
-              <span className="text-amber-600 group-hover:text-amber-900">✕</span>
+              <X className="h-3 w-3 text-amber-600 group-hover:text-amber-900" />
             </button>
           ))}
         </div>

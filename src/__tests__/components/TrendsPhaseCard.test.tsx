@@ -58,7 +58,7 @@ describe("TrendsPhaseCard", () => {
     // Actually want day 14 on 2026-01-08 → start 2025-12-26
     seedOnboarding("2025-12-26T08:00:00.000Z");
     render(<TrendsPhaseCard />);
-    expect(screen.getByText(/Днес е ден 14.*milestone/i)).toBeInTheDocument();
+    expect(screen.getByText(/Днес е ден 14.*етап достигнат/i)).toBeInTheDocument();
   });
 
   it("crosses into phase 2 on day 15", () => {

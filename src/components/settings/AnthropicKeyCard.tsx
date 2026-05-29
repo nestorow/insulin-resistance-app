@@ -69,7 +69,7 @@ export default function AnthropicKeyCard() {
       setMasked(m);
       setInput("");
       setShowForm(false);
-      showToast("API key запазен ✓");
+      showToast("API ключът е запазен.");
     } catch {
       showToast("Грешка при запис.");
     } finally {

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import TrendsModule from "@/components/trends/TrendsModule";
-import ModuleNav from "@/components/ModuleNav";
 
 export const metadata: Metadata = {
   title: "Тренд — InsulinReset",
@@ -11,7 +10,6 @@ export const metadata: Metadata = {
 export default function TrendsPage() {
   return (
     <main className="min-h-dvh">
-      <ModuleNav active="/trends" />
       <TrendsModule />
     </main>
   );

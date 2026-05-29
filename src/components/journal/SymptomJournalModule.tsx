@@ -11,6 +11,7 @@ import {
 import { showToast } from "@/lib/toast";
 import { clampedNum } from "@/lib/numbers";
 import { SkeletonRows } from "@/components/ui/Skeleton";
+import { LineChart } from "lucide-react";
 
 // Trend chart pulls ~80kB of recharts — dynamic-import so the form +
 // recent-entries list paint first.
@@ -182,9 +183,12 @@ export default function SymptomJournalModule() {
 
       {/* Empty / encouragement states (until chart is meaningful) */}
       {mounted && logs.length === 0 && (
-        <div className="mb-8 rounded-2xl border border-teal-100 bg-teal-50/40 p-5 text-center text-sm text-slate-600">
-          📈 Запиши първия си ден отгоре — графиката на тренда ще се появи след
-          втория запис.
+        <div className="mb-8 flex flex-col items-center gap-2 rounded-2xl border border-teal-100 bg-teal-50/40 p-5 text-center text-sm text-slate-600">
+          <LineChart className="h-6 w-6 text-teal-400" />
+          <span>
+            Запиши първия си ден отгоре — графиката на тренда ще се появи след
+            втория запис.
+          </span>
         </div>
       )}
       {mounted && logs.length === 1 && (

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import CgmModule from "@/components/cgm/CgmModule";
-import ModuleNav from "@/components/ModuleNav";
 
 export const metadata: Metadata = {
   title: "CGM анализ — InsulinReset",
@@ -11,7 +10,6 @@ export const metadata: Metadata = {
 export default function CgmPage() {
   return (
     <main className="min-h-dvh">
-      <ModuleNav active="/cgm" />
       <CgmModule />
     </main>
   );

@@ -16,6 +16,7 @@ import {
 import type { CgmReading } from "@/lib/cgm";
 import { SkeletonRows } from "@/components/ui/Skeleton";
 import { showToast } from "@/lib/toast";
+import { LineChart } from "lucide-react";
 import CgmStatsCards from "./CgmStatsCards";
 import CgmSpikeList from "./CgmSpikeList";
 import CgmUploader from "./CgmUploader";
@@ -133,10 +134,13 @@ export default function CgmModule() {
       )}
 
       {mounted && readings.length === 0 && (
-        <div className="mt-8 rounded-2xl border border-teal-100 bg-teal-50/40 p-5 text-center text-sm text-slate-600">
-          📈 Качи export от CGM-а си, за да видиш TIR + AGP. Поне 14 дни
-          данни дават клинично значимо ниво — 30 дни е стандартът за
-          доклади.
+        <div className="mt-8 flex flex-col items-center gap-2 rounded-2xl border border-teal-100 bg-teal-50/40 p-5 text-center text-sm text-slate-600">
+          <LineChart className="h-6 w-6 text-teal-400" />
+          <span>
+            Качи export от CGM-а си, за да видиш TIR + AGP. Поне 14 дни
+            данни дават клинично значимо ниво — 30 дни е стандартът за
+            доклади.
+          </span>
         </div>
       )}
 

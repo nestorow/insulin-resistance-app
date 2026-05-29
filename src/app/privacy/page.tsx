@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Политика за поверителност — InsulinReset",
@@ -18,9 +19,9 @@ export default function PrivacyPage() {
       <header className="mb-8">
         <Link
           href="/"
-          className="text-sm text-teal-600 hover:text-teal-700"
+          className="inline-flex items-center gap-1 text-sm text-teal-600 hover:text-teal-700"
         >
-          ← Към началото
+          <ArrowLeft className="h-4 w-4" /> Към началото
         </Link>
         <h1 className="mt-4 text-3xl font-extrabold text-teal-700">
           Политика за поверителност

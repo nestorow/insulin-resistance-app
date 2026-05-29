@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import ExerciseModule from "@/components/exercise/ExerciseModule";
-import ModuleNav from "@/components/ModuleNav";
 
 export const metadata: Metadata = {
   title: "Тренировки — InsulinReset",
@@ -10,7 +9,6 @@ export const metadata: Metadata = {
 export default function ExercisePage() {
   return (
     <main className="min-h-dvh">
-      <ModuleNav active="/exercise" />
       <ExerciseModule />
     </main>
   );

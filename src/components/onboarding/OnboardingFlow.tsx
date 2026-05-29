@@ -16,6 +16,7 @@ import {
   Sun,
   Moon,
   PartyPopper,
+  Save,
 } from "lucide-react";
 import {
   LENSES,
@@ -214,8 +215,9 @@ export default function OnboardingFlow() {
               <p className="mt-2 text-sm text-slate-500">
                 Отговори с „Да&rdquo; или „Не&rdquo; на всеки въпрос.
               </p>
-              <p className="mt-1 text-xs text-teal-600">
-                💾 Прогресът ти се запазва — можеш да продължиш по-късно.
+              <p className="mt-1 flex items-center gap-1.5 text-xs text-teal-600">
+                <Save className="h-3.5 w-3.5 shrink-0" />
+                Прогресът ти се запазва — можеш да продължиш по-късно.
               </p>
 
               <div className="mt-5 space-y-2.5">

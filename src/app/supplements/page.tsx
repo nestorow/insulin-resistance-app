@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import SupplementsModule from "@/components/supplements/SupplementsModule";
-import ModuleNav from "@/components/ModuleNav";
 
 export const metadata: Metadata = {
   title: "Добавки — InsulinReset",
@@ -10,7 +9,6 @@ export const metadata: Metadata = {
 export default function SupplementsPage() {
   return (
     <main className="min-h-dvh">
-      <ModuleNav active="/supplements" />
       <SupplementsModule />
     </main>
   );

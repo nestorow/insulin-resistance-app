@@ -5,6 +5,7 @@ import HowItWorks from "@/components/landing/HowItWorks";
 import FeatureGrid from "@/components/landing/FeatureGrid";
 import TrustStrip from "@/components/landing/TrustStrip";
 import LandingFaq from "@/components/landing/LandingFaq";
+import { Clock } from "lucide-react";
 
 // Landing page — mirrors thyroidrehab.bg structure but with conversion
 // scaffolding: punchier hero + trust strip, the 4 pillars (WHAT), a
@@ -31,8 +32,8 @@ export default function Home() {
         </p>
 
         <LandingCTA />
-        <p className="mt-3 text-xs text-slate-400">
-          ⏱ Тестът отнема около 3 минути
+        <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-slate-400">
+          <Clock className="h-3.5 w-3.5" /> Тестът отнема около 3 минути
         </p>
 
         <TrustStrip />
@@ -65,8 +66,8 @@ export default function Home() {
       {/* Final closing CTA */}
       <section className="flex flex-col items-center px-4 pb-16 pt-4">
         <LandingCTA />
-        <p className="mt-3 text-xs text-slate-400">
-          ⏱ Тестът отнема около 3 минути
+        <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-slate-400">
+          <Clock className="h-3.5 w-3.5" /> Тестът отнема около 3 минути
         </p>
       </section>
     </main>

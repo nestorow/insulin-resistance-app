@@ -9,6 +9,7 @@ import {
   setCgmAnnotation,
 } from "@/lib/cgm-annotations";
 import { showToast } from "@/lib/toast";
+import { ShieldCheck, Utensils } from "lucide-react";
 
 // Auto-detected glucose spikes (>=40 mg/dL rise from 60-min trough,
 // 90-min cooldown). Each row has an inline editor for a short label
@@ -74,9 +75,12 @@ export default function CgmSpikeList({ spikes }: Props) {
         </span>
       </div>
       {spikes.length === 0 ? (
-        <div className="rounded-2xl border border-teal-100 bg-teal-50/40 p-4 text-center text-sm text-slate-600">
-          🎯 Няма пикове ≥40 mg/dL в прозореца — индикатор за стабилна
-          глюкоза, което Bikman свързва с по-добра insulin sensitivity.
+        <div className="flex flex-col items-center gap-2 rounded-2xl border border-teal-100 bg-teal-50/40 p-4 text-center text-sm text-slate-600">
+          <ShieldCheck className="h-6 w-6 text-teal-400" />
+          <span>
+            Няма пикове ≥40 mg/dL в прозореца — индикатор за стабилна
+            глюкоза, което Bikman свързва с по-добра insulin sensitivity.
+          </span>
         </div>
       ) : (
         <div className="space-y-2">
@@ -139,7 +143,8 @@ export default function CgmSpikeList({ spikes }: Props) {
                   >
                     {note ? (
                       <span className="text-slate-700">
-                        🍴 {note}{" "}
+                        <Utensils className="mr-1 inline h-3.5 w-3.5" />
+                        {note}{" "}
                         <span className="text-teal-600 underline">редактирай</span>
                       </span>
                     ) : (

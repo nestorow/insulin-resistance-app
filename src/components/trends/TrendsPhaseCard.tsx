@@ -94,7 +94,7 @@ export default function TrendsPhaseCard() {
       )}
       {pos.milestoneCrossedToday && (
         <p className="mt-2 text-xs font-semibold text-teal-700">
-          🎯 Днес е ден {pos.milestoneCrossedToday} — milestone!
+          Днес е ден {pos.milestoneCrossedToday} — етап достигнат.
         </p>
       )}
     </section>

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import EducationModule from "@/components/education/EducationModule";
-import ModuleNav from "@/components/ModuleNav";
 import { educationJsonLd } from "@/lib/education-schema";
 
 export const metadata: Metadata = {
@@ -19,7 +18,6 @@ export default function EducationPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <ModuleNav active="/education" />
       <EducationModule />
     </main>
   );

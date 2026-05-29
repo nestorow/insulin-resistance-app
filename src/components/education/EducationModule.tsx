@@ -14,6 +14,7 @@ import {
   ChevronDown,
   Search,
   X,
+  Lightbulb,
   type LucideIcon,
 } from "lucide-react";
 import { keyFacts, fourPillars, chapters } from "@/data/knowledge";
@@ -296,8 +297,9 @@ export default function EducationModule() {
                           ))}
                         </ul>
                         {c.funFact && (
-                          <p className="mt-3 rounded-lg bg-teal-50 p-3 text-sm text-teal-800">
-                            💡 {c.funFact}
+                          <p className="mt-3 flex items-start gap-2 rounded-lg bg-teal-50 p-3 text-sm text-teal-800">
+                            <Lightbulb className="mt-0.5 h-4 w-4 shrink-0" />
+                            <span>{c.funFact}</span>
                           </p>
                         )}
                       </div>

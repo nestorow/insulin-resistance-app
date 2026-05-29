@@ -9,7 +9,7 @@ export default function GlobalFooter() {
   return (
     <footer className="mt-auto border-t border-teal-100 bg-white/60 px-6 py-6 text-center text-xs text-slate-500">
       <p className="mx-auto mb-3 max-w-xl leading-relaxed">
-        ⚕️ Информацията е с образователна цел и не е медицински съвет.
+        Информацията е с образователна цел и не е медицински съвет.
         Консултирай се с лекар преди да правиш промени, особено ако имаш
         диагноза, приемаш лекарства или си бременна.
       </p>

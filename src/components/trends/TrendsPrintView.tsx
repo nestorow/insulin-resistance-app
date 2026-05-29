@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { ArrowLeft } from "lucide-react";
 import type { TrendsData } from "@/lib/trends";
 import { loadOnboarding } from "@/lib/onboarding-storage";
 import { computeInsights } from "@/lib/trend-insights";
@@ -84,9 +85,9 @@ export default function TrendsPrintView() {
       <div className="mb-6 flex items-center justify-between border-b border-slate-200 pb-4 print:hidden">
         <a
           href="/trends"
-          className="text-sm text-teal-700 underline-offset-2 hover:underline"
+          className="inline-flex items-center gap-1 text-sm text-teal-700 underline-offset-2 hover:underline"
         >
-          ← Назад към интерактивния изглед
+          <ArrowLeft className="h-4 w-4" /> Назад към интерактивния изглед
         </a>
         <button
           onClick={() => window.print()}

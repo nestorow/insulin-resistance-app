@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Sunrise, Sun, Moon, CalendarDays, CalendarRange, Target } from "lucide-react";
+import { Sunrise, Sun, Moon, CalendarDays, CalendarRange, Target, Check } from "lucide-react";
 import { checklistItems, itemText, type ChecklistItem } from "@/data/protocol";
 import { tierFromYesCount } from "@/lib/onboarding";
 import { loadOnboarding } from "@/lib/onboarding-storage";
@@ -176,7 +176,7 @@ export default function DailyPlanModule() {
                             done ? "border-teal-500 bg-teal-500 text-white" : "border-teal-300"
                           }`}
                         >
-                          {done && "✓"}
+                          {done && <Check className="h-3 w-3" />}
                         </span>
                         {text}
                       </button>

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import SymptomJournalModule from "@/components/journal/SymptomJournalModule";
-import ModuleNav from "@/components/ModuleNav";
 
 export const metadata: Metadata = {
   title: "Дневник на симптомите — InsulinReset",
@@ -10,7 +9,6 @@ export const metadata: Metadata = {
 export default function JournalPage() {
   return (
     <main className="min-h-dvh">
-      <ModuleNav active="/journal" />
       <SymptomJournalModule />
     </main>
   );

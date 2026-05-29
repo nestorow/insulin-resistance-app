@@ -6,6 +6,7 @@ import SyncOnLogin from "@/components/SyncOnLogin";
 import Toast from "@/components/Toast";
 import GlobalFooter from "@/components/GlobalFooter";
 import SkipLink from "@/components/SkipLink";
+import AppShell from "@/components/AppShell";
 import { siteUrl } from "@/lib/site-url";
 
 const SITE_URL = siteUrl();
@@ -103,14 +104,17 @@ export default function RootLayout({
           <SkipLink />
           <SyncOnLogin />
           <AuthBadge />
-          {/* Landmark target for SkipLink. tabIndex=-1 makes the div
-              focusable programmatically without entering the natural
-              tab order — the skip link sends focus here, then Tab
-              continues into the main content. */}
-          <div id="main-content" tabIndex={-1} className="flex-1 outline-none">
-            {children}
-          </div>
-          <GlobalFooter />
+          {/* AppShell adds the desktop sidebar + mobile bottom-tab nav for
+              app routes, and renders bare (no chrome) on marketing / funnel /
+              print routes. The #main-content landmark (SkipLink target;
+              tabIndex=-1 = programmatic focus only) and footer live inside it
+              so the shell can offset them for the sidebar + bottom bar. */}
+          <AppShell>
+            <div id="main-content" tabIndex={-1} className="flex-1 outline-none">
+              {children}
+            </div>
+            <GlobalFooter />
+          </AppShell>
           <Toast />
         </SessionProvider>
       </body>

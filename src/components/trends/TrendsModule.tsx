@@ -7,6 +7,7 @@ import type { TrendsData } from "@/lib/trends";
 import { computeInsights } from "@/lib/trend-insights";
 import type { AnnotationMap } from "@/lib/day-annotations";
 import { SkeletonRows } from "@/components/ui/Skeleton";
+import { LineChart, FileText } from "lucide-react";
 import TrendsAnnotationsEditor from "./TrendsAnnotationsEditor";
 import TrendsHero from "./TrendsHero";
 import TrendsInsights from "./TrendsInsights";
@@ -114,16 +115,16 @@ export default function TrendsModule() {
         {!isEmpty && (
           <a
             href="/trends/print"
-            className="mt-1 shrink-0 rounded-full border border-teal-200 px-3 py-1.5 text-xs font-medium text-teal-700 hover:bg-teal-50"
+            className="mt-1 inline-flex shrink-0 items-center gap-1 rounded-full border border-teal-200 px-3 py-1.5 text-xs font-medium text-teal-700 hover:bg-teal-50"
           >
-            PDF за лекар →
+            <FileText className="h-3.5 w-3.5" /> PDF за лекар
           </a>
         )}
       </header>
 
       {isEmpty ? (
         <div className="rounded-2xl border border-teal-100 bg-teal-50/40 p-6 text-center text-sm text-slate-600">
-          📊 Тук ще се появи тренд след първите ти записи. Започни от{" "}
+          <LineChart className="mr-1 inline h-4 w-4 text-teal-400" /> Тук ще се появи тренд след първите ти записи. Започни от{" "}
           <a className="underline" href="/journal">
             Дневник
           </a>{" "}

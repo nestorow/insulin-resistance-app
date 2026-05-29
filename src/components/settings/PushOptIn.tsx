@@ -108,7 +108,7 @@ export default function PushOptIn() {
         return;
       }
       setState("on");
-      showToast("Включи push известията 🎉");
+      showToast("Push известията са включени.");
     } catch {
       showToast("Грешка при включване на push.");
     } finally {

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import FastingModule from "@/components/fasting/FastingModule";
-import ModuleNav from "@/components/ModuleNav";
 
 export const metadata: Metadata = {
   title: "Гладуване — InsulinReset",
@@ -10,7 +9,6 @@ export const metadata: Metadata = {
 export default function FastingPage() {
   return (
     <main className="min-h-dvh">
-      <ModuleNav active="/fasting" />
       <FastingModule />
     </main>
   );

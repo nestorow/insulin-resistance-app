@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import MarkersModule from "@/components/markers/MarkersModule";
-import ModuleNav from "@/components/ModuleNav";
 
 export const metadata: Metadata = {
   title: "Тракер на показатели — InsulinReset",
@@ -10,7 +9,6 @@ export const metadata: Metadata = {
 export default function MarkersPage() {
   return (
     <main className="min-h-dvh">
-      <ModuleNav active="/markers" />
       <MarkersModule />
     </main>
   );
