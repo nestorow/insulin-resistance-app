@@ -6,6 +6,7 @@
 
 const KEYS = [
   "ir-onboarding-v1",
+  "ir-onboarding-draft-v1",
   "ir-daily-plan-v1",
   "ir-symptom-log-v1",
   "ir-marker-log-v1",

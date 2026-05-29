@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -27,6 +27,12 @@ import {
   type Lens,
 } from "@/lib/onboarding";
 import { saveOnboarding, loadOnboarding } from "@/lib/onboarding-storage";
+import {
+  clearOnboardingDraft,
+  isDraftSubstantive,
+  loadOnboardingDraft,
+  saveOnboardingDraft,
+} from "@/lib/onboarding-draft";
 
 // Quiz comes before lens so we can pre-select the lens that matches the
 // user's quiz pattern — fewer cognitive choices, better-calibrated default.
@@ -61,13 +67,57 @@ export default function OnboardingFlow() {
   const [waist, setWaist] = useState("");
   const [hip, setHip] = useState("");
 
+  // Ref-guarded mount-once hydration. Next 15's useRouter() returns a
+  // fresh object on every render, so a naive `[router]` dep on this
+  // effect re-runs the setAnswers/setLens setters every cycle and
+  // overshoots React's update-depth guard. We only need this logic
+  // to fire once.
+  const hydrated = useRef(false);
   useEffect(() => {
+    if (hydrated.current) return;
+    hydrated.current = true;
+
     if (loadOnboarding()) {
       router.replace("/plan");
-    } else {
-      setChecking(false);
+      return;
     }
+    // Hydrate from in-progress draft so a closed tab / refresh doesn't
+    // start the user back at step 1. Only resume when the draft has
+    // substantive content — empty drafts (just a "welcome" peek) are
+    // ignored so the welcome screen still shows.
+    const draft = loadOnboardingDraft();
+    if (isDraftSubstantive(draft) && draft) {
+      setAnswers(draft.answers);
+      setLens(draft.lens);
+      setTg(draft.tg);
+      setHdl(draft.hdl);
+      setWaist(draft.waist);
+      setHip(draft.hip);
+      // Snap to the resumed step; the "day1" step is post-completion
+      // so we never resume to it (the completed-result branch above
+      // would have caught that case).
+      if (draft.step !== "welcome" && draft.step !== "day1") {
+        setStep(draft.step);
+      }
+    }
+    setChecking(false);
   }, [router]);
+
+  // Auto-save the in-progress draft on every meaningful state change.
+  // No debounce — localStorage writes are sync + cheap (< 1KB payload),
+  // and we don't want a refresh to lose the last keystroke.
+  useEffect(() => {
+    if (checking) return;
+    saveOnboardingDraft({
+      step,
+      answers,
+      lens,
+      tg,
+      hdl,
+      waist,
+      hip,
+    });
+  }, [checking, step, answers, lens, tg, hdl, waist, hip]);
 
   const yesCount = answers.filter((a) => a === true).length;
   const allAnswered = answers.every((a) => a !== null);
@@ -109,6 +159,9 @@ export default function OnboardingFlow() {
       whr,
       completedAt: new Date().toISOString(),
     });
+    // Completion supersedes the draft — wipe it so a clearOnboarding
+    // re-test in /settings starts genuinely fresh.
+    clearOnboardingDraft();
     setStep("day1");
   }
 
@@ -160,6 +213,9 @@ export default function OnboardingFlow() {
               </h2>
               <p className="mt-2 text-sm text-slate-500">
                 Отговори с „Да&rdquo; или „Не&rdquo; на всеки въпрос.
+              </p>
+              <p className="mt-1 text-xs text-teal-600">
+                💾 Прогресът ти се запазва — можеш да продължиш по-късно.
               </p>
 
               <div className="mt-5 space-y-2.5">

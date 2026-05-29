@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
 import { RotateCcw, AlertTriangle, X } from "lucide-react";
 import { loadOnboarding, clearOnboarding } from "@/lib/onboarding-storage";
+import { clearOnboardingDraft } from "@/lib/onboarding-draft";
 import { clearOnboardingAction } from "@/lib/actions/onboarding";
 import { tierFromYesCount, LENSES } from "@/lib/onboarding";
 import type { OnboardingResult } from "@/lib/onboarding";
@@ -37,6 +38,9 @@ export default function SettingsModule() {
     // Order matters: clear local first so the next render of any UI doesn't
     // momentarily see the stale onboarding row.
     clearOnboarding();
+    // Drop any in-progress draft too so the next onboarding visit starts
+    // genuinely blank rather than inheriting half-typed answers.
+    clearOnboardingDraft();
     // Server clear is fire-and-forget — if it fails (network / no session)
     // the local clear is already sufficient for the user's current device.
     try {

@@ -49,6 +49,71 @@ describe("OnboardingFlow — step order", () => {
     render(<OnboardingFlow />);
     expect(replaceMock).toHaveBeenCalledWith("/plan");
   });
+
+  it("resumes from a substantive draft directly into the saved step", async () => {
+    // Seed a draft with the user mid-way through the quiz.
+    window.localStorage.setItem(
+      "ir-onboarding-draft-v1",
+      JSON.stringify({
+        step: "quiz",
+        answers: [true, false, true, null, null, null, null, null],
+        lens: null,
+        tg: "",
+        hdl: "",
+        waist: "",
+        hip: "",
+        savedAt: new Date().toISOString(),
+      })
+    );
+    render(<OnboardingFlow />);
+    // Should skip welcome and render the quiz heading instead.
+    expect(
+      await screen.findByRole("heading", {
+        name: /Тест за инсулинова резистентност/,
+      })
+    ).toBeInTheDocument();
+    // The 3 answered-quiz-buttons should be in the active visual state —
+    // checking textContent is enough here without poking computed styles.
+    const yesButtons = await screen.findAllByRole("button", { name: /Да/ });
+    expect(yesButtons).toHaveLength(8);
+  });
+
+  it("ignores an empty draft and stays on welcome", () => {
+    window.localStorage.setItem(
+      "ir-onboarding-draft-v1",
+      JSON.stringify({
+        step: "quiz",
+        answers: Array(8).fill(null),
+        lens: null,
+        tg: "",
+        hdl: "",
+        waist: "",
+        hip: "",
+        savedAt: new Date().toISOString(),
+      })
+    );
+    render(<OnboardingFlow />);
+    expect(screen.getByText(/Добре дошъл/)).toBeInTheDocument();
+  });
+
+  it("ignores a draft older than 7 days", () => {
+    const eightDaysAgo = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000);
+    window.localStorage.setItem(
+      "ir-onboarding-draft-v1",
+      JSON.stringify({
+        step: "lens",
+        answers: [true, true, true, true, true, true, true, true],
+        lens: "medical",
+        tg: "",
+        hdl: "",
+        waist: "",
+        hip: "",
+        savedAt: eightDaysAgo.toISOString(),
+      })
+    );
+    render(<OnboardingFlow />);
+    expect(screen.getByText(/Добре дошъл/)).toBeInTheDocument();
+  });
 });
 
 describe("OnboardingFlow — inferred lens pre-selection", () => {
