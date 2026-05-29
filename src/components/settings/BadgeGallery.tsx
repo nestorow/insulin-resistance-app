@@ -8,6 +8,8 @@ import {
   CalendarCheck,
   Trophy,
   Award,
+  Activity,
+  LineChart,
   type LucideIcon,
 } from "lucide-react";
 
@@ -46,6 +48,18 @@ const BADGE_DISPLAY: {
     name_bg: "30 дни в ред",
     description_bg: "Един месец постоянство.",
     Icon: Trophy,
+  },
+  {
+    id: "first_cgm",
+    name_bg: "Първи CGM",
+    description_bg: "Първи запис на CGM данни — реален или ръчно въведен.",
+    Icon: Activity,
+  },
+  {
+    id: "cgm_week",
+    name_bg: "CGM седмица",
+    description_bg: "7 различни дни с CGM покритие.",
+    Icon: LineChart,
   },
   {
     id: "ninety_streak",

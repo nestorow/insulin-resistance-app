@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { encrypt, decrypt } from "@/lib/encryption";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { logAudit } from "@/lib/audit";
+import { recordEvent } from "@/lib/gamification";
 import type { CgmReading } from "@/lib/cgm";
 
 // CGM batch save — one server roundtrip per CSV upload, regardless of
@@ -123,6 +124,13 @@ export async function saveCgmBatchAction(
       readingCount: readings.length,
     },
   });
+
+  // XP credits today (so the streak ping lands on the upload day, not the
+  // historical date the readings cover). The latest day in the batch
+  // would also work; sticking with "today" matches how other modules
+  // credit user-initiated actions.
+  const today = new Date().toISOString().slice(0, 10);
+  await recordEvent(session.user.id, "cgm.upload", today);
 
   return { ok: true, daysWritten: days.size, totalReadings };
 }

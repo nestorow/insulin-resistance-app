@@ -209,6 +209,42 @@ describe("recordEvent — error swallowing", () => {
   });
 });
 
+describe("cgm.upload event + new badges", () => {
+  it("awards 10 XP per cgm.upload (POINTS table)", () => {
+    expect(_internal.POINTS["cgm.upload"]).toBe(10);
+  });
+
+  it("first_cgm badge predicate hits xp_log for event_kind='cgm.upload'", async () => {
+    const first = BADGES.find((b) => b.id === "first_cgm");
+    expect(first).toBeDefined();
+    executeMock.mockReset();
+    executeMock.mockResolvedValueOnce({ rows: [{ "1": 1 }] }); // any non-empty
+    const ok = await first!.check("user-1");
+    expect(ok).toBe(true);
+    expect(executeMock.mock.calls[0][0]).toMatchObject({
+      sql: expect.stringContaining("event_kind = ?"),
+      args: ["user-1", "cgm.upload"],
+    });
+  });
+
+  it("cgm_week badge requires ≥7 distinct days in cgm_readings", async () => {
+    const week = BADGES.find((b) => b.id === "cgm_week");
+    expect(week).toBeDefined();
+
+    executeMock.mockReset();
+    executeMock.mockResolvedValueOnce({ rows: [{ days: 6 }] });
+    expect(await week!.check("user-1")).toBe(false);
+
+    executeMock.mockReset();
+    executeMock.mockResolvedValueOnce({ rows: [{ days: 7 }] });
+    expect(await week!.check("user-1")).toBe(true);
+
+    executeMock.mockReset();
+    executeMock.mockResolvedValueOnce({ rows: [{ days: 21 }] });
+    expect(await week!.check("user-1")).toBe(true);
+  });
+});
+
 describe("getProgress", () => {
   it("returns zeros when no rows exist yet", async () => {
     queueResults([{ rows: [] }, { rows: [] }]);

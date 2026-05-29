@@ -18,6 +18,7 @@ const POINTS = {
   "symptom.save": 5,         // per day saved
   "marker.save": 20,         // per day of marker data (rare, valuable)
   "onboarding.save": 0,      // not user-earned XP; just a streak ping
+  "cgm.upload": 10,          // per CGM batch (CSV upload OR manual entry)
 } as const;
 
 export type XpEventKind = keyof typeof POINTS;
@@ -102,6 +103,35 @@ export const BADGES: BadgeDef[] = [
       });
       const s = r.rows[0]?.current_streak;
       return typeof s === "number" && s >= 30;
+    },
+  },
+  {
+    id: "first_cgm",
+    name_bg: "Първи CGM",
+    description_bg: "Първи запис на CGM данни — реален или ръчно въведен.",
+    icon: "Activity",
+    check: async (userId) => {
+      const r = await db.execute({
+        sql: "SELECT 1 FROM xp_log WHERE user_id = ? AND event_kind = ? LIMIT 1",
+        args: [userId, "cgm.upload"],
+      });
+      return r.rows.length > 0;
+    },
+  },
+  {
+    id: "cgm_week",
+    name_bg: "CGM седмица",
+    description_bg: "7 различни дни с CGM покритие.",
+    icon: "LineChart",
+    check: async (userId) => {
+      // Coverage is computed from cgm_readings directly (one row per day),
+      // not from xp_log — a single upload that brought in 14 days of
+      // history should immediately count.
+      const r = await db.execute({
+        sql: "SELECT COUNT(*) AS days FROM cgm_readings WHERE user_id = ?",
+        args: [userId],
+      });
+      return Number(r.rows[0]?.days ?? 0) >= 7;
     },
   },
   {
