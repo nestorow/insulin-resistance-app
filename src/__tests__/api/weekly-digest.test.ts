@@ -2,25 +2,32 @@
  * @jest-environment node
  */
 
+import type { SendResult } from "@/lib/email";
+import type { ProgressSnapshot } from "@/lib/gamification";
+
 const executeMock = jest.fn();
 jest.mock("@/lib/db", () => ({
   db: { execute: (...args: unknown[]) => executeMock(...args) },
 }));
 
-const sendDigestMock = jest.fn(async () => ({ ok: true as const }));
+const sendDigestMock = jest.fn<Promise<SendResult>, unknown[]>(
+  async () => ({ ok: true })
+);
 jest.mock("@/lib/email", () => ({
   sendDigest: (...args: unknown[]) => sendDigestMock(...args),
 }));
 
-const getProgressMock = jest.fn(async () => ({
-  currentStreak: 5,
-  longestStreak: 5,
-  totalXp: 60,
-  level: 2,
-  xpForCurrentLevel: 30,
-  xpForNextLevel: 120,
-  badgesEarned: [],
-}));
+const getProgressMock = jest.fn<Promise<ProgressSnapshot>, unknown[]>(
+  async () => ({
+    currentStreak: 5,
+    longestStreak: 5,
+    totalXp: 60,
+    level: 2,
+    xpForCurrentLevel: 30,
+    xpForNextLevel: 120,
+    badgesEarned: [],
+  })
+);
 jest.mock("@/lib/gamification", () => ({
   getProgress: (...args: unknown[]) => getProgressMock(...args),
   BADGES: [],

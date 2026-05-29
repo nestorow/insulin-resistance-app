@@ -1,7 +1,9 @@
 // Verify logAudit emits the expected SQL + arg shape and never throws on
 // DB errors (audit is observability, not a gate).
 
-const executeMock = jest.fn(async () => ({ rows: [] }));
+const executeMock = jest.fn<Promise<{ rows: unknown[] }>, unknown[]>(
+  async () => ({ rows: [] })
+);
 
 jest.mock("@/lib/db", () => ({
   db: {

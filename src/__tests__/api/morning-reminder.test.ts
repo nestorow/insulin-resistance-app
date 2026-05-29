@@ -9,12 +9,17 @@
 // token, even if the request looks otherwise innocent. Without this gate
 // anyone on the internet could trigger an unbounded push fan-out.
 
-const executeMock = jest.fn(async () => ({ rows: [] }));
+const executeMock = jest.fn<Promise<{ rows: unknown[] }>, unknown[]>(
+  async () => ({ rows: [] })
+);
 jest.mock("@/lib/db", () => ({
   db: { execute: (...args: unknown[]) => executeMock(...args) },
 }));
 
-const sendPushMock = jest.fn(async () => ({ ok: true as const }));
+const sendPushMock = jest.fn<
+  Promise<{ ok: true } | { ok: false; gone: true }>,
+  unknown[]
+>(async () => ({ ok: true }));
 jest.mock("@/lib/web-push", () => ({
   sendPush: (...args: unknown[]) => sendPushMock(...args),
   publicVapidKey: () => "test-pub-key",
