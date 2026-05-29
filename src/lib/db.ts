@@ -279,5 +279,18 @@ export async function initializeDatabase() {
 
     CREATE INDEX IF NOT EXISTS idx_cgm_readings_user_date
       ON cgm_readings(user_id, date DESC);
+
+    -- One row per user holding the entire { peakTs → label } map as
+    -- an encrypted JSON blob. Read pattern is "load all annotations
+    -- to overlay on the spike list", so a single-row blob beats a
+    -- normalized (user_id, peak_ts) table on simplicity. Note text is
+    -- user-typed (could name foods → arguably more sensitive than the
+    -- reading itself), hence encryption.
+    CREATE TABLE IF NOT EXISTS cgm_annotations (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL UNIQUE,
+      encrypted_payload TEXT NOT NULL,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
   `);
 }

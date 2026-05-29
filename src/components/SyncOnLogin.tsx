@@ -31,6 +31,14 @@ import {
   saveCgmBatchAction,
 } from "@/lib/actions/cgm";
 import { addCgmReadings, getCgmReadings } from "@/lib/cgm-storage";
+import {
+  getCgmAnnotationsAction,
+  saveCgmAnnotationAction,
+} from "@/lib/actions/cgm-annotations";
+import {
+  getCgmAnnotations,
+  setCgmAnnotation,
+} from "@/lib/cgm-annotations";
 
 // One-time per session bidirectional sync:
 //   server → localStorage  (writes mirrored to local, no echo back)
@@ -58,6 +66,7 @@ async function runSync() {
       syncSymptoms(),
       syncMarkers(),
       syncCgm(),
+      syncCgmAnnotations(),
     ]);
   } catch {
     // best-effort — next session will retry
@@ -145,5 +154,20 @@ async function syncCgm() {
   const localOnly = local.filter((r) => !serverTs.has(r.ts));
   if (localOnly.length) {
     await saveCgmBatchAction(localOnly);
+  }
+}
+
+async function syncCgmAnnotations() {
+  const local = getCgmAnnotations();
+  const server = (await getCgmAnnotationsAction()) ?? {};
+  // Merge: server wins on key collision (single source of truth across
+  // devices). Push any local-only keys up.
+  for (const [ts, note] of Object.entries(server)) {
+    setCgmAnnotation(ts, note, { skipServer: true });
+  }
+  for (const [ts, note] of Object.entries(local)) {
+    if (!(ts in server)) {
+      await saveCgmAnnotationAction(ts, note);
+    }
   }
 }

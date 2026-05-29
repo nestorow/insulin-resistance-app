@@ -1,11 +1,19 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import type { GlucoseSpike } from "@/lib/cgm-stats";
+import {
+  AnnotationMap,
+  MAX_NOTE_LEN,
+  getCgmAnnotations,
+  setCgmAnnotation,
+} from "@/lib/cgm-annotations";
+import { showToast } from "@/lib/toast";
 
-// Auto-detected glucose spikes (≥40 mg/dL rise from 60-min trough,
-// 90-min cooldown). Sorted by peak time descending — newest first.
-// Manual meal annotations land in a follow-up commit; for now the row
-// shows the timestamp + rise so the user can correlate with memory.
+// Auto-detected glucose spikes (>=40 mg/dL rise from 60-min trough,
+// 90-min cooldown). Each row has an inline editor for a short label
+// the user can attach ("банан", "пица + бира"), which lets the
+// biohacker correlate food with peaks over time.
 
 interface Props {
   spikes: GlucoseSpike[];
@@ -26,6 +34,35 @@ function severityClass(rise: number): string {
 }
 
 export default function CgmSpikeList({ spikes }: Props) {
+  const [annotations, setAnnotations] = useState<AnnotationMap>({});
+  const [editing, setEditing] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
+
+  useEffect(() => {
+    setAnnotations(getCgmAnnotations());
+  }, []);
+
+  function startEdit(peakTs: string) {
+    setEditing(peakTs);
+    setDraft(annotations[peakTs] ?? "");
+  }
+
+  function commitEdit() {
+    if (editing === null) return;
+    const { local, pending } = setCgmAnnotation(editing, draft);
+    setAnnotations(local);
+    setEditing(null);
+    setDraft("");
+    showToast(draft.trim() ? "Запазено." : "Изтрита.");
+
+    // Rollback on rate-limit — re-fetch from local (server didn't land).
+    pending.then((outcome) => {
+      if (outcome === "rejected") {
+        showToast("Сървърът отказа (твърде много заявки).");
+      }
+    });
+  }
+
   return (
     <div className="mt-6">
       <div className="mb-3 flex items-baseline justify-between">
@@ -33,7 +70,7 @@ export default function CgmSpikeList({ spikes }: Props) {
           Открити пикове ({spikes.length})
         </h2>
         <span className="text-[11px] text-slate-500">
-          ≥40 mg/dL над 60-min baseline
+          ≥40 mg/dL над 60-min baseline · кликни за бележка
         </span>
       </div>
       {spikes.length === 0 ? (
@@ -43,29 +80,76 @@ export default function CgmSpikeList({ spikes }: Props) {
         </div>
       ) : (
         <div className="space-y-2">
-          {[...spikes].reverse().map((s) => (
-            <div
-              key={s.peakTs}
-              className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl border border-teal-100 bg-white p-3 text-sm"
-            >
-              <span className="font-medium text-slate-700">
-                {fmtTs(s.peakTs)}
-              </span>
-              <span
-                className={`rounded-full px-2 py-0.5 text-xs font-semibold ${severityClass(
-                  s.riseMgdl
-                )}`}
+          {[...spikes].reverse().map((s) => {
+            const note = annotations[s.peakTs];
+            const isEditing = editing === s.peakTs;
+            return (
+              <div
+                key={s.peakTs}
+                className="rounded-xl border border-teal-100 bg-white p-3 text-sm"
               >
-                +{s.riseMgdl} mg/dL
-              </span>
-              <span className="text-slate-500">
-                пик {s.peakMgdl} от baseline {s.baselineMgdl}
-              </span>
-              <span className="text-slate-400">
-                за {s.riseDurationMin} мин
-              </span>
-            </div>
-          ))}
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                  <span className="font-medium text-slate-700">
+                    {fmtTs(s.peakTs)}
+                  </span>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs font-semibold ${severityClass(
+                      s.riseMgdl
+                    )}`}
+                  >
+                    +{s.riseMgdl} mg/dL
+                  </span>
+                  <span className="text-slate-500">
+                    пик {s.peakMgdl} от baseline {s.baselineMgdl}
+                  </span>
+                  <span className="text-slate-400">
+                    за {s.riseDurationMin} мин
+                  </span>
+                </div>
+
+                {isEditing ? (
+                  <div className="mt-2 flex gap-2">
+                    <input
+                      autoFocus
+                      type="text"
+                      value={draft}
+                      maxLength={MAX_NOTE_LEN}
+                      placeholder="Какво яде? (банан, пица, кафе с мляко…)"
+                      onChange={(e) => setDraft(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") commitEdit();
+                        if (e.key === "Escape") {
+                          setEditing(null);
+                          setDraft("");
+                        }
+                      }}
+                      className="flex-1 rounded-lg border border-teal-200 bg-white px-3 py-1.5 text-sm outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200"
+                    />
+                    <button
+                      onClick={commitEdit}
+                      className="rounded-lg bg-teal-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-600"
+                    >
+                      Запази
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => startEdit(s.peakTs)}
+                    className="mt-2 block w-full rounded-lg border border-dashed border-teal-100 px-3 py-1.5 text-left text-xs text-slate-500 hover:border-teal-300 hover:bg-teal-50/50"
+                  >
+                    {note ? (
+                      <span className="text-slate-700">
+                        🍴 {note}{" "}
+                        <span className="text-teal-600 underline">редактирай</span>
+                      </span>
+                    ) : (
+                      "+ добави бележка (храна / контекст)"
+                    )}
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
