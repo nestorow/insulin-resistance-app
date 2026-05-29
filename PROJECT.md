@@ -281,7 +281,7 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
 
 ### Бъдещи фази (Phase 8+)
 - [ ] TWA build → Play Store
-- [ ] Custom домейн (insulin-reset.bg?)
+- [ ] Custom домейн → **insulin-reset.bg** (apex канон, www→apex) — cutover-ът е account-side (registrar + Vercel + Google OAuth); чеклист: `docs/custom-domain-cutover.md`
 - [x] ~~CGM integration за biohacker lens~~ → /cgm + LibreView/Dexcom CSV parsers, AGP analytics, meal-annotated spikes (Phase 8)
 - [x] ~~AI асистент за хранителни въпроси~~ → Claude Haiku 4.5 + per-{tier, query} cache + 5/min rate limit, /foods (Phase 8)
 
