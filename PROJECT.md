@@ -6,7 +6,7 @@
 
 **Repo:** `nestorow/insulin-resistance-app` · **Deploy:** `insulin-resistance-app.vercel.app`
 **Бранд:** InsulinReset
-**Статус:** Phase 2 завършена + полирано + Phase 2.6 (conversion / прогресия / SEO) + Phase 2.7 (UX полиране + security + engagement) — всичките 8 модула + onboarding в production, Google sign-in работи, DB persistence за логнати потребители (Turso), localStorage остава cache за анонимни. PWA manifest + iOS PNG icons. Landing-ът има conversion scaffolding, дневният план е **прогресивен** в 4 фази, сайтът е discoverable (OG + sitemap + robots + MedicalWebPage + chapter/disease JSON-LD). Re-test опция, бележки в дневник, физиологични clamp-и, shimmer skeletons. **Trust layer**: blood markers AES-256-GCM enkriptirani at rest, Upstash rate limiting (30 writes/мин), append-only audit_log. **Push notifications**: VAPID + service worker + opt-in UI + Vercel Cron сутрешен reminder. **Email digest**: Resend + opt-in + неделен HTML email с прогрес + Vercel Cron. **Gamification**: streak/XP/badge engine с 5 badges, ProgressCard на /plan, BadgeGallery в /settings. **Optimistic rollback** при rate-limit. **Phase 8 в ход**: AI food assistant (Claude Haiku 4.5 BYOK + multi-turn + per-tier cache, 5/мин rate limit) в /foods; legal pages (/privacy + /terms); custom-domain prep + security headers; **CGM integration в /cgm** — LibreView + Dexcom Clarity CSV import, AGP analytics (TIR + CV + GMI + 24h profile), auto spike detection с meal labels, encrypted at rest; **CGM polish bundle (Phase 8.1)** — sample dataset demo button, ръчно single-reading въвеждане, CGM section в weekly email digest, два нови CGM badges (first_cgm + cgm_week); **Trends дашборд (`/trends`)** — cross-module 90-day timeline с hero strip + 8 sparkline grid + 6-rule insight engine. **266 unit + component test покритие.**
+**Статус:** Phase 2 завършена + полирано + Phase 2.6 (conversion / прогресия / SEO) + Phase 2.7 (UX полиране + security + engagement) — всичките 8 модула + onboarding в production, Google sign-in работи, DB persistence за логнати потребители (Turso), localStorage остава cache за анонимни. PWA manifest + iOS PNG icons. Landing-ът има conversion scaffolding, дневният план е **прогресивен** в 4 фази, сайтът е discoverable (OG + sitemap + robots + MedicalWebPage + chapter/disease JSON-LD). Re-test опция, бележки в дневник, физиологични clamp-и, shimmer skeletons. **Trust layer**: blood markers AES-256-GCM enkriptirani at rest, Upstash rate limiting (30 writes/мин), append-only audit_log. **Push notifications**: VAPID + service worker + opt-in UI + Vercel Cron сутрешен reminder. **Email digest**: Resend + opt-in + неделен HTML email с прогрес + Vercel Cron. **Gamification**: streak/XP/badge engine с 5 badges, ProgressCard на /plan, BadgeGallery в /settings. **Optimistic rollback** при rate-limit. **Phase 8 в ход**: AI food assistant (Claude Haiku 4.5 BYOK + multi-turn + per-tier cache, 5/мин rate limit) в /foods; legal pages (/privacy + /terms); custom-domain prep + security headers; **CGM integration в /cgm** — LibreView + Dexcom Clarity CSV import, AGP analytics (TIR + CV + GMI + 24h profile), auto spike detection с meal labels, encrypted at rest; **CGM polish bundle (Phase 8.1)** — sample dataset demo button, ръчно single-reading въвеждане, CGM section в weekly email digest, два нови CGM badges (first_cgm + cgm_week); **Trends дашборд (`/trends`)** — cross-module 90-day timeline с phase progress card + hero strip + 8 sparkline grid + 6-rule insight engine + day annotations overlay; **Performance pass** (recharts lazy-load на 4 route-а, -50% First Load); **GDPR export** (JSON dump в /settings + /trends/print за лекар); **Landing conversion** (TrustStrip + 5-question FAQ + sharper hero). **282 unit + component test покритие.**
 
 ---
 
@@ -326,6 +326,41 @@ Cross-module view, който проектира 4 модула върху об�
   - `activitySnapshot`: factual „N of 90 дни" coverage observation
 - ✅ **`TrendsInsights`** — kind-coded card list (improvement teal / concern rose / correlation amber / observation slate) с Lucide icons (TrendingUp / AlertTriangle / LineChart / Eye); короткий detail collapses ако omitted
 - ✅ **Тестове** (+33): trends pure helpers (axis shape, isoDay UTC, mergers, CGM daily agg, plan %, summary latest/delta/coverage/window bounds) = 16; insight rules — всяко правило positive case + min-N gate + min-effect gate = 17
+
+## Phase 8 — Trends polish: phase progress + day annotations + export + landing + perf
+
+Четири паралелни workstream-а, обединени в едно итерация.
+
+### Performance pass
+- ✅ Recharts (≈80kB) dynamic-import-нат на 4-те chart route-а през `next/dynamic` с `ssr:false` + skeleton fallback-и: `/cgm` (`CgmAgpChart`), `/trends` (`TrendsSparkGrid`), `/journal` (нов `JournalTrendChart`), `/markers` (нов `MarkersTrendChart`)
+- ✅ **Bundle deltas** (First Load JS): /cgm 234→115kB (-51%), /trends 231→121kB (-48%), /journal 224→110kB (-51%), /markers 224→110kB (-51%) — recharts вече не пада на initial paint
+
+### Trends polish — phase progress card
+- ✅ **`lib/protocol-day.ts`** — pure `protocolDay(completedAtIso, now?)` → `{ day (clamped 1-90), rawDays (uncapped), phase, pct, milestoneCrossedToday, nextMilestone, daysToNextMilestone }`; UTC-day math за да не desync-ва с daily-plan checkbox grid-а
+- ✅ **`TrendsPhaseCard`** — „Ден X от 90" counter + phase name + range; 4-segment progress bar (един segment per program phase, fill within current phase) — показва едновременно progress и фазови граници; phase goal copy; milestone proximity (Следващ etap, или 🎯 при milestone днес)
+- ✅ +9 тестове за protocol-day математиката (day boundary, clamping, phase transitions, milestones)
+
+### Trends polish — day annotations
+- ✅ **`lib/day-annotations.ts`** + **`actions/day-annotations.ts`** + DB table `day_annotations` (1 ред/user, AES-256-GCM blob); { date → ≤60 char label } map; trim+slice, empty=delete; rate-limit wired
+- ✅ **`TrendsAnnotationsEditor`** — collapsed-by-default panel; inline date+text+Enter; saved annotations като removable amber chips
+- ✅ **`TrendsSparkGrid`** приема optional `annotations` prop; `ReferenceLine` overlay (amber dashed strokes с label above) на всеки sparkline; `ifOverflow="extendDomain"` за gracefully clipping near edge
+- ✅ SyncOnLogin: 7-та sync функция (server wins on key collision)
+- ✅ `local-data.ts` wipe-on-signOut обновен
+- ✅ +7 тестове (trim/cap/empty-delete/multi-date)
+
+### Export — JSON dump + doctor PDF
+- ✅ **`lib/actions/export.ts`** — `exportUserDataAction` обединява 11 parallel queries (user, onboarding, symptoms, markers, plan, cgm readings, cgm annotations, day annotations, streak, badges, xp log) в един `UserExport` blob с version=1; server-side decryption на blood markers + CGM readings + двата annotation map-а; excludes Anthropic API key (credential), audit log (administrative), push subscriptions (device-specific); audit: нов `data.export` action
+- ✅ **`DataExportCard`** в /settings — blob → Object URL → anchor click → revoke pattern; browser-side, никакво server storage на export-а
+- ✅ **`/trends/print`** route + `TrendsPrintView` — A4-shaped single-column print-friendly изглед; robots:noindex; header с период + ден-от-90 + lens; key-numbers таблица; enumerated insights с BG labels (Подобрение / За преглед / Корелация / Наблюдение); methodology footer (AGP, Bergenstal, Bikman); window.print() бутон + back link, hidden чрез print: utility класове
+- ✅ TrendsModule header сега има „PDF за лекар →" pill
+
+### Landing conversion
+- ✅ **`TrustStrip`** под hero CTA — 4-signal row (Безплатно · Изцяло на български · Криптирано в покой · GDPR-friendly); адресира silent objections преди потребителя да скрол-не до pillars
+- ✅ **`LandingFaq`** — 5-question accordion преди closing CTA, ordered by frequency: medical disclaimer, hardware requirements, data handling, 90-day rationale, offline use; всеки отговор споменава релевантния feature (CGM optional, AES-256-GCM, GDPR export, 4 phases, PWA install)
+- ✅ Hero sub-copy преработено да описва конкретните mechanics („3-min тест → персонален план → следиш с маркери, CGM или симптоми") вместо generic „научно обоснован"
+- ✅ Нова page структура: hero → pillars → how → features → FAQ → closing CTA
+
+**Общо:** +6 commit-а в тази итерация; 266 → 282 unit + component тестове; всичките 7 chart route-а под 130kB First Load JS.
 
 ## Phase 8 — Privacy Policy + Terms of Use
 - ✅ **`/privacy`** — 12 секции на български: кои сме, какви данни събираме (с encryption mention), как ги ползваме, кои трети страни (Google, Turso, Vercel, Anthropic, Resend, Upstash, push providers), security posture, retention, GDPR права (вкл. жалба до КЗЛД), cookies, възраст, контакт; кратка версия card в началото
