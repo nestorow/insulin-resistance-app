@@ -86,6 +86,7 @@ export default function CgmManualEntry({ onSubmit }: Props) {
             <select
               value={unit}
               onChange={(e) => setUnit(e.target.value as "mg/dL" | "mmol/L")}
+              aria-label="Единица за стойността"
               className="rounded-lg border border-teal-200 bg-white px-2 py-2 text-sm outline-none focus:border-teal-400"
             >
               <option value="mg/dL">mg/dL</option>

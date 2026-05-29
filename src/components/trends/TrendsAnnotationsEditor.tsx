@@ -115,6 +115,7 @@ export default function TrendsAnnotationsEditor({ onChange }: Props) {
             <button
               key={d}
               onClick={() => remove(d)}
+              aria-label={`Премахни анотация „${text}" от ${d}`}
               title={`Премахни „${text}" от ${d}`}
               className="group flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-[11px] text-amber-900 ring-1 ring-amber-200 hover:bg-amber-200"
             >

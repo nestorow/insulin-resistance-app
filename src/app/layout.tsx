@@ -5,6 +5,7 @@ import AuthBadge from "@/components/AuthBadge";
 import SyncOnLogin from "@/components/SyncOnLogin";
 import Toast from "@/components/Toast";
 import GlobalFooter from "@/components/GlobalFooter";
+import SkipLink from "@/components/SkipLink";
 import { siteUrl } from "@/lib/site-url";
 
 const SITE_URL = siteUrl();
@@ -99,9 +100,16 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <SessionProvider>
+          <SkipLink />
           <SyncOnLogin />
           <AuthBadge />
-          <div className="flex-1">{children}</div>
+          {/* Landmark target for SkipLink. tabIndex=-1 makes the div
+              focusable programmatically without entering the natural
+              tab order — the skip link sends focus here, then Tab
+              continues into the main content. */}
+          <div id="main-content" tabIndex={-1} className="flex-1 outline-none">
+            {children}
+          </div>
           <GlobalFooter />
           <Toast />
         </SessionProvider>

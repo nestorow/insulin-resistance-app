@@ -164,6 +164,7 @@ export default function DailyPlanModule() {
                     <li key={i.id}>
                       <button
                         onClick={() => onToggle(i.id)}
+                        aria-pressed={done}
                         className={`flex w-full items-start gap-2.5 rounded-xl border p-3 text-left text-sm transition-colors ${
                           done
                             ? "border-teal-300 bg-teal-50 text-slate-500 line-through"
