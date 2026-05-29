@@ -38,6 +38,33 @@ entirely account-side. Work the checklist top to bottom.
 - [ ] Wait for propagation → Vercel shows **Valid Configuration** and
       issues the TLS cert automatically.
 
+### This project — registrar is SuperHosting.bg
+`insulin-reset.bg` uses SuperHosting nameservers
+(`ns263.superhosting.bg` / `ns264.superhosting.bg`). **Keep them** — that
+leaves email (MX/SPF/DKIM for `hello@insulin-reset.bg`) manageable on
+SuperHosting. Just add two records that point the web to Vercel:
+
+| Type  | Host / Name | Value                  | TTL  |
+|-------|-------------|------------------------|------|
+| A     | `@` (apex)  | `76.76.21.21`          | 3600 |
+| CNAME | `www`       | `cname.vercel-dns.com` | 3600 |
+
+How, in the SuperHosting panel (Контролен панел → домейна → DNS):
+- The top-level **„DNS Настройки"** screen's *„Насочване към IP адрес"* sets
+  only the **apex A record** — put `76.76.21.21` there.
+- For the **`www` CNAME**, open the full zone editor: **„Управление на DNS
+  зоната"** in the customer panel, or **cPanel → Zone Editor** if the domain
+  sits on a cPanel hosting account. Add `Type=CNAME`, `Name=www`,
+  `Record=cname.vercel-dns.com`.
+- **Edit, don't duplicate**: if a default apex `A` record already exists
+  (parking / SuperHosting hosting IP), change its value to `76.76.21.21`
+  instead of adding a second one; remove any conflicting `www` record.
+- Apex must be **A** (a CNAME on the bare domain is invalid).
+- Labels vary by panel version — if the zone editor is hard to find, ask
+  SuperHosting support verbatim: *"add A `@` → 76.76.21.21 and CNAME `www`
+  → cname.vercel-dns.com, keep the current nameservers."*
+- Propagation: **2–48 h** (per SuperHosting's own notice).
+
 ## 4. Environment variables (Vercel → Settings → Environment Variables)
 Set on **Production** scope:
 - [ ] `NEXT_PUBLIC_SITE_URL = https://insulin-reset.bg`  (no trailing slash)
