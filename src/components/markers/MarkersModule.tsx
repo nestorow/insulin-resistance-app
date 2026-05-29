@@ -1,15 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-} from "recharts";
+import dynamic from "next/dynamic";
 import {
   getMarkerLogs,
   addMarkerLog,
@@ -19,6 +11,15 @@ import {
 import { showToast } from "@/lib/toast";
 import { clampedNum } from "@/lib/numbers";
 import { SkeletonRows } from "@/components/ui/Skeleton";
+
+// Same lazy pattern as JournalTrendChart — defer recharts until after
+// the form + entry list paint.
+const MarkersTrendChart = dynamic(() => import("./MarkersTrendChart"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[220px] w-full animate-pulse rounded-lg bg-teal-50/40" />
+  ),
+});
 
 function today() {
   return new Date().toISOString().slice(0, 10);
@@ -177,16 +178,7 @@ export default function MarkersModule() {
           <h2 className="mb-3 text-sm font-semibold text-slate-700">
             HOMA-IR и инсулин на гладно
           </h2>
-          <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E8F5F0" />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Line type="monotone" dataKey="HOMA-IR" stroke="#1B7A6E" strokeWidth={2} connectNulls />
-              <Line type="monotone" dataKey="Инсулин" stroke="#06b6d4" strokeWidth={2} connectNulls />
-            </LineChart>
-          </ResponsiveContainer>
+          <MarkersTrendChart data={chartData} />
         </div>
       )}
 

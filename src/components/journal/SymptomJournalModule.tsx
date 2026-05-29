@@ -1,15 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-} from "recharts";
+import dynamic from "next/dynamic";
 import {
   getSymptomLogs,
   addSymptomLog,
@@ -19,6 +11,15 @@ import {
 import { showToast } from "@/lib/toast";
 import { clampedNum } from "@/lib/numbers";
 import { SkeletonRows } from "@/components/ui/Skeleton";
+
+// Trend chart pulls ~80kB of recharts — dynamic-import so the form +
+// recent-entries list paint first.
+const JournalTrendChart = dynamic(() => import("./JournalTrendChart"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[220px] w-full animate-pulse rounded-lg bg-teal-50/40" />
+  ),
+});
 
 const NOTES_MAX = 280;
 
@@ -198,16 +199,7 @@ export default function SymptomJournalModule() {
           <h2 className="mb-3 text-sm font-semibold text-slate-700">
             Енергия и brain fog (1-10)
           </h2>
-          <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E8F5F0" />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-              <YAxis domain={[0, 10]} tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Line type="monotone" dataKey="Енергия" stroke="#1B7A6E" strokeWidth={2} />
-              <Line type="monotone" dataKey="Brain fog" stroke="#f97316" strokeWidth={2} />
-            </LineChart>
-          </ResponsiveContainer>
+          <JournalTrendChart data={chartData} />
         </div>
       )}
 

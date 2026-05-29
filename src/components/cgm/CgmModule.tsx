@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import {
   addCgmReadings,
   clearCgmReadings,
@@ -16,10 +17,22 @@ import type { CgmReading } from "@/lib/cgm";
 import { SkeletonRows } from "@/components/ui/Skeleton";
 import { showToast } from "@/lib/toast";
 import CgmStatsCards from "./CgmStatsCards";
-import CgmAgpChart from "./CgmAgpChart";
 import CgmSpikeList from "./CgmSpikeList";
 import CgmUploader from "./CgmUploader";
 import CgmManualEntry from "./CgmManualEntry";
+
+// AGP chart is the heaviest piece on /cgm (recharts stacked-area + the
+// p10-p90 ribbon arithmetic). Dynamic-import it so the uploader, stats
+// cards, and spike list stream in first — recharts arrives after.
+const CgmAgpChart = dynamic(() => import("./CgmAgpChart"), {
+  ssr: false,
+  loading: () => (
+    <div className="mt-6 h-[300px] rounded-2xl border border-teal-100 bg-white p-4">
+      <div className="h-4 w-40 animate-pulse rounded bg-teal-50" />
+      <div className="mt-4 h-[230px] w-full animate-pulse rounded-lg bg-teal-50/60" />
+    </div>
+  ),
+});
 
 // Filter readings to the last N days — keeps stats clinically meaningful.
 // The AGP consensus calls for ≥14 days of data; 30 covers a typical

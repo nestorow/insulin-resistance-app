@@ -1,13 +1,33 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
 import type { TrendsData } from "@/lib/trends";
 import { computeInsights } from "@/lib/trend-insights";
 import { SkeletonRows } from "@/components/ui/Skeleton";
 import TrendsHero from "./TrendsHero";
 import TrendsInsights from "./TrendsInsights";
-import TrendsSparkGrid from "./TrendsSparkGrid";
+
+// SparkGrid loads recharts (~80kB). Splitting it out keeps the initial
+// /trends paint cheap — hero + insights stream first, the chart grid
+// drops in once recharts arrives.
+const TrendsSparkGrid = dynamic(() => import("./TrendsSparkGrid"), {
+  ssr: false,
+  loading: () => (
+    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div
+          key={i}
+          className="h-[126px] rounded-2xl border border-teal-100 bg-white p-4"
+        >
+          <div className="h-3 w-24 animate-pulse rounded bg-teal-50" />
+          <div className="mt-4 h-16 w-full animate-pulse rounded bg-teal-50/60" />
+        </div>
+      ))}
+    </div>
+  ),
+});
 
 // Top-level container — handles auth gating, data fetch, loading + empty
 // states. The page itself is sign-in-required (the underlying data lives
