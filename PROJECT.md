@@ -6,7 +6,7 @@
 
 **Repo:** `nestorow/insulin-resistance-app` · **Deploy:** `insulin-resistance-app.vercel.app`
 **Бранд:** InsulinReset
-**Статус:** Phase 2 завършена + полирано + Phase 2.6 (conversion / прогресия / SEO) + Phase 2.7 (UX полиране + security + engagement) — всичките 8 модула + onboarding в production, Google sign-in работи, DB persistence за логнати потребители (Turso), localStorage остава cache за анонимни. PWA manifest + iOS PNG icons. Landing-ът има conversion scaffolding, дневният план е **прогресивен** в 4 фази, сайтът е discoverable (OG + sitemap + robots + MedicalWebPage + chapter/disease JSON-LD). Re-test опция, бележки в дневник, физиологични clamp-и, shimmer skeletons. **Trust layer**: blood markers AES-256-GCM enkriptirani at rest, Upstash rate limiting (30 writes/мин), append-only audit_log. **Push notifications**: VAPID + service worker + opt-in UI + Vercel Cron сутрешен reminder. **Email digest**: Resend + opt-in + неделен HTML email с прогрес + Vercel Cron. **Gamification**: streak/XP/badge engine с 5 badges, ProgressCard на /plan, BadgeGallery в /settings. **Optimistic rollback** при rate-limit. **Phase 8 в ход**: AI food assistant (Claude Haiku 4.5 BYOK + multi-turn + per-tier cache, 5/мин rate limit) в /foods; legal pages (/privacy + /terms); custom-domain prep + security headers; **CGM integration в /cgm** — LibreView + Dexcom Clarity CSV import, AGP analytics (TIR + CV + GMI + 24h profile), auto spike detection с meal labels, encrypted at rest; **CGM polish bundle (Phase 8.1)** — sample dataset demo button, ръчно single-reading въвеждане, CGM section в weekly email digest, два нови CGM badges (first_cgm + cgm_week); **Trends дашборд (`/trends`)** — cross-module 90-day timeline с phase progress card + hero strip + 8 sparkline grid + 6-rule insight engine + day annotations overlay; **Performance pass** (recharts lazy-load на 4 route-а, -50% First Load); **GDPR export** (JSON dump в /settings + /trends/print за лекар); **Landing conversion** (TrustStrip + 5-question FAQ + sharper hero); **Component test + a11y pass** (44 нови component тест-а за CGM + Trends, skip link, aria-pressed на plan checks). **329 unit + component test покритие.**
+**Статус:** Phase 2 завършена + полирано + Phase 2.6 (conversion / прогресия / SEO) + Phase 2.7 (UX полиране + security + engagement) — всичките 8 модула + onboarding в production, Google sign-in работи, DB persistence за логнати потребители (Turso), localStorage остава cache за анонимни. PWA manifest + iOS PNG icons. Landing-ът има conversion scaffolding, дневният план е **прогресивен** в 4 фази, сайтът е discoverable (OG + sitemap + robots + MedicalWebPage + chapter/disease JSON-LD). Re-test опция, бележки в дневник, физиологични clamp-и, shimmer skeletons. **Trust layer**: blood markers AES-256-GCM enkriptirani at rest, Upstash rate limiting (30 writes/мин), append-only audit_log. **Push notifications**: VAPID + service worker + opt-in UI + Vercel Cron сутрешен reminder. **Email digest**: Resend + opt-in + неделен HTML email с прогрес + Vercel Cron. **Gamification**: streak/XP/badge engine с 5 badges, ProgressCard на /plan, BadgeGallery в /settings. **Optimistic rollback** при rate-limit. **Phase 8 в ход**: AI food assistant (Claude Haiku 4.5 BYOK + multi-turn + per-tier cache, 5/мин rate limit) в /foods; legal pages (/privacy + /terms); custom-domain prep + security headers; **CGM integration в /cgm** — LibreView + Dexcom Clarity CSV import, AGP analytics (TIR + CV + GMI + 24h profile), auto spike detection с meal labels, encrypted at rest; **CGM polish bundle (Phase 8.1)** — sample dataset demo button, ръчно single-reading въвеждане, CGM section в weekly email digest, два нови CGM badges (first_cgm + cgm_week); **Trends дашборд (`/trends`)** — cross-module 90-day timeline с phase progress card + hero strip + 8 sparkline grid + 6-rule insight engine + day annotations overlay; **Performance pass** (recharts lazy-load на 4 route-а, -50% First Load); **GDPR export** (JSON dump в /settings + /trends/print за лекар); **Landing conversion** (TrustStrip + 5-question FAQ + sharper hero); **Component test + a11y pass** (44 нови component тест-а за CGM + Trends, skip link, aria-pressed на plan checks). **Education search** (client-side диагнози+глави, английски заявки match-ват). **Onboarding save+resume** (draft auto-persist mid-flow, 7-day TTL). **357 unit + component теста (40 suites).**
 
 ---
 
@@ -422,7 +422,28 @@ Cross-module view, който проектира 4 модула върху об�
 - ✅ **.env.example**: `ANTHROPIC_API_KEY` с console URL
 - ✅ **Тестове**: 14 нови (queryCacheKey stability/whitespace/tier-split, system prompt tier carb cap + Bulgarian + medical guard + Bikman ref, MAX constants bounds, food-cache miss/hit/race-safe write)
 
-## Стил на работа
+## Phase 8 — Education search + onboarding save/resume
+
+Два малки, conversion- и UX-насочени слоя след основния Phase 8.
+
+### Client-side education search (`/education`)
+- ✅ **`lib/education-search.ts`** — pre-normalized search blob-ове, построени веднъж при module load; AND-token substring match (всеки токен трябва да съвпадне); diacritic/lowercase normalization
+- ✅ **`name_en` в блоба** — английски заявки („ALZHEIMER", „parkinson", „GERD", „fatty liver") резолват към българските disease записи без транслитерация (всяко заболяване вече имаше `name_en` поле, просто не беше в blob-а)
+- ✅ **`EducationModule.tsx`** — search input скрива body-map + chips докато филтрира (един filter наведнъж); единствен matching chapter се auto-expand-ва
+- ✅ **`scripts/education-search-smoke.mjs`** — бърз re-verify smoke script
+- ✅ **Тестове** (+14): `education-search.test.ts` — normalization, AND-token logic, EN/BG match, празна заявка
+
+### Onboarding save+resume mid-flow
+- ✅ **`lib/onboarding-draft.ts`** — отделен `{ step, answers, lens, tg, hdl, waist, hip, savedAt }` shape от завършения `OnboardingResult`, за да не се сблъсква draft-ът с „готов ли си?" redirect-а към /plan; **localStorage-only** (никога не се синхронизира към сървъра — drafts остаряват за часове, по-малка GDPR повърхност когато полу-въведени отговори не напускат устройството)
+- ✅ **7-day TTL** на read: drop-ва остарели draft-ове + purge на ключа на същия read (localStorage не натрупва безкрайно); `isDraftSubstantive` guard игнорира празни drafts (welcome screen остава за първи посетители, които веднага навигират встрани)
+- ✅ **`OnboardingFlow`** — ref-guarded mount-once hydration (Next 15 `useRouter()` връща нов обект всеки render → naive `[router]` dep loop-ва setter-ите покрай React update-depth guard-а); auto-save без debounce (localStorage writes са sync, <1KB — никога не искаме refresh да загуби последния keystroke); `clearOnboardingDraft` при finish (re-test в /settings почва наистина празен); „💾 Прогресът ти се запазва" microcopy на quiz step-а
+- ✅ **`/settings` re-test** handler + `local-data.ts` signOut wipe обновени с новия `ir-onboarding-draft-v1` ключ
+- ✅ **Тестове** (+14): `onboarding-draft.test.ts` (11 — round-trip, overwrite, 7-day TTL purge, malformed JSON, `isDraftSubstantive` cases) + OnboardingFlow component (+3 — resume from substantive draft, ignore empty, ignore 8-day-old)
+
+### Test typing fix
+- ✅ **jest mock typings** в `audit` / `morning-reminder` / `weekly-digest` suites — `jest.fn<Return, Args>()` явни генерици вместо implementation-inferred типове (празен args tuple → `mock(...args)` spread грешки; `never[]` rows; `ok: true` literal блокираше `ok: false`); `tsc --noEmit` + ESLint вече напълно clean, без промяна в runtime поведение
+
+**Total:** 329 → **357 теста (40 suites)**; tsc + lint + build clean.
 
 ## Стил на работа
 
