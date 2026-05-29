@@ -258,4 +258,26 @@ export async function initializeDatabase() {
   // re-written as an encrypted JSON blob in `encrypted_data` and the
   // plaintext columns are nulled out.
   await ensureColumn(client, "blood_markers", "encrypted_data", "TEXT");
+
+  // Migration (Phase 8): CGM readings — for the biohacker lens.
+  // One row per (user, day). The day's readings are stored as an
+  // AES-256-GCM blob (same scheme as blood markers) since glucose patterns
+  // are GDPR special-category data. `count` lets us run quick coverage
+  // queries (which days have data) without decrypting the payload.
+  await client.executeMultiple(`
+    CREATE TABLE IF NOT EXISTS cgm_readings (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      date TEXT NOT NULL,                 -- YYYY-MM-DD (UTC day key)
+      encrypted_payload TEXT NOT NULL,    -- AES-256-GCM of [{ts, mgdl, source}]
+      count INTEGER NOT NULL,             -- # readings in the day
+      source TEXT,                        -- 'libre'|'dexcom'|'manual'|'mixed'
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(user_id, date)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_cgm_readings_user_date
+      ON cgm_readings(user_id, date DESC);
+  `);
 }

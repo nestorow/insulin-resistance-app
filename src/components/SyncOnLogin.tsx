@@ -26,6 +26,11 @@ import {
   getMarkerLogs,
   addMarkerLog,
 } from "@/lib/tracking-storage";
+import {
+  getCgmReadingsAction,
+  saveCgmBatchAction,
+} from "@/lib/actions/cgm";
+import { addCgmReadings, getCgmReadings } from "@/lib/cgm-storage";
 
 // One-time per session bidirectional sync:
 //   server → localStorage  (writes mirrored to local, no echo back)
@@ -52,6 +57,7 @@ async function runSync() {
       syncDailyPlan(),
       syncSymptoms(),
       syncMarkers(),
+      syncCgm(),
     ]);
   } catch {
     // best-effort — next session will retry
@@ -122,5 +128,22 @@ async function syncMarkers() {
     if (!serverDates.has(e.date)) {
       await saveMarkerLogAction(e);
     }
+  }
+}
+
+async function syncCgm() {
+  // Symmetric pull/push. The server merge logic (saveCgmBatchAction)
+  // dedupes by ts, so pushing every local reading is safe — the action
+  // itself filters out duplicates that already exist server-side.
+  const local = getCgmReadings();
+  const server = (await getCgmReadingsAction()) ?? [];
+  if (server.length) {
+    addCgmReadings(server, { skipServer: true });
+  }
+  // Push any timestamps the server doesn't have yet.
+  const serverTs = new Set(server.map((r) => r.ts));
+  const localOnly = local.filter((r) => !serverTs.has(r.ts));
+  if (localOnly.length) {
+    await saveCgmBatchAction(localOnly);
   }
 }

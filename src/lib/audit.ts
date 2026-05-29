@@ -13,7 +13,9 @@ export type AuditAction =
   | "onboarding.clear"
   | "markers.save"
   | "symptoms.save"
-  | "plan.update";
+  | "plan.update"
+  | "cgm.save"
+  | "cgm.clear";
 
 export interface AuditMetadata {
   /** Target date for date-keyed writes (markers, symptoms, plan). */
@@ -22,6 +24,10 @@ export interface AuditMetadata {
   tier?: string;
   /** How many marker fields populated — counts only, never values. */
   fieldsPresent?: number;
+  /** Distinct days touched (used by cgm batch saves). */
+  daysWritten?: number;
+  /** Total readings touched (CGM batch saves only; counts, not values). */
+  readingCount?: number;
 }
 
 /**
