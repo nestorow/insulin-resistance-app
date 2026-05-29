@@ -112,6 +112,115 @@ describe("digestHtml — content + escaping", () => {
   });
 });
 
+describe("digestHtml — CGM block", () => {
+  const withCgm = (tirPct: number, over: Partial<DigestData> = {}) =>
+    sample({
+      cgm: {
+        tirPct,
+        meanMgdl: 110,
+        cvPct: 28,
+        spikeCount: 3,
+        daysCovered: 5,
+      },
+      ...over,
+    });
+
+  it("omits the CGM row when cgm is undefined", () => {
+    const html = _internal.digestHtml(sample({ cgm: undefined }));
+    expect(html).not.toContain("CGM ·");
+    expect(html).not.toContain("TIR");
+  });
+
+  it("renders the CGM row when cgm is present", () => {
+    const html = _internal.digestHtml(withCgm(72));
+    expect(html).toContain("CGM · последните 7 дни");
+    expect(html).toContain("TIR 72%");
+    expect(html).toContain("CV 28%");
+    expect(html).toContain("3 пика");
+    expect(html).toContain("5/7 дни");
+  });
+
+  it("singular 'пик' when spikeCount is 1", () => {
+    const html = _internal.digestHtml(
+      sample({
+        cgm: {
+          tirPct: 80,
+          meanMgdl: 105,
+          cvPct: 25,
+          spikeCount: 1,
+          daysCovered: 7,
+        },
+      })
+    );
+    expect(html).toContain("1 пик ·");
+  });
+
+  it("color-codes background green when TIR ≥ 70", () => {
+    const html = _internal.digestHtml(withCgm(75));
+    expect(html).toContain("#E8F5F0");
+  });
+
+  it("color-codes background amber when 50 ≤ TIR < 70", () => {
+    const html = _internal.digestHtml(withCgm(60));
+    expect(html).toContain("#FEF3C7");
+  });
+
+  it("color-codes background rose when TIR < 50", () => {
+    const html = _internal.digestHtml(withCgm(40));
+    expect(html).toContain("#FFE4E6");
+  });
+});
+
+describe("digestSubject — CGM-aware", () => {
+  it("prefers TIR-framed subject when CGM TIR ≥ 80 and no badges", () => {
+    const s = _internal.digestSubject(
+      sample({
+        currentStreak: 9,
+        cgm: {
+          tirPct: 84,
+          meanMgdl: 105,
+          cvPct: 24,
+          spikeCount: 2,
+          daysCovered: 7,
+        },
+      })
+    );
+    expect(s).toMatch(/TIR 84%/);
+  });
+
+  it("badges still win over CGM TIR", () => {
+    const s = _internal.digestSubject(
+      sample({
+        newBadges: ["7 дни в ред"],
+        cgm: {
+          tirPct: 85,
+          meanMgdl: 105,
+          cvPct: 24,
+          spikeCount: 2,
+          daysCovered: 7,
+        },
+      })
+    );
+    expect(s).toMatch(/Нова значка/);
+  });
+
+  it("ignores CGM when TIR < 80", () => {
+    const s = _internal.digestSubject(
+      sample({
+        currentStreak: 9,
+        cgm: {
+          tirPct: 65,
+          meanMgdl: 130,
+          cvPct: 38,
+          spikeCount: 6,
+          daysCovered: 7,
+        },
+      })
+    );
+    expect(s).toMatch(/9 дни в ред/);
+  });
+});
+
 describe("escapeHtml", () => {
   it("converts <, >, &, \", ' to entities", () => {
     expect(_internal.escapeHtml("<a href=\"&'\">x</a>")).toBe(

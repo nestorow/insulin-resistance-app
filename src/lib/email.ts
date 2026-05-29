@@ -16,6 +16,17 @@ export interface DigestData {
   symptomEntriesLast7d: number;
   newBadges: string[];         // Bulgarian badge names earned this week
   appUrl: string;              // canonical site for the CTA
+  /** Optional CGM stats — block omitted when the user has no readings. */
+  cgm?: CgmDigestStats;
+}
+
+/** Last-7-days CGM block. Numbers come from cron's server-side query. */
+export interface CgmDigestStats {
+  tirPct: number;          // 0-100 percent in 70-180
+  meanMgdl: number;        // mean glucose
+  cvPct: number;           // coefficient of variation (variability)
+  spikeCount: number;      // detected post-prandial spikes
+  daysCovered: number;     // distinct days with any reading
 }
 
 export type SendResult =
@@ -59,6 +70,11 @@ function digestSubject(d: DigestData): string {
   if (d.newBadges.length > 0) {
     return `InsulinReset · ${d.newBadges.length === 1 ? "Нова значка" : "Нови значки"} тази седмица 🏆`;
   }
+  // CGM users get glycemic framing when the data is in range — it's
+  // the most actionable feedback we can give a biohacker.
+  if (d.cgm && d.cgm.tirPct >= 80) {
+    return `InsulinReset · TIR ${d.cgm.tirPct}% тази седмица 📈`;
+  }
   if (d.currentStreak >= 7) {
     return `InsulinReset · ${d.currentStreak} дни в ред 🔥`;
   }
@@ -84,6 +100,42 @@ function digestHtml(d: DigestData): string {
         </td>
       </tr>`
       : "";
+
+  // CGM block: only rendered when the user has uploaded readings this
+  // week. TIR color follows the AGP consensus (≥70 green, ≥50 amber,
+  // else rose). Email clients don't honor inline class names, so colors
+  // are baked into the style attr.
+  const cgmRow = d.cgm
+    ? `
+      <tr>
+        <td style="padding: 16px 24px; background: ${
+          d.cgm.tirPct >= 70
+            ? "#E8F5F0"
+            : d.cgm.tirPct >= 50
+            ? "#FEF3C7"
+            : "#FFE4E6"
+        };">
+          <p style="margin: 0 0 8px; font-size: 14px; font-weight: 600; color: #114A42;">
+            📈 CGM · последните 7 дни
+          </p>
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+            <tr>
+              <td style="font-size: 13px; color: #166258; padding-right: 12px;">
+                <strong>TIR ${d.cgm.tirPct}%</strong> (70–180 mg/dL)
+              </td>
+              <td style="font-size: 13px; color: #166258; padding-right: 12px;">
+                CV ${d.cgm.cvPct}%
+              </td>
+              <td style="font-size: 13px; color: #166258;">
+                ${d.cgm.spikeCount} ${
+                  d.cgm.spikeCount === 1 ? "пик" : "пика"
+                } · ${d.cgm.daysCovered}/7 дни
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>`
+    : "";
 
   return `<!DOCTYPE html>
 <html lang="bg">
@@ -148,6 +200,8 @@ function digestHtml(d: DigestData): string {
               </table>
             </td>
           </tr>
+
+          ${cgmRow}
 
           ${badgeRow}
 

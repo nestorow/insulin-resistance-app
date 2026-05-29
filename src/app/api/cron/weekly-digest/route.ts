@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { sendDigest, type DigestData } from "@/lib/email";
+import { sendDigest, type CgmDigestStats, type DigestData } from "@/lib/email";
 import { getProgress } from "@/lib/gamification";
 import { BADGES } from "@/lib/gamification";
 import { siteUrl } from "@/lib/site-url";
+import { decrypt } from "@/lib/encryption";
+import type { CgmReading } from "@/lib/cgm";
+import { detectSpikes, timeInRange, variability } from "@/lib/cgm-stats";
 
 // Weekly digest cron — runs Sundays at 16:00 UTC (≈ 18-19 BG).
 // Same bearer-token gate as the morning push cron; deny-by-default
@@ -64,6 +67,11 @@ export async function GET(req: Request) {
         .map((b) => badgeNames.get(String(b.badge_id)) ?? null)
         .filter((x): x is string => x !== null);
 
+      // CGM block is optional — fetchCgmStats returns null when the user
+      // has no readings in the last 7 days, and the template renders no
+      // CGM row in that case.
+      const cgm = await fetchCgmStats(userId, sevenDaysAgo);
+
       const data: DigestData = {
         to: email,
         name,
@@ -74,6 +82,7 @@ export async function GET(req: Request) {
         symptomEntriesLast7d,
         newBadges,
         appUrl: SITE_URL,
+        cgm: cgm ?? undefined,
       };
 
       const result = await sendDigest(data);
@@ -86,4 +95,52 @@ export async function GET(req: Request) {
   }
 
   return NextResponse.json({ ok: true, sent, skipped, failed });
+}
+
+/**
+ * Pull encrypted CGM blobs for the last 7 days, decrypt, then run the
+ * pure-function stat helpers from cgm-stats.ts. Returns null when the
+ * user has no readings in the window — the email simply omits the CGM
+ * row, no special-casing in the template.
+ *
+ * Cheap query — the (user_id, date DESC) index makes it a small scan.
+ */
+async function fetchCgmStats(
+  userId: string,
+  sinceDate: string
+): Promise<CgmDigestStats | null> {
+  const res = await db.execute({
+    sql: `SELECT encrypted_payload
+            FROM cgm_readings
+           WHERE user_id = ? AND date >= ?`,
+    args: [userId, sinceDate],
+  });
+  if (res.rows.length === 0) return null;
+
+  const readings: CgmReading[] = [];
+  for (const row of res.rows) {
+    try {
+      const day = JSON.parse(
+        decrypt(String(row.encrypted_payload))
+      ) as CgmReading[];
+      for (const r of day) readings.push(r);
+    } catch {
+      // skip bad rows — never block the digest on one corrupt blob
+    }
+  }
+  if (readings.length === 0) return null;
+  readings.sort((a, b) => a.ts.localeCompare(b.ts));
+
+  const t = timeInRange(readings);
+  const v = variability(readings);
+  const spikes = detectSpikes(readings);
+  const daysCovered = new Set(readings.map((r) => r.ts.slice(0, 10))).size;
+
+  return {
+    tirPct: t.tir,
+    meanMgdl: Math.round(v.mean),
+    cvPct: Math.round(v.cv),
+    spikeCount: spikes.length,
+    daysCovered,
+  };
 }
