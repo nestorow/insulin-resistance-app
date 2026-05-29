@@ -19,6 +19,7 @@ import CgmStatsCards from "./CgmStatsCards";
 import CgmAgpChart from "./CgmAgpChart";
 import CgmSpikeList from "./CgmSpikeList";
 import CgmUploader from "./CgmUploader";
+import CgmManualEntry from "./CgmManualEntry";
 
 // Filter readings to the last N days — keeps stats clinically meaningful.
 // The AGP consensus calls for ≥14 days of data; 30 covers a typical
@@ -109,6 +110,8 @@ export default function CgmModule() {
       </header>
 
       <CgmUploader onParsed={onUpload} />
+
+      <CgmManualEntry onSubmit={(r) => onUpload([r])} />
 
       {!mounted && (
         <div className="mt-8">
