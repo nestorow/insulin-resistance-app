@@ -11,6 +11,7 @@ const LINKS = [
   { href: "/fasting", label: "Гладуване" },
   { href: "/supplements", label: "Добавки" },
   { href: "/cgm", label: "CGM" },
+  { href: "/trends", label: "Тренд" },
   { href: "/education", label: "Образование" },
   { href: "/settings", label: "Настройки" },
 ];
