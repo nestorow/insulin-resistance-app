@@ -39,6 +39,14 @@ import {
   getCgmAnnotations,
   setCgmAnnotation,
 } from "@/lib/cgm-annotations";
+import {
+  getDayAnnotationsAction,
+  saveDayAnnotationAction,
+} from "@/lib/actions/day-annotations";
+import {
+  getDayAnnotations,
+  setDayAnnotation,
+} from "@/lib/day-annotations";
 
 // One-time per session bidirectional sync:
 //   server → localStorage  (writes mirrored to local, no echo back)
@@ -67,6 +75,7 @@ async function runSync() {
       syncMarkers(),
       syncCgm(),
       syncCgmAnnotations(),
+      syncDayAnnotations(),
     ]);
   } catch {
     // best-effort — next session will retry
@@ -168,6 +177,21 @@ async function syncCgmAnnotations() {
   for (const [ts, note] of Object.entries(local)) {
     if (!(ts in server)) {
       await saveCgmAnnotationAction(ts, note);
+    }
+  }
+}
+
+async function syncDayAnnotations() {
+  // Same merge rules as syncCgmAnnotations — server wins on key
+  // collision, local-only keys push up.
+  const local = getDayAnnotations();
+  const server = (await getDayAnnotationsAction()) ?? {};
+  for (const [date, note] of Object.entries(server)) {
+    setDayAnnotation(date, note, { skipServer: true });
+  }
+  for (const [date, note] of Object.entries(local)) {
+    if (!(date in server)) {
+      await saveDayAnnotationAction(date, note);
     }
   }
 }

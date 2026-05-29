@@ -11,6 +11,7 @@ const KEYS = [
   "ir-marker-log-v1",
   "ir-cgm-readings-v1",
   "ir-cgm-annotations-v1",
+  "ir-day-annotations-v1",
 ];
 
 export function clearAllLocalData(): void {

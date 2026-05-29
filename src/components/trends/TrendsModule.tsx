@@ -5,7 +5,9 @@ import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
 import type { TrendsData } from "@/lib/trends";
 import { computeInsights } from "@/lib/trend-insights";
+import type { AnnotationMap } from "@/lib/day-annotations";
 import { SkeletonRows } from "@/components/ui/Skeleton";
+import TrendsAnnotationsEditor from "./TrendsAnnotationsEditor";
 import TrendsHero from "./TrendsHero";
 import TrendsInsights from "./TrendsInsights";
 import TrendsPhaseCard from "./TrendsPhaseCard";
@@ -39,6 +41,7 @@ export default function TrendsModule() {
   const { status } = useSession();
   const [data, setData] = useState<TrendsData | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [annotations, setAnnotations] = useState<AnnotationMap>({});
 
   // Hoisted above the early returns to satisfy rules-of-hooks; it's a
   // cheap pure call so the wasted work on the unauth/loading paths is
@@ -125,7 +128,8 @@ export default function TrendsModule() {
           <TrendsPhaseCard />
           <TrendsHero summary={data!.summary} />
           <TrendsInsights insights={insights} />
-          <TrendsSparkGrid days={data!.days} />
+          <TrendsAnnotationsEditor onChange={setAnnotations} />
+          <TrendsSparkGrid days={data!.days} annotations={annotations} />
         </>
       )}
     </div>

@@ -3,12 +3,14 @@
 import {
   Line,
   LineChart,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
 import type { TrendDay } from "@/lib/trends";
+import type { AnnotationMap } from "@/lib/day-annotations";
 
 // Small-multiples grid — one mini chart per metric on a shared 90-day
 // X-axis. Pattern: lots of context at a glance, no comparison needed
@@ -18,6 +20,8 @@ import type { TrendDay } from "@/lib/trends";
 
 interface Props {
   days: TrendDay[];
+  /** Optional date→label overlay rendered as amber vertical lines. */
+  annotations?: AnnotationMap;
 }
 
 interface MetricDef {
@@ -88,7 +92,7 @@ const METRICS: MetricDef[] = [
   },
 ];
 
-export default function TrendsSparkGrid({ days }: Props) {
+export default function TrendsSparkGrid({ days, annotations = {} }: Props) {
   // Drop metrics that have zero data — keeps the grid focused on what
   // the user actually tracks. (A first-week user with only plan checks
   // sees just the plan sparkline, not 7 empty boxes.)
@@ -98,16 +102,39 @@ export default function TrendsSparkGrid({ days }: Props) {
 
   if (visible.length === 0) return null;
 
+  // Only annotations that fall inside the rendered window deserve a
+  // reference line — drop the rest so recharts doesn't waste markers
+  // on dates that don't exist on the X-axis.
+  const visibleAnnotations: { label: string; xValue: string }[] = [];
+  const axisDates = new Set(days.map((d) => d.date.slice(5)));
+  for (const [date, label] of Object.entries(annotations)) {
+    const mmDd = date.slice(5);
+    if (axisDates.has(mmDd)) visibleAnnotations.push({ label, xValue: mmDd });
+  }
+
   return (
     <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
       {visible.map((m) => (
-        <Spark key={String(m.key)} metric={m} days={days} />
+        <Spark
+          key={String(m.key)}
+          metric={m}
+          days={days}
+          annotations={visibleAnnotations}
+        />
       ))}
     </div>
   );
 }
 
-function Spark({ metric, days }: { metric: MetricDef; days: TrendDay[] }) {
+function Spark({
+  metric,
+  days,
+  annotations,
+}: {
+  metric: MetricDef;
+  days: TrendDay[];
+  annotations: { label: string; xValue: string }[];
+}) {
   // Recharts wants `null` (not undefined) for gaps when connectNulls is
   // on. We also strip the leading-zero gap by emitting the date label
   // only — the line component reads the metric.
@@ -175,6 +202,24 @@ function Spark({ metric, days }: { metric: MetricDef; days: TrendDay[] }) {
             connectNulls
             isAnimationActive={false}
           />
+          {/* Annotation overlay — amber vertical lines with the label
+              above each. Rendered last so the line sits over the data. */}
+          {annotations.map((a) => (
+            <ReferenceLine
+              key={a.xValue + a.label}
+              x={a.xValue}
+              stroke="#F5D060"
+              strokeDasharray="2 2"
+              strokeWidth={1.5}
+              label={{
+                value: a.label,
+                position: "top",
+                fontSize: 9,
+                fill: "#92590B",
+              }}
+              ifOverflow="extendDomain"
+            />
+          ))}
         </LineChart>
       </ResponsiveContainer>
     </div>

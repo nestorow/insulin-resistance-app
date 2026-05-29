@@ -292,5 +292,17 @@ export async function initializeDatabase() {
       encrypted_payload TEXT NOT NULL,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
+
+    -- Day-level annotations for the trends dashboard ("започнах кето",
+    -- "ваканция", "бях болен"). Same single-row-per-user encrypted blob
+    -- pattern as cgm_annotations — the map is { date → label } and the
+    -- read pattern is "load all, overlay as vertical reference lines
+    -- on every sparkline".
+    CREATE TABLE IF NOT EXISTS day_annotations (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL UNIQUE,
+      encrypted_payload TEXT NOT NULL,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
   `);
 }
