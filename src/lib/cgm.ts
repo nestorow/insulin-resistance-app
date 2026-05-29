@@ -6,7 +6,7 @@
 // ingest so downstream code never branches on units. (mg/dL = mmol/L ×
 // 18.0182, rounded to 1 decimal.)
 
-export type CgmSource = "libre" | "dexcom" | "manual";
+export type CgmSource = "libre" | "dexcom" | "manual" | "demo";
 
 export interface CgmReading {
   /** ISO-8601 UTC timestamp, e.g. "2026-05-20T14:32:00.000Z". */

@@ -3,14 +3,15 @@
 import { useState } from "react";
 import { parseCgm } from "@/lib/cgm-parser";
 import type { CgmReading } from "@/lib/cgm";
+import { generateSampleReadings } from "@/lib/cgm-sample-data";
 import { showToast } from "@/lib/toast";
 
-// CSV upload card. Lives outside CgmModule so the heavier chart bundle
-// doesn't block the file picker — the picker is the first thing a new
-// user sees on /cgm.
+// CSV upload card + "demo data" affordance for users without a CGM.
+// The demo path is purely local — `skipServer: true` so the synthetic
+// readings never reach Turso; clearing wipes them with one click.
 
 interface Props {
-  onParsed: (readings: CgmReading[]) => void;
+  onParsed: (readings: CgmReading[], opts?: { skipServer?: boolean }) => void;
 }
 
 export default function CgmUploader({ onParsed }: Props) {
@@ -37,6 +38,14 @@ export default function CgmUploader({ onParsed }: Props) {
     } finally {
       setBusy(false);
     }
+  }
+
+  function onSample() {
+    const readings = generateSampleReadings();
+    // Local-only — synthetic data is never useful on the server, and
+    // mixing it with the user's real readings would muddy real stats.
+    onParsed(readings, { skipServer: true });
+    showToast(`Заредени ${readings.length} примерни стойности.`);
   }
 
   return (
@@ -70,6 +79,20 @@ export default function CgmUploader({ onParsed }: Props) {
         />
         {busy ? "Чета файла…" : "Избери CSV файл"}
       </label>
+
+      <div className="mt-3 flex items-center gap-3 text-xs">
+        <span className="text-slate-400">или</span>
+        <button
+          onClick={onSample}
+          disabled={busy}
+          className="rounded-full border border-teal-200 px-3 py-1 text-teal-700 transition-colors hover:bg-teal-50 disabled:opacity-50"
+        >
+          Зареди примерни данни
+        </button>
+        <span className="text-slate-400">
+          (14 синтетични дни — за да видиш как изглежда анализът)
+        </span>
+      </div>
     </div>
   );
 }

@@ -47,14 +47,19 @@ export default function CgmModule() {
   const agp = useMemo(() => agpProfile(windowed), [windowed]);
   const spikes = useMemo(() => detectSpikes(windowed), [windowed]);
 
-  function onUpload(parsed: CgmReading[]) {
+  function onUpload(
+    parsed: CgmReading[],
+    opts: { skipServer?: boolean } = {}
+  ) {
     if (!parsed.length) {
       showToast("Не открих CGM редове във файла.");
       return;
     }
-    const { local } = addCgmReadings(parsed);
+    const { local } = addCgmReadings(parsed, opts);
     setReadings(local);
-    showToast(`Добавени ${parsed.length} стойности.`);
+    if (!opts.skipServer) {
+      showToast(`Добавени ${parsed.length} стойности.`);
+    }
   }
 
   function onClear() {
@@ -74,6 +79,14 @@ export default function CgmModule() {
     const days = new Set(windowed.map((r) => r.ts.slice(0, 10)));
     return days.size;
   }, [windowed]);
+
+  // "Demo mode" = ALL current readings come from the synthetic dataset.
+  // We don't flag a partial mix (real upload + demo) because once real
+  // data exists the user is committed; we just stop showing the banner.
+  const isDemo = useMemo(
+    () => readings.length > 0 && readings.every((r) => r.source === "demo"),
+    [readings]
+  );
 
   return (
     <div className="mx-auto w-full max-w-3xl px-5 py-10">
@@ -113,17 +126,35 @@ export default function CgmModule() {
 
       {mounted && readings.length > 0 && (
         <>
+          {isDemo && (
+            <div className="mt-4 flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+              <span>
+                <span className="font-semibold">Демо данни.</span> 14 синтетични
+                дни — показват как изглежда анализът. Изтрий, преди да качиш
+                реален CSV.
+              </span>
+              <button
+                onClick={onClear}
+                className="ml-3 rounded-full border border-amber-300 px-3 py-1 font-medium hover:bg-amber-100"
+              >
+                Изтрий демо
+              </button>
+            </div>
+          )}
+
           <div className="mt-2 mb-4 flex items-center justify-between text-xs text-slate-500">
             <span>
               {windowed.length} стойности · {coverageDays} дни (последните{" "}
               {WINDOW_DAYS})
             </span>
-            <button
-              onClick={onClear}
-              className="rounded-full border border-rose-200 px-3 py-1 text-rose-600 hover:bg-rose-50"
-            >
-              Изтрий
-            </button>
+            {!isDemo && (
+              <button
+                onClick={onClear}
+                className="rounded-full border border-rose-200 px-3 py-1 text-rose-600 hover:bg-rose-50"
+              >
+                Изтрий
+              </button>
+            )}
           </div>
 
           <CgmStatsCards tir={tir} vari={vari} />
