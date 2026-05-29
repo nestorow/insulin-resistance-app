@@ -3,10 +3,13 @@ import LandingCTA from "@/components/LandingCTA";
 import FourPillars from "@/components/landing/FourPillars";
 import HowItWorks from "@/components/landing/HowItWorks";
 import FeatureGrid from "@/components/landing/FeatureGrid";
+import TrustStrip from "@/components/landing/TrustStrip";
+import LandingFaq from "@/components/landing/LandingFaq";
 
 // Landing page — mirrors thyroidrehab.bg structure but with conversion
-// scaffolding: punchier hero, the 4 pillars (WHAT), a 3-step path
-// (HOW), the 8 modules grid (WHERE), then CTA + disclaimer.
+// scaffolding: punchier hero + trust strip, the 4 pillars (WHAT), a
+// 3-step path (HOW), the 8 modules grid (WHERE), FAQ (objections),
+// then CTA + disclaimer.
 
 export default function Home() {
   return (
@@ -22,14 +25,17 @@ export default function Home() {
           Свали инсулина си — преди да стане диабет
         </p>
         <p className="mx-auto mb-8 max-w-xl text-base leading-relaxed text-slate-600 sm:text-lg">
-          90-дневен научно обоснован протокол по д-р Benjamin Bikman.
-          Безплатно, на български, без реклами.
+          90-дневен протокол по д-р Benjamin Bikman, преведен в дневен
+          чеклист. Започваш с 3-минутен тест, получаваш персонален план,
+          следиш напредъка обективно с кръвни маркери, CGM или просто симптоми.
         </p>
 
         <LandingCTA />
         <p className="mt-3 text-xs text-slate-400">
           ⏱ Тестът отнема около 3 минути
         </p>
+
+        <TrustStrip />
       </section>
 
       {/* The 4 pillars — answer to "what do you actually do?" */}
@@ -53,6 +59,16 @@ export default function Home() {
         </div>
       </section>
 
+      {/* FAQ — direct answers to the 5 most common objections */}
+      <LandingFaq />
+
+      {/* Final closing CTA */}
+      <section className="flex flex-col items-center px-4 pb-16 pt-4">
+        <LandingCTA />
+        <p className="mt-3 text-xs text-slate-400">
+          ⏱ Тестът отнема около 3 минути
+        </p>
+      </section>
     </main>
   );
 }
