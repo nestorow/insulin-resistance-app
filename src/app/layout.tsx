@@ -7,6 +7,7 @@ import Toast from "@/components/Toast";
 import GlobalFooter from "@/components/GlobalFooter";
 import SkipLink from "@/components/SkipLink";
 import AppShell from "@/components/AppShell";
+import RegisterServiceWorker from "@/components/RegisterServiceWorker";
 import { siteUrl } from "@/lib/site-url";
 
 const SITE_URL = siteUrl();
@@ -101,6 +102,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <SessionProvider>
+          <RegisterServiceWorker />
           <SkipLink />
           <SyncOnLogin />
           <AuthBadge />

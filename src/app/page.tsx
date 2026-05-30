@@ -1,5 +1,6 @@
 import Logo from "@/components/Logo";
 import LandingCTA from "@/components/LandingCTA";
+import InstallAppCTA from "@/components/InstallAppCTA";
 import FourPillars from "@/components/landing/FourPillars";
 import HowItWorks from "@/components/landing/HowItWorks";
 import FeatureGrid from "@/components/landing/FeatureGrid";
@@ -69,6 +70,10 @@ export default function Home() {
         <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-slate-400">
           <Clock className="h-3.5 w-3.5" /> Тестът отнема около 3 минути
         </p>
+
+        {/* Secondary CTA — install the PWA (self-hides if not installable,
+            already installed, or previously dismissed). */}
+        <InstallAppCTA />
       </section>
     </main>
   );

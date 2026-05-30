@@ -50,3 +50,10 @@ self.addEventListener("notificationclick", (event) => {
     })
   );
 });
+
+// Installability requirement: Chrome only fires `beforeinstallprompt` when the
+// active service worker registers a fetch handler. We intentionally do NOT
+// cache (see the note at the top), so this is a no-op that lets every request
+// proceed to the network exactly as before — it exists purely to satisfy the
+// install criterion that powers the "Инсталирай приложението" CTA.
+self.addEventListener("fetch", () => {});
