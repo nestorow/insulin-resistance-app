@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 // Update this when the policy changes substantively (data flows, third
 // parties, retention). Plain ISO string — easy to diff in git.
-const LAST_UPDATED = "2026-05-28";
+const LAST_UPDATED = "2026-06-10";
 const CONTACT_EMAIL = "nestorow@gmail.com";
 
 export default function PrivacyPage() {
@@ -118,6 +118,29 @@ export default function PrivacyPage() {
             "AI асистент за храни — въпросът ти се изпраща към Anthropic Claude (без твоето user ID).",
           ]}
         />
+        <p className="mt-3">
+          <strong>Правно основание (GDPR):</strong>
+        </p>
+        <List
+          items={[
+            <>
+              <strong>Съгласие (чл. 6, пар. 1, б. „а“)</strong> — за създаване на
+              акаунт и предоставяне на услугата.
+            </>,
+            <>
+              <strong>
+                Изрично съгласие за специална категория (чл. 9, пар. 2, б. „а“)
+              </strong>{" "}
+              — здравните данни (кръвни маркери, HOMA-IR, дневник на симптомите,
+              CGM) се обработват само въз основа на твоето изрично съгласие, което
+              можеш да оттеглиш по всяко време.
+            </>,
+            <>
+              <strong>Изпълнение на услугата (чл. 6, пар. 1, б. „б“)</strong> — за
+              функционирането на 90-дневния протокол.
+            </>,
+          ]}
+        />
       </Section>
 
       <Section title="4. Анонимни потребители">
@@ -170,6 +193,13 @@ export default function PrivacyPage() {
         <p className="mt-3">
           <strong>Не продаваме данни. Не показваме реклами. Не правим
           tracking за маркетинг.</strong>
+        </p>
+        <p className="mt-3">
+          <strong>Международно предаване:</strong> някои доставчици (Vercel,
+          Anthropic, Resend, Upstash, Google) са базирани в САЩ. Предаването на
+          данни се извършва въз основа на стандартни договорни клаузи (SCC)
+          съгласно чл. 46 от GDPR и/или Рамката за защита на данните ЕС–САЩ
+          (EU-US Data Privacy Framework).
         </p>
       </Section>
 
