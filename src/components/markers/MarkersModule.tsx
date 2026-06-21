@@ -12,18 +12,9 @@ import { showToast } from "@/lib/toast";
 import { clampedNum } from "@/lib/numbers";
 import { SkeletonRows } from "@/components/ui/Skeleton";
 import NumberField, { rangeError } from "@/components/ui/NumberField";
-import { formatDateBg } from "@/lib/date-format";
+import { formatDateBg, formatDayMonthBg } from "@/lib/date-format";
+import { MARKER_RANGES as RANGES } from "@/lib/health-ranges";
 import { FlaskConical } from "lucide-react";
-
-// Physiological ranges for the marker fields (shared by the inline validator
-// and the save-time clamp so a valid value is never dropped).
-const RANGES = {
-  homaIr: { min: 0, max: 50, unit: "" },
-  fastingInsulin: { min: 0, max: 100, unit: "µU/mL" },
-  hba1c: { min: 3, max: 15, unit: "%" },
-  tg: { min: 0, max: 2000, unit: "mg/dL" },
-  hdl: { min: 0, max: 200, unit: "mg/dL" },
-} as const;
 
 // Same lazy pattern as JournalTrendChart — defer recharts until after
 // the form + entry list paint.
@@ -111,7 +102,7 @@ export default function MarkersModule() {
   }
 
   const chartData = logs.map((l) => ({
-    date: l.date.slice(5),
+    date: formatDayMonthBg(l.date),
     "HOMA-IR": l.homaIr ?? null,
     "Инсулин": l.fastingInsulin ?? null,
   }));
@@ -136,6 +127,9 @@ export default function MarkersModule() {
               onChange={(e) => setDate(e.target.value)}
               className="w-full rounded-lg border border-teal-200 bg-white px-3 py-2 text-sm outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200"
             />
+            <span className="mt-1 block text-xs text-slate-500">
+              {formatDateBg(date)} · ДД.ММ.ГГГГ
+            </span>
           </Field>
           <div />
           <NumberField

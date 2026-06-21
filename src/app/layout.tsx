@@ -3,6 +3,7 @@ import "./globals.css";
 import SessionProvider from "@/components/SessionProvider";
 import AuthBadge from "@/components/AuthBadge";
 import SyncOnLogin from "@/components/SyncOnLogin";
+import MigrateLocalData from "@/components/MigrateLocalData";
 import Toast from "@/components/Toast";
 import GlobalFooter from "@/components/GlobalFooter";
 import SkipLink from "@/components/SkipLink";
@@ -115,6 +116,7 @@ export default function RootLayout({
           <RegisterServiceWorker />
           <SkipLink />
           <SyncOnLogin />
+          <MigrateLocalData />
           <AuthBadge />
           {/* AppShell adds the desktop sidebar + mobile bottom-tab nav for
               app routes, and renders bare (no chrome) on marketing / funnel /

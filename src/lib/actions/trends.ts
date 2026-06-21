@@ -16,6 +16,7 @@ import {
   TRENDS_WINDOW_DAYS,
   type TrendsData,
 } from "@/lib/trends";
+import { sanitizeMarkerEntry, sanitizeSymptomEntry } from "@/lib/health-ranges";
 
 // Single read endpoint for the /trends dashboard. Reaches into the four
 // stores (blood_markers, symptom_log, cgm_readings, daily_plan), filters
@@ -49,8 +50,9 @@ export async function getTrendsAction(): Promise<TrendsData | null> {
   ]);
 
   let days = axis;
-  days = mergeMarkers(days, markers);
-  days = mergeSymptoms(days, symptoms);
+  // Drop out-of-range values from old DB rows so they don't skew trends.
+  days = mergeMarkers(days, markers.map(sanitizeMarkerEntry));
+  days = mergeSymptoms(days, symptoms.map(sanitizeSymptomEntry));
   days = mergeCgm(days, cgm);
   days = mergePlan(days, plan);
 

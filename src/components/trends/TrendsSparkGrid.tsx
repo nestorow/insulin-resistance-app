@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import type { TrendDay } from "@/lib/trends";
 import type { AnnotationMap } from "@/lib/day-annotations";
+import { formatDayMonthBg } from "@/lib/date-format";
 
 // Small-multiples grid — one mini chart per metric on a shared 90-day
 // X-axis. Pattern: lots of context at a glance, no comparison needed
@@ -106,10 +107,10 @@ export default function TrendsSparkGrid({ days, annotations = {} }: Props) {
   // reference line — drop the rest so recharts doesn't waste markers
   // on dates that don't exist on the X-axis.
   const visibleAnnotations: { label: string; xValue: string }[] = [];
-  const axisDates = new Set(days.map((d) => d.date.slice(5)));
+  const axisDates = new Set(days.map((d) => formatDayMonthBg(d.date)));
   for (const [date, label] of Object.entries(annotations)) {
-    const mmDd = date.slice(5);
-    if (axisDates.has(mmDd)) visibleAnnotations.push({ label, xValue: mmDd });
+    const ddMm = formatDayMonthBg(date);
+    if (axisDates.has(ddMm)) visibleAnnotations.push({ label, xValue: ddMm });
   }
 
   return (
@@ -141,7 +142,7 @@ function Spark({
   const data = days.map((d) => {
     const v = d[metric.key];
     return {
-      date: d.date.slice(5), // MM-DD
+      date: formatDayMonthBg(d.date), // ДД.ММ
       value: typeof v === "number" ? v : null,
     };
   });
@@ -164,7 +165,7 @@ function Spark({
             {metric.title}
           </span>
           {metric.unit && (
-            <span className="ml-1 text-[11px] text-slate-400">
+            <span className="ml-1 text-xs text-slate-400">
               {metric.unit}
             </span>
           )}
@@ -179,7 +180,7 @@ function Spark({
         <LineChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
           <XAxis
             dataKey="date"
-            tick={{ fontSize: 10 }}
+            tick={{ fontSize: 11 }}
             interval={14}
             tickLine={false}
             axisLine={false}

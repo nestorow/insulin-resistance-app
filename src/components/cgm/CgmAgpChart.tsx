@@ -56,7 +56,7 @@ export default function CgmAgpChart({ bands }: Props) {
         <h2 className="text-sm font-semibold text-slate-700">
           24-часов AGP профил
         </h2>
-        <span className="text-[11px] text-slate-500">
+        <span className="text-xs text-slate-500">
           ribbon = p10–p90 (външен), p25–p75 (вътрешен), линия = медиана
         </span>
       </div>

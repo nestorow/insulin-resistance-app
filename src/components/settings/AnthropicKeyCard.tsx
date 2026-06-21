@@ -181,7 +181,7 @@ export default function AnthropicKeyCard() {
               </button>
             )}
           </div>
-          <p className="mt-3 flex items-start gap-1.5 text-[11px] leading-relaxed text-slate-500">
+          <p className="mt-3 flex items-start gap-1.5 text-xs leading-relaxed text-slate-500">
             <AlertCircle className="mt-0.5 h-3 w-3 shrink-0" />
             Вземи ключ от{" "}
             <a

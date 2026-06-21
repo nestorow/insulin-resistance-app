@@ -156,7 +156,7 @@ export default function DailyPlanModule() {
                 <Icon className="h-4 w-4 text-teal-500" />
                 {label}
               </div>
-              <ul className="space-y-1.5">
+              <ul className="space-y-2">
                 {items.map((i) => {
                   const done = !!checks[i.id];
                   const text = itemText(i, phase.index);
@@ -165,20 +165,22 @@ export default function DailyPlanModule() {
                       <button
                         onClick={() => onToggle(i.id)}
                         aria-pressed={done}
-                        className={`flex w-full items-start gap-2.5 rounded-xl border p-3 text-left text-sm transition-colors ${
+                        className={`flex min-h-[48px] w-full items-center gap-3 rounded-xl border p-3 text-left text-sm transition-colors ${
                           done
                             ? "border-teal-300 bg-teal-50 text-slate-500 line-through"
                             : "border-teal-100 bg-white text-slate-700 hover:border-teal-200"
                         }`}
                       >
                         <span
-                          className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
-                            done ? "border-teal-500 bg-teal-500 text-white" : "border-teal-300"
+                          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 transition-colors ${
+                            done
+                              ? "border-teal-500 bg-teal-500 text-white"
+                              : "border-teal-300"
                           }`}
                         >
-                          {done && <Check className="h-3 w-3" />}
+                          {done && <Check className="h-4 w-4" strokeWidth={3} />}
                         </span>
-                        {text}
+                        <span className="flex-1">{text}</span>
                       </button>
                     </li>
                   );

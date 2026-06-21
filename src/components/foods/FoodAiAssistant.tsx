@@ -182,7 +182,7 @@ export default function FoodAiAssistant() {
       {/* Up-front "needs setup" notice when no personal key is configured. */}
       {hasKey === false && (
         <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-slate-600">
-          <span className="inline-flex items-center gap-1 rounded-full bg-amber-200/70 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-800">
+          <span className="inline-flex items-center gap-1 rounded-full bg-amber-200/70 px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-amber-800">
             <Key className="h-3 w-3" /> Изисква настройка
           </span>
           <p className="mt-1.5">
@@ -263,7 +263,7 @@ export default function FoodAiAssistant() {
       {/* Persistent disclaimer on every non-empty chat — once a real
           answer is on screen, the user needs the safety hint nearby. */}
       {!isEmpty && (
-        <p className="mt-3 flex items-start gap-1.5 border-t border-teal-100 pt-2 text-[11px] leading-relaxed text-slate-400">
+        <p className="mt-3 flex items-start gap-1.5 border-t border-teal-100 pt-2 text-xs leading-relaxed text-slate-400">
           <AlertCircle className="mt-0.5 h-3 w-3 shrink-0" />
           AI отговори — не са медицински съвет. За индивидуални препоръки
           консултирай се с лекар.
@@ -297,7 +297,7 @@ function Turn({ turn }: { turn: ChatTurn }) {
       >
         <p className="whitespace-pre-wrap">{turn.content}</p>
         {!isUser && turn.cached && (
-          <span className="mt-1 block text-[10px] text-slate-400">
+          <span className="mt-1 block text-xs text-slate-400">
             от кеша
           </span>
         )}
@@ -324,7 +324,7 @@ function friendlyError(
     case "no-key":
       return (
         message ??
-        "Добави Anthropic API key в Настройки, за да задаваш нови въпроси."
+        "Добави своя Anthropic API ключ в Настройки, за да задаваш нови въпроси."
       );
     case "too-long":
       return message ?? "Въпросът е твърде дълъг.";

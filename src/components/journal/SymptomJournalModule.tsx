@@ -12,16 +12,9 @@ import { showToast } from "@/lib/toast";
 import { clampedNum } from "@/lib/numbers";
 import { SkeletonRows } from "@/components/ui/Skeleton";
 import NumberField, { rangeError } from "@/components/ui/NumberField";
-import { formatDateBg } from "@/lib/date-format";
+import { formatDateBg, formatDayMonthBg } from "@/lib/date-format";
+import { SYMPTOM_RANGES as RANGES } from "@/lib/health-ranges";
 import { LineChart } from "lucide-react";
-
-// Physiological ranges for the journal numeric fields (shared by the inline
-// validator and the save-time clamp so a valid value is never dropped).
-const RANGES = {
-  weight: { min: 30, max: 300, unit: "кг" },
-  waist: { min: 40, max: 200, unit: "см" },
-  bloodSugar: { min: 2, max: 30, unit: "mmol/L" },
-} as const;
 
 // Trend chart pulls ~80kB of recharts — dynamic-import so the form +
 // recent-entries list paint first.
@@ -118,7 +111,7 @@ export default function SymptomJournalModule() {
   }
 
   const chartData = logs.map((l) => ({
-    date: l.date.slice(5),
+    date: formatDayMonthBg(l.date),
     Енергия: l.energy,
     "Brain fog": l.brainFog,
   }));
@@ -143,6 +136,9 @@ export default function SymptomJournalModule() {
               onChange={(e) => setDate(e.target.value)}
               className="w-full rounded-lg border border-teal-200 bg-white px-3 py-2 text-sm outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200"
             />
+            <span className="mt-1 block text-xs text-slate-500">
+              {formatDateBg(date)} · ДД.ММ.ГГГГ
+            </span>
           </Field>
           <div />
           <Slider label={`Енергия: ${energy}`} value={energy} onChange={setEnergy} />

@@ -15,6 +15,8 @@
 // This is the foundation for optimistic UI rollback on the journal +
 // markers entry forms.
 
+import { sanitizeMarkerEntry, sanitizeSymptomEntry } from "./health-ranges";
+
 export type SaveOutcome = "ok" | "rejected" | "offline";
 
 export interface SymptomEntry {
@@ -87,7 +89,9 @@ function removeByDate<T extends { date: string }>(arr: T[], date: string): T[] {
 
 // ── Symptom log ─────────────────────────────────────────────────────
 export function getSymptomLogs(): SymptomEntry[] {
-  return readArr<SymptomEntry>(SYMPTOM_KEY);
+  // Sanitize on read so historical / imported records with out-of-range
+  // values (e.g. a stray HbA1c 1.0%) never reach charts or trends.
+  return readArr<SymptomEntry>(SYMPTOM_KEY).map(sanitizeSymptomEntry);
 }
 
 export function addSymptomLog(
@@ -123,7 +127,7 @@ export function removeSymptomLog(date: string): SymptomEntry[] {
 
 // ── Marker log ──────────────────────────────────────────────────────
 export function getMarkerLogs(): MarkerEntry[] {
-  return readArr<MarkerEntry>(MARKER_KEY);
+  return readArr<MarkerEntry>(MARKER_KEY).map(sanitizeMarkerEntry);
 }
 
 export function addMarkerLog(
@@ -152,4 +156,34 @@ export function removeMarkerLog(date: string): MarkerEntry[] {
   const next = removeByDate(getMarkerLogs(), date);
   writeArr(MARKER_KEY, next);
   return next;
+}
+
+// ── One-time cleanup migration ──────────────────────────────────────
+// Rewrites the stored symptom + marker blobs with sanitized copies so
+// out-of-range values are physically removed (not just hidden on read).
+// Runs once per device, guarded by a version flag. Sanitize-on-read above
+// is the real guarantee; this just stops bad data from lingering / re-syncing.
+const MIGRATION_KEY = "ir-data-sanitized-v1";
+
+export function runTrackingMigration(): void {
+  if (typeof window === "undefined") return;
+  try {
+    if (window.localStorage.getItem(MIGRATION_KEY)) return;
+
+    const symptoms = readArr<SymptomEntry>(SYMPTOM_KEY);
+    const cleanedSymptoms = symptoms.map(sanitizeSymptomEntry);
+    if (JSON.stringify(cleanedSymptoms) !== JSON.stringify(symptoms)) {
+      writeArr(SYMPTOM_KEY, cleanedSymptoms);
+    }
+
+    const markers = readArr<MarkerEntry>(MARKER_KEY);
+    const cleanedMarkers = markers.map(sanitizeMarkerEntry);
+    if (JSON.stringify(cleanedMarkers) !== JSON.stringify(markers)) {
+      writeArr(MARKER_KEY, cleanedMarkers);
+    }
+
+    window.localStorage.setItem(MIGRATION_KEY, "1");
+  } catch {
+    // best-effort; sanitize-on-read still protects the UI
+  }
 }

@@ -23,7 +23,8 @@ interface Props {
 function fmtTs(ts: string): string {
   const d = new Date(ts);
   const pad = (n: number) => String(n).padStart(2, "0");
-  return `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)} ${pad(
+  // ДД.ММ ЧЧ:ММ — Bulgarian day-first order.
+  return `${pad(d.getUTCDate())}.${pad(d.getUTCMonth() + 1)} ${pad(
     d.getUTCHours()
   )}:${pad(d.getUTCMinutes())}`;
 }
@@ -70,7 +71,7 @@ export default function CgmSpikeList({ spikes }: Props) {
         <h2 className="text-sm font-semibold text-slate-700">
           Открити пикове ({spikes.length})
         </h2>
-        <span className="text-[11px] text-slate-500">
+        <span className="text-xs text-slate-500">
           ≥40 mg/dL над 60-min baseline · кликни за бележка
         </span>
       </div>

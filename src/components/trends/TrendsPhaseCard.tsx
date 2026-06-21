@@ -87,7 +87,7 @@ export default function TrendsPhaseCard() {
       {/* Milestone proximity */}
       {pos.nextMilestone !== null && pos.daysToNextMilestone !== null && (
         <p className="mt-2 text-xs text-teal-700">
-          Следващ etap: <strong>ден {pos.nextMilestone}</strong> · след{" "}
+          Следващ етап: <strong>ден {pos.nextMilestone}</strong> · след{" "}
           {pos.daysToNextMilestone}{" "}
           {pos.daysToNextMilestone === 1 ? "ден" : "дни"}
         </p>

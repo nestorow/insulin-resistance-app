@@ -47,7 +47,7 @@ describe("TrendsPhaseCard", () => {
     render(<TrendsPhaseCard />);
     // The line is split across a <strong> tag, so match by combining the
     // text content of the surrounding paragraph rather than a single node.
-    expect(screen.getByText(/Следващ etap:/)).toBeInTheDocument();
+    expect(screen.getByText(/Следващ етап:/)).toBeInTheDocument();
     expect(screen.getByText(/ден 14/)).toBeInTheDocument();
     // 8 → 14 = 6 days away
     expect(screen.getByText(/след 6 дни/)).toBeInTheDocument();

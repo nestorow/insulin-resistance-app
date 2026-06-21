@@ -209,7 +209,7 @@ export default function EducationModule() {
                 onRegionClick={(s) => setSystem(s)}
               />
             </div>
-            <div className="mb-4 flex flex-wrap gap-2">
+            <div className="mb-4 flex flex-wrap gap-2.5">
               <Chip active={system === "all"} onClick={() => setSystem("all")}>
                 Всички
               </Chip>
@@ -349,7 +349,7 @@ function Chip({
   return (
     <button
       onClick={onClick}
-      className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
+      className={`inline-flex min-h-11 items-center rounded-full px-4 text-sm font-medium transition-colors ${
         active
           ? "bg-teal-500 text-white"
           : "bg-white text-teal-700 ring-1 ring-teal-200 hover:bg-teal-50"

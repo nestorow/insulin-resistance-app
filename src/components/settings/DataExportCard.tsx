@@ -64,7 +64,7 @@ export default function DataExportCard() {
         <Download className="h-4 w-4" />
         {busy ? "Подготвям…" : "Изтегли JSON експорт"}
       </button>
-      <p className="mt-2 text-[11px] text-slate-400">
+      <p className="mt-2 text-xs text-slate-400">
         Файлът се прави и сваля в браузъра — не качваме никъде копие.
       </p>
     </section>

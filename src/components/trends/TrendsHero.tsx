@@ -2,6 +2,7 @@
 
 import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
 import type { TrendsSummary } from "@/lib/trends";
+import { formatDayMonthBg } from "@/lib/date-format";
 
 // Hero strip — the 4 numbers a returning user cares about most:
 //   latest HOMA-IR, latest HbA1c, latest CGM TIR, latest weight.
@@ -19,9 +20,8 @@ interface Props {
 
 function fmtDate(iso?: string): string {
   if (!iso) return "";
-  const d = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)}`;
+  // ДД.ММ — Bulgarian day-first order (was US-ish MM via "/" separator).
+  return formatDayMonthBg(iso);
 }
 
 export default function TrendsHero({ summary }: Props) {
@@ -123,7 +123,7 @@ function Card({
         )}
       </div>
       <div className="mt-1 text-2xl font-bold text-slate-800">{value}</div>
-      <div className="mt-0.5 text-[11px] text-slate-500">{sub}</div>
+      <div className="mt-0.5 text-xs text-slate-500">{sub}</div>
     </div>
   );
 }

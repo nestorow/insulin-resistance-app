@@ -51,7 +51,7 @@ describe("TrendsHero", () => {
       />
     );
     expect(screen.getByText("75%")).toBeInTheDocument();
-    expect(screen.getByText(/последен 15\/03/)).toBeInTheDocument();
+    expect(screen.getByText(/последен 15\.03/)).toBeInTheDocument();
   });
 
   it("shows HOMA-IR delta as a percentage with sign", () => {
@@ -63,7 +63,7 @@ describe("TrendsHero", () => {
         })}
       />
     );
-    expect(screen.getByText(/-20% спрямо 01\/03/)).toBeInTheDocument();
+    expect(screen.getByText(/-20% спрямо 01\.03/)).toBeInTheDocument();
   });
 
   it("shows weight delta in kg with sign and unit", () => {

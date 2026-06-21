@@ -30,3 +30,22 @@ export function formatDateBg(input: string | Date): string {
   }
   return Number.isNaN(input.getTime()) ? "" : fromDate(input);
 }
+
+/**
+ * Compact "ДД.ММ" — for dense chart axes / inline labels where the year is
+ * implied. Same Bulgarian day-first order as formatDateBg, no year. Parses
+ * date-only strings by parts to dodge the UTC off-by-one.
+ */
+export function formatDayMonthBg(input: string | Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  if (typeof input === "string") {
+    const m = DATE_ONLY.exec(input);
+    if (m) return `${m[3]}.${m[2]}`;
+    const parsed = new Date(input);
+    if (Number.isNaN(parsed.getTime())) return input;
+    return `${pad(parsed.getDate())}.${pad(parsed.getMonth() + 1)}`;
+  }
+  return Number.isNaN(input.getTime())
+    ? ""
+    : `${pad(input.getDate())}.${pad(input.getMonth() + 1)}`;
+}

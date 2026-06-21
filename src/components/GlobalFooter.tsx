@@ -30,7 +30,7 @@ export default function GlobalFooter() {
           Образование
         </Link>
       </nav>
-      <p className="mt-3 text-[10px] text-slate-400">
+      <p className="mt-3 text-xs text-slate-400">
         © {new Date().getFullYear()} InsulinReset · Базирано на работата на д-р Benjamin Bikman
       </p>
     </footer>

@@ -41,9 +41,9 @@ const NAV: NavItem[] = [
   { href: "/settings", label: "Настройки", Icon: Settings },
 ];
 
-// The mobile bottom bar surfaces the four most-used destinations; the rest
-// live behind "Още" so the bar never wraps or crowds.
-const PRIMARY_HREFS = ["/plan", "/journal", "/markers", "/trends"];
+// The mobile bottom bar surfaces the four most-used DAILY destinations; the
+// rest (incl. the less-frequent Показатели / Тренд) live behind "Още".
+const PRIMARY_HREFS = ["/plan", "/journal", "/fasting", "/foods"];
 const PRIMARY = PRIMARY_HREFS.map((h) => NAV.find((n) => n.href === h)!);
 const SECONDARY = NAV.filter((n) => !PRIMARY_HREFS.includes(n.href));
 
@@ -69,6 +69,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [moreOpen, setMoreOpen] = useState(false);
 
   if (isBareRoute(pathname)) return <>{children}</>;
+
+  // Highlight "Още" when the current route lives behind it, so the user can
+  // still tell where they are even when the active tab isn't on the bar.
+  const moreActive = SECONDARY.some((n) => isActivePath(pathname, n.href));
 
   return (
     <>
@@ -109,13 +113,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Page content + footer. pb-16 keeps the last content above the fixed
           mobile bar; md:pl-60 clears the desktop sidebar. */}
-      <div className="flex min-h-dvh flex-col pb-16 md:pb-0 md:pl-60">
+      <div className="flex min-h-dvh flex-col pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0 md:pl-60">
         {children}
       </div>
 
-      {/* Mobile bottom tab bar */}
+      {/* Mobile bottom tab bar. Each tab is min-h-16 (64px) and ≥1/5 of the
+          viewport wide → comfortably past the 44×44px touch-target floor even
+          at 360px. pb=safe-area keeps the row above the iPhone home indicator. */}
       <nav
-        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-teal-100 bg-white/95 backdrop-blur md:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-teal-100 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
         aria-label="Основна навигация"
       >
         {PRIMARY.map(({ href, label, Icon }) => {
@@ -125,11 +131,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               key={href}
               href={href}
               aria-current={active ? "page" : undefined}
-              className={`flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium ${
+              className={`relative flex min-h-16 flex-col items-center justify-center gap-1 px-1 text-center text-xs font-medium leading-tight ${
                 active ? "text-teal-600" : "text-slate-500"
               }`}
             >
-              <Icon className="h-5 w-5" />
+              {active && (
+                <span className="absolute inset-x-4 top-0 h-0.5 rounded-full bg-teal-500" />
+              )}
+              <Icon className="h-6 w-6" />
               {label}
             </Link>
           );
@@ -139,9 +148,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           onClick={() => setMoreOpen(true)}
           aria-haspopup="dialog"
           aria-expanded={moreOpen}
-          className="flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium text-slate-500"
+          className={`relative flex min-h-16 flex-col items-center justify-center gap-1 px-1 text-xs font-medium ${
+            moreActive || moreOpen ? "text-teal-600" : "text-slate-500"
+          }`}
         >
-          <MoreHorizontal className="h-5 w-5" />
+          {moreActive && (
+            <span className="absolute inset-x-4 top-0 h-0.5 rounded-full bg-teal-500" />
+          )}
+          <MoreHorizontal className="h-6 w-6" />
           Още
         </button>
       </nav>
@@ -166,7 +180,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 <X className="h-5 w-5" />
               </Dialog.Close>
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="max-h-[60vh] space-y-2 overflow-y-auto">
               {SECONDARY.map(({ href, label, Icon }) => {
                 const active = isActivePath(pathname, href);
                 return (
@@ -175,13 +189,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                     href={href}
                     onClick={() => setMoreOpen(false)}
                     aria-current={active ? "page" : undefined}
-                    className={`flex flex-col items-center gap-1 rounded-xl border p-3 text-center text-xs font-medium ${
+                    className={`flex min-h-12 items-center gap-3 rounded-xl border px-4 text-sm font-medium ${
                       active
                         ? "border-teal-300 bg-teal-50 text-teal-700"
-                        : "border-slate-100 text-slate-600"
+                        : "border-slate-100 text-slate-700"
                     }`}
                   >
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-5 w-5 shrink-0" />
                     {label}
                   </Link>
                 );

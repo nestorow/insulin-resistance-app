@@ -64,7 +64,7 @@ export default function CgmStatsCards({ tir, vari }: Props) {
             <Bar pct={tir.veryHigh} cls="bg-rose-400" />
           </div>
         </div>
-        <div className="mt-1 flex justify-between text-[10px] text-slate-500">
+        <div className="mt-1 flex justify-between text-xs text-slate-500">
           <span>&lt;54: {tir.veryLow}%</span>
           <span>54–69: {tir.low}%</span>
           <span>70–180: {tir.inRange}%</span>
@@ -91,7 +91,7 @@ function StatCard({
     <div className={`rounded-2xl p-4 ${accent}`}>
       <div className="text-xs uppercase tracking-wide opacity-70">{title}</div>
       <div className="mt-1 text-2xl font-bold">{value}</div>
-      <div className="mt-0.5 text-[11px] opacity-70">{sub}</div>
+      <div className="mt-0.5 text-xs opacity-70">{sub}</div>
     </div>
   );
 }

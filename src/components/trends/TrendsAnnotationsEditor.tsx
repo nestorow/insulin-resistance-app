@@ -9,6 +9,7 @@ import {
   setDayAnnotation,
 } from "@/lib/day-annotations";
 import { showToast } from "@/lib/toast";
+import { formatDayMonthBg } from "@/lib/date-format";
 
 // Annotation editor — collapsed by default; opens an inline form for
 // adding/removing date labels. Saved annotations appear as amber chips
@@ -118,9 +119,9 @@ export default function TrendsAnnotationsEditor({ onChange }: Props) {
               onClick={() => remove(d)}
               aria-label={`Премахни анотация „${text}" от ${d}`}
               title={`Премахни „${text}" от ${d}`}
-              className="group flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-[11px] text-amber-900 ring-1 ring-amber-200 hover:bg-amber-200"
+              className="group flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-xs text-amber-900 ring-1 ring-amber-200 hover:bg-amber-200"
             >
-              <span className="font-medium">{d.slice(5)}</span>
+              <span className="font-medium">{formatDayMonthBg(d)}</span>
               <span>·</span>
               <span>{text}</span>
               <X className="h-3 w-3 text-amber-600 group-hover:text-amber-900" />
