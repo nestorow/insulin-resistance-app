@@ -11,7 +11,19 @@ import {
 import { showToast } from "@/lib/toast";
 import { clampedNum } from "@/lib/numbers";
 import { SkeletonRows } from "@/components/ui/Skeleton";
+import NumberField, { rangeError } from "@/components/ui/NumberField";
+import { formatDateBg } from "@/lib/date-format";
 import { FlaskConical } from "lucide-react";
+
+// Physiological ranges for the marker fields (shared by the inline validator
+// and the save-time clamp so a valid value is never dropped).
+const RANGES = {
+  homaIr: { min: 0, max: 50, unit: "" },
+  fastingInsulin: { min: 0, max: 100, unit: "µU/mL" },
+  hba1c: { min: 3, max: 15, unit: "%" },
+  tg: { min: 0, max: 2000, unit: "mg/dL" },
+  hdl: { min: 0, max: 200, unit: "mg/dL" },
+} as const;
 
 // Same lazy pattern as JournalTrendChart — defer recharts until after
 // the form + entry list paint.
@@ -35,6 +47,8 @@ export default function MarkersModule() {
   const [hba1c, setHba1c] = useState("");
   const [tg, setTg] = useState("");
   const [hdl, setHdl] = useState("");
+  // Flips true on a blocked save so every out-of-range field lights up.
+  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     setLogs(getMarkerLogs());
@@ -42,13 +56,35 @@ export default function MarkersModule() {
   }, []);
 
   function save() {
+    // Block save on any out-of-range value and reveal the inline errors.
+    const invalid =
+      rangeError(homaIr, RANGES.homaIr.min, RANGES.homaIr.max) ||
+      rangeError(
+        fastingInsulin,
+        RANGES.fastingInsulin.min,
+        RANGES.fastingInsulin.max
+      ) ||
+      rangeError(hba1c, RANGES.hba1c.min, RANGES.hba1c.max) ||
+      rangeError(tg, RANGES.tg.min, RANGES.tg.max) ||
+      rangeError(hdl, RANGES.hdl.min, RANGES.hdl.max);
+    if (invalid) {
+      setSubmitted(true);
+      showToast("Провери стойностите извън допустимия диапазон.");
+      return;
+    }
+    setSubmitted(false);
+
     const entry: MarkerEntry = {
       date,
-      homaIr: clampedNum(homaIr, 0, 50),
-      fastingInsulin: clampedNum(fastingInsulin, 0, 500),
-      hba1c: clampedNum(hba1c, 3, 20),
-      triglycerides: clampedNum(tg, 0, 2000),
-      hdl: clampedNum(hdl, 0, 200),
+      homaIr: clampedNum(homaIr, RANGES.homaIr.min, RANGES.homaIr.max),
+      fastingInsulin: clampedNum(
+        fastingInsulin,
+        RANGES.fastingInsulin.min,
+        RANGES.fastingInsulin.max
+      ),
+      hba1c: clampedNum(hba1c, RANGES.hba1c.min, RANGES.hba1c.max),
+      triglycerides: clampedNum(tg, RANGES.tg.min, RANGES.tg.max),
+      hdl: clampedNum(hdl, RANGES.hdl.min, RANGES.hdl.max),
     };
     const previous = logs;
     const { local, pending } = addMarkerLog(entry);
@@ -102,46 +138,55 @@ export default function MarkersModule() {
             />
           </Field>
           <div />
-          <Num
+          <NumberField
             label="HOMA-IR"
             value={homaIr}
             onChange={setHomaIr}
-            min={0}
-            max={50}
+            min={RANGES.homaIr.min}
+            max={RANGES.homaIr.max}
             step={0.1}
+            forceShowError={submitted}
           />
-          <Num
+          <NumberField
             label="Инсулин на гладно (µU/mL)"
             value={fastingInsulin}
             onChange={setFastingInsulin}
-            min={0}
-            max={500}
+            min={RANGES.fastingInsulin.min}
+            max={RANGES.fastingInsulin.max}
+            unit={RANGES.fastingInsulin.unit}
             step={0.1}
+            forceShowError={submitted}
           />
-          <Num
+          <NumberField
             label="HbA1c (%)"
             value={hba1c}
             onChange={setHba1c}
-            min={3}
-            max={20}
+            min={RANGES.hba1c.min}
+            max={RANGES.hba1c.max}
+            unit={RANGES.hba1c.unit}
             step={0.1}
+            forceShowError={submitted}
           />
           <div />
-          <Num
+          <NumberField
             label="Триглицериди (mg/dL)"
             value={tg}
             onChange={setTg}
-            min={0}
-            max={2000}
+            min={RANGES.tg.min}
+            max={RANGES.tg.max}
+            unit={RANGES.tg.unit}
             step={1}
+            forceShowError={submitted}
           />
-          <Num
+          <NumberField
             label="HDL (mg/dL)"
             value={hdl}
             onChange={setHdl}
-            min={0}
-            max={200}
+            min={RANGES.hdl.min}
+            max={RANGES.hdl.max}
+            unit={RANGES.hdl.unit}
             step={1}
+            forceShowError={submitted}
           />
         </div>
         <button
@@ -199,7 +244,9 @@ export default function MarkersModule() {
                   key={l.date}
                   className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl border border-teal-100 bg-white p-3 text-sm"
                 >
-                  <span className="font-medium text-slate-700">{l.date}</span>
+                  <span className="font-medium text-slate-700">
+                    {formatDateBg(l.date)}
+                  </span>
                   {l.homaIr != null && <span className="text-slate-500">HOMA {l.homaIr}</span>}
                   {l.fastingInsulin != null && (
                     <span className="text-slate-500">инсулин {l.fastingInsulin}</span>
@@ -231,33 +278,3 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function Num({
-  label,
-  value,
-  onChange,
-  min,
-  max,
-  step,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  min: number;
-  max: number;
-  step: number;
-}) {
-  return (
-    <Field label={label}>
-      <input
-        type="number"
-        inputMode="decimal"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        min={min}
-        max={max}
-        step={step}
-        className="w-full rounded-lg border border-teal-200 bg-white px-3 py-2 text-sm outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200"
-      />
-    </Field>
-  );
-}

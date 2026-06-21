@@ -118,8 +118,9 @@ export default function CgmModule() {
           постпрандиални пикове.
         </p>
         <p className="mt-2 text-xs text-slate-500">
-          За biohacker lens-а. Glucose pattern-ите се пазят AES-256-GCM
-          enkriptirani at rest — виж <a className="underline" href="/privacy">политиката за поверителност</a>.
+          За по-задълбочен анализ. Профилът на глюкозата се пази криптиран в
+          покой (AES-256-GCM) — виж{" "}
+          <a className="underline" href="/privacy">политиката за поверителност</a>.
         </p>
       </header>
 

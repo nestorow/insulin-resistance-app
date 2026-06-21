@@ -71,7 +71,7 @@ export const checklistItems: ChecklistItem[] = [
   },
   {
     id: "day_carbs_last",
-    text_bg: "Въглехидратите ПОСЛЕДНИ в хранението",
+    text_bg: "Въглехидратите ПОСЛЕДНИ в храненето",
     category: "day",
   },
   {
@@ -97,7 +97,7 @@ export const checklistItems: ChecklistItem[] = [
   },
   {
     id: "day_no_seed_oils",
-    text_bg: "Без семенни олиа",
+    text_bg: "Без семенни масла",
     category: "day",
   },
   {

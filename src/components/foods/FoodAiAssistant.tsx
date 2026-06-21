@@ -10,6 +10,7 @@ import {
   RotateCcw,
   User,
   Bot,
+  Key,
 } from "lucide-react";
 import { showToast } from "@/lib/toast";
 
@@ -40,11 +41,17 @@ async function actions() {
   return import("@/lib/actions/food-ai");
 }
 
+async function keyActions() {
+  return import("@/lib/actions/anthropic-key");
+}
+
 export default function FoodAiAssistant() {
   const { status } = useSession();
   const [query, setQuery] = useState("");
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [busy, setBusy] = useState(false);
+  // null = unknown/loading, false = no key configured, true = key present.
+  const [hasKey, setHasKey] = useState<boolean | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to the newest turn when one arrives.
@@ -53,6 +60,26 @@ export default function FoodAiAssistant() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [turns]);
+
+  // Detect up-front whether the user has their own Anthropic key so we can
+  // flag "изисква настройка" BEFORE a question is spent — instead of only
+  // surfacing a toast after a failed ask. Cached answers still work keyless.
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { maskedAnthropicKeyAction } = await keyActions();
+        const m = await maskedAnthropicKeyAction();
+        if (!cancelled) setHasKey(!!m);
+      } catch {
+        if (!cancelled) setHasKey(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [status]);
 
   async function ask(text: string) {
     const trimmed = text.trim();
@@ -117,7 +144,7 @@ export default function FoodAiAssistant() {
             >
               Влез
             </a>{" "}
-            и питай AI асистента — отговаря според твоя tier.
+            и питай AI асистента — отговаря според твоето ниво на риск.
           </span>
         </div>
       </section>
@@ -151,6 +178,22 @@ export default function FoodAiAssistant() {
           </button>
         )}
       </div>
+
+      {/* Up-front "needs setup" notice when no personal key is configured. */}
+      {hasKey === false && (
+        <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-slate-600">
+          <span className="inline-flex items-center gap-1 rounded-full bg-amber-200/70 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-800">
+            <Key className="h-3 w-3" /> Изисква настройка
+          </span>
+          <p className="mt-1.5">
+            Новите въпроси изискват твой собствен Anthropic API ключ. Добави го в{" "}
+            <a href="/settings" className="font-semibold text-teal-700 underline">
+              Настройки
+            </a>
+            . Кешираните отговори от други потребители остават безплатни.
+          </p>
+        </div>
+      )}
 
       {/* Conversation history — scrollable on long chats */}
       {!isEmpty && (
@@ -255,7 +298,7 @@ function Turn({ turn }: { turn: ChatTurn }) {
         <p className="whitespace-pre-wrap">{turn.content}</p>
         {!isUser && turn.cached && (
           <span className="mt-1 block text-[10px] text-slate-400">
-            от cache
+            от кеша
           </span>
         )}
       </div>

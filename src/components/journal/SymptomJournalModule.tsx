@@ -11,7 +11,17 @@ import {
 import { showToast } from "@/lib/toast";
 import { clampedNum } from "@/lib/numbers";
 import { SkeletonRows } from "@/components/ui/Skeleton";
+import NumberField, { rangeError } from "@/components/ui/NumberField";
+import { formatDateBg } from "@/lib/date-format";
 import { LineChart } from "lucide-react";
+
+// Physiological ranges for the journal numeric fields (shared by the inline
+// validator and the save-time clamp so a valid value is never dropped).
+const RANGES = {
+  weight: { min: 30, max: 300, unit: "кг" },
+  waist: { min: 40, max: 200, unit: "см" },
+  bloodSugar: { min: 2, max: 30, unit: "mmol/L" },
+} as const;
 
 // Trend chart pulls ~80kB of recharts — dynamic-import so the form +
 // recent-entries list paint first.
@@ -38,6 +48,9 @@ export default function SymptomJournalModule() {
   const [waist, setWaist] = useState("");
   const [bloodSugar, setBloodSugar] = useState("");
   const [notes, setNotes] = useState("");
+  // Flips true on a blocked save so every out-of-range field lights up,
+  // not just the one the user happened to blur.
+  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     setLogs(getSymptomLogs());
@@ -45,14 +58,30 @@ export default function SymptomJournalModule() {
   }, []);
 
   function save() {
+    // Block save on any out-of-range value and reveal the inline errors.
+    const invalid =
+      rangeError(weight, RANGES.weight.min, RANGES.weight.max) ||
+      rangeError(waist, RANGES.waist.min, RANGES.waist.max) ||
+      rangeError(bloodSugar, RANGES.bloodSugar.min, RANGES.bloodSugar.max);
+    if (invalid) {
+      setSubmitted(true);
+      showToast("Провери стойностите извън допустимия диапазон.");
+      return;
+    }
+    setSubmitted(false);
+
     const trimmed = notes.trim().slice(0, NOTES_MAX);
     const entry: SymptomEntry = {
       date,
       energy,
       brainFog,
-      weight: clampedNum(weight, 20, 400),
-      waist: clampedNum(waist, 30, 300),
-      bloodSugar: clampedNum(bloodSugar, 0, 30),
+      weight: clampedNum(weight, RANGES.weight.min, RANGES.weight.max),
+      waist: clampedNum(waist, RANGES.waist.min, RANGES.waist.max),
+      bloodSugar: clampedNum(
+        bloodSugar,
+        RANGES.bloodSugar.min,
+        RANGES.bloodSugar.max
+      ),
       notes: trimmed.length > 0 ? trimmed : undefined,
     };
 
@@ -118,29 +147,35 @@ export default function SymptomJournalModule() {
           <div />
           <Slider label={`Енергия: ${energy}`} value={energy} onChange={setEnergy} />
           <Slider label={`Brain fog: ${brainFog}`} value={brainFog} onChange={setBrainFog} />
-          <Num
+          <NumberField
             label="Тегло (кг)"
             value={weight}
             onChange={setWeight}
-            min={20}
-            max={400}
+            min={RANGES.weight.min}
+            max={RANGES.weight.max}
+            unit={RANGES.weight.unit}
             step={0.1}
+            forceShowError={submitted}
           />
-          <Num
+          <NumberField
             label="Талия (см)"
             value={waist}
             onChange={setWaist}
-            min={30}
-            max={300}
+            min={RANGES.waist.min}
+            max={RANGES.waist.max}
+            unit={RANGES.waist.unit}
             step={0.5}
+            forceShowError={submitted}
           />
-          <Num
+          <NumberField
             label="Кръвна захар (mmol/L)"
             value={bloodSugar}
             onChange={setBloodSugar}
-            min={0}
-            max={30}
+            min={RANGES.bloodSugar.min}
+            max={RANGES.bloodSugar.max}
+            unit={RANGES.bloodSugar.unit}
             step={0.1}
+            forceShowError={submitted}
           />
         </div>
 
@@ -218,7 +253,9 @@ export default function SymptomJournalModule() {
                 className="rounded-xl border border-teal-100 bg-white p-3 text-sm"
               >
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                  <span className="font-medium text-slate-700">{l.date}</span>
+                  <span className="font-medium text-slate-700">
+                    {formatDateBg(l.date)}
+                  </span>
                   <span className="text-slate-500">Енергия {l.energy}</span>
                   <span className="text-slate-500">Фог {l.brainFog}</span>
                   {l.weight != null && <span className="text-slate-500">{l.weight} кг</span>}
@@ -247,37 +284,6 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <span className="mb-1 block text-xs text-slate-500">{label}</span>
       {children}
     </label>
-  );
-}
-
-function Num({
-  label,
-  value,
-  onChange,
-  min,
-  max,
-  step,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  min: number;
-  max: number;
-  step: number;
-}) {
-  return (
-    <Field label={label}>
-      <input
-        type="number"
-        inputMode="decimal"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        min={min}
-        max={max}
-        step={step}
-        className="w-full rounded-lg border border-teal-200 bg-white px-3 py-2 text-sm outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200"
-      />
-    </Field>
   );
 }
 

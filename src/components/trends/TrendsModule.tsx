@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
 import type { TrendsData } from "@/lib/trends";
+import { buildTrendsFromLocal } from "@/lib/trends-local";
 import { computeInsights } from "@/lib/trend-insights";
 import type { AnnotationMap } from "@/lib/day-annotations";
 import { SkeletonRows } from "@/components/ui/Skeleton";
@@ -53,15 +54,27 @@ export default function TrendsModule() {
   );
 
   useEffect(() => {
-    if (status !== "authenticated") {
-      setLoaded(true);
-      return;
-    }
+    // Wait for the session to resolve so the (authenticated-only) server
+    // fallback can run; the local read itself works offline / anonymous.
+    if (status === "loading") return;
     let cancelled = false;
     (async () => {
       try {
-        const { getTrendsAction } = await import("@/lib/actions/trends");
-        const result = await getTrendsAction();
+        // Primary source: whatever the user has actually recorded locally.
+        // This is what fixes the "empty trends despite data" bug — the data
+        // lives in localStorage and may not have synced to the server yet.
+        let result = buildTrendsFromLocal();
+        // Fallback: a freshly signed-in device with an empty local cache can
+        // still hydrate the timeline from the server.
+        if (result.summary.activeDays === 0 && status === "authenticated") {
+          try {
+            const { getTrendsAction } = await import("@/lib/actions/trends");
+            const server = await getTrendsAction();
+            if (server && server.summary.activeDays > 0) result = server;
+          } catch {
+            // keep the (empty) local result — offline / server error
+          }
+        }
         if (!cancelled) setData(result);
       } finally {
         if (!cancelled) setLoaded(true);
@@ -76,25 +89,6 @@ export default function TrendsModule() {
     return (
       <div className="mx-auto w-full max-w-4xl px-5 py-10">
         <SkeletonRows rows={6} />
-      </div>
-    );
-  }
-
-  if (status !== "authenticated") {
-    return (
-      <div className="mx-auto w-full max-w-3xl px-5 py-10">
-        <header className="mb-6">
-          <h1 className="text-3xl font-extrabold text-teal-700">Тренд</h1>
-          <p className="mt-2 text-slate-600">
-            Един view върху всичките ти модули — HOMA-IR, HbA1c, CGM, симптоми
-            и дневна изпълняемост за последните 90 дни.
-          </p>
-        </header>
-        <div className="rounded-2xl border border-teal-100 bg-teal-50/40 p-6 text-center">
-          <p className="text-sm text-slate-700">
-            Влез през Google, за да видиш тренда на показателите си.
-          </p>
-        </div>
       </div>
     );
   }
@@ -133,6 +127,11 @@ export default function TrendsModule() {
             Показатели
           </a>
           .
+          {status !== "authenticated" && (
+            <p className="mt-3 text-xs text-slate-500">
+              Влез през Google, за да синхронизираш записите си между устройства.
+            </p>
+          )}
         </div>
       ) : (
         <>

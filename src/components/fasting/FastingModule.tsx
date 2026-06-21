@@ -1,4 +1,5 @@
-import { FASTING_PHASES, FASTING_TARGETS } from "@/data/training";
+import { FASTING_TARGETS } from "@/data/training";
+import FastingTimer from "./FastingTimer";
 
 export default function FastingModule() {
   return (
@@ -11,28 +12,9 @@ export default function FastingModule() {
         </p>
       </header>
 
-      {/* Phase timeline */}
-      <section className="mb-10">
-        <h2 className="mb-3 text-xl font-bold text-teal-700">
-          Какво се случва в тялото
-        </h2>
-        <div className="space-y-2">
-          {FASTING_PHASES.map((p) => (
-            <div
-              key={p.minHours}
-              className="flex items-center gap-3 rounded-xl border border-teal-100 bg-white p-3.5"
-            >
-              <span
-                className="flex h-12 w-14 shrink-0 items-center justify-center rounded-lg text-sm font-bold text-white"
-                style={{ backgroundColor: p.color }}
-              >
-                {p.minHours}-{p.maxHours}ч
-              </span>
-              <p className="text-sm text-slate-700">{p.label_bg}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* Active fasting timer + phase timeline (the timer highlights the
+          current phase as time elapses). */}
+      <FastingTimer />
 
       {/* Progression targets */}
       <section>

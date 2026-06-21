@@ -83,7 +83,7 @@ export default function AnthropicKeyCard() {
       const { clearAnthropicKeyAction } = await actions();
       await clearAnthropicKeyAction();
       setMasked(null);
-      showToast("API key премахнат.");
+      showToast("API ключът е премахнат.");
     } finally {
       setBusy(false);
     }
@@ -97,13 +97,13 @@ export default function AnthropicKeyCard() {
     <section className="mb-6 rounded-2xl border border-teal-100 bg-white p-5">
       <h2 className="mb-2 flex items-center gap-2 text-lg font-semibold text-slate-800">
         <Sparkles className="h-5 w-5 text-teal-600" />
-        AI асистент — твоят API key
+        AI асистент — твоят API ключ
       </h2>
       <p className="mb-4 text-sm leading-relaxed text-slate-600">
         AI асистентът в{" "}
         <a href="/foods" className="text-teal-600 underline">/foods</a>{" "}
-        работи с твой собствен Anthropic API key — ти плащаш само за
-        собствените си нови въпроси (cached отговори от други потребители
+        работи с твой собствен Anthropic API ключ — ти плащаш само за
+        собствените си нови въпроси (кешираните отговори от други потребители
         са безплатни). Ключът се пази{" "}
         <strong>криптиран в покой</strong> (AES-256-GCM, същият като за
         кръвните маркери) и не се връща обратно към браузъра след запис.
@@ -142,7 +142,7 @@ export default function AnthropicKeyCard() {
         <div>
           <label className="block">
             <span className="mb-1 block text-xs font-medium text-slate-500">
-              API key (sk-ant-api03-…)
+              API ключ (sk-ant-api03-…)
             </span>
             <input
               type="password"
@@ -193,8 +193,9 @@ export default function AnthropicKeyCard() {
               console.anthropic.com/settings/keys
               <ExternalLink className="h-2.5 w-2.5" />
             </a>
-            . Препоръчвам да зададеш и месечен limit на акаунта си — Anthropic
-            има stop-loss настройка.
+            . Препоръчвам да зададеш и месечен лимит на разходите в акаунта си
+            — Anthropic има настройка за автоматично спиране при достигане на
+            лимита.
           </p>
         </div>
       )}

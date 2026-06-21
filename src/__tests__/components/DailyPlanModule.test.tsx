@@ -19,7 +19,8 @@ function seedOnboarding(opts: {
       .fill(false)
       .map((_, i) => i < opts.yesCount),
     quizYesCount: opts.yesCount,
-    tier: opts.yesCount <= 0 ? "none" : opts.yesCount === 1 ? "moderate" : "keto",
+    tier:
+      opts.yesCount <= 1 ? "none" : opts.yesCount <= 4 ? "moderate" : "keto",
     tgHdlRatio: null,
     whr: null,
     completedAt,
@@ -101,7 +102,7 @@ describe("DailyPlanModule — progression unlocks", () => {
 
 describe("DailyPlanModule — tier filtering", () => {
   it("keto tier sees the berry-only fruit rule", () => {
-    seedOnboarding({ daysAgo: 0, yesCount: 3 }); // keto
+    seedOnboarding({ daysAgo: 0, yesCount: 5 }); // 5-8 → keto
     render(<DailyPlanModule />);
     expect(screen.getByText(/Плодове — само горски/)).toBeInTheDocument();
   });
@@ -116,7 +117,7 @@ describe("DailyPlanModule — tier filtering", () => {
   });
 
   it("moderate tier sees the grains rule, not the keto fruit rule", () => {
-    seedOnboarding({ daysAgo: 0, yesCount: 1 }); // moderate
+    seedOnboarding({ daysAgo: 0, yesCount: 3 }); // 2-4 → moderate
     render(<DailyPlanModule />);
     expect(screen.getByText(/Зърнени — само пълнозърнести/)).toBeInTheDocument();
     expect(screen.queryByText(/Плодове — само горски/)).not.toBeInTheDocument();

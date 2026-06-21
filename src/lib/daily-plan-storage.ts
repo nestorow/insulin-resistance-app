@@ -44,6 +44,11 @@ export function getDayChecks(date: string): Record<string, boolean> {
   return read()[date] ?? {};
 }
 
+/** The full date→checks map — used by the client-side trends aggregator. */
+export function getAllDayChecks(): Record<string, Record<string, boolean>> {
+  return read();
+}
+
 export function toggleDayCheck(
   date: string,
   itemId: string

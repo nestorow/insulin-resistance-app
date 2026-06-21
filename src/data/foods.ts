@@ -40,7 +40,7 @@ export const foods: Food[] = [
   { id: 'pecan', name_bg: 'Пекан', name_en: 'Pecans', category: 'green', gl: 1, macros: { fat: 72, protein: 9, carbs: 14, fiber: 10 }, servingSize: '30g' },
   { id: 'mushrooms', name_bg: 'Гъби', name_en: 'Mushrooms', category: 'green', gl: 1, macros: { fat: 0.3, protein: 3.1, carbs: 3.3, fiber: 1 }, servingSize: '100g' },
   { id: 'zucchini', name_bg: 'Тиквички', name_en: 'Zucchini', category: 'green', gl: 2, macros: { fat: 0.3, protein: 1.2, carbs: 3.1, fiber: 1 }, servingSize: '100g' },
-  { id: 'mayo', name_bg: 'Майонеза (домашна)', name_en: 'Mayonnaise (homemade)', category: 'green', gl: 0, macros: { fat: 75, protein: 1, carbs: 1, fiber: 0 }, servingSize: '14g (1 с.л.)', notes_bg: 'Само домашна — фабричната съдържа семенни олиа' },
+  { id: 'mayo', name_bg: 'Майонеза (домашна)', name_en: 'Mayonnaise (homemade)', category: 'green', gl: 0, macros: { fat: 75, protein: 1, carbs: 1, fiber: 0 }, servingSize: '14g (1 с.л.)', notes_bg: 'Само домашна — фабричната съдържа семенни масла' },
   // YELLOW (GL 16-30)
   { id: 'almonds', name_bg: 'Бадеми', name_en: 'Almonds', category: 'yellow', gl: 18, macros: { fat: 50, protein: 21, carbs: 22, fiber: 12 }, servingSize: '30g' },
   { id: 'walnuts', name_bg: 'Орехи', name_en: 'Walnuts', category: 'yellow', gl: 16, macros: { fat: 65, protein: 15, carbs: 14, fiber: 7 }, servingSize: '30g' },
@@ -71,7 +71,7 @@ export const foods: Food[] = [
   { id: 'grapes', name_bg: 'Грозде', name_en: 'Grapes', category: 'red', gl: 43, macros: { fat: 0.2, protein: 0.7, carbs: 18, fiber: 0.9 }, servingSize: '150g' },
   { id: 'soda', name_bg: 'Газирани напитки / безалкохолни', name_en: 'Soda / Soft Drinks', category: 'red', gl: 70, macros: { fat: 0, protein: 0, carbs: 11, fiber: 0 }, servingSize: '330ml', notes_bg: 'Чист HFCS — един от най-лошите избори' },
   { id: 'candy', name_bg: 'Бонбони, захарни изделия', name_en: 'Candy', category: 'red', gl: 75, macros: { fat: 5, protein: 2, carbs: 80, fiber: 0 }, servingSize: '50g' },
-  { id: 'processed_food', name_bg: 'Обработени храни (чипс, снаксове)', name_en: 'Processed Snacks', category: 'red', gl: 60, macros: { fat: 30, protein: 5, carbs: 55, fiber: 2 }, servingSize: '50g', notes_bg: 'Комбинация от семенни олиа + рафинирани ВХ — двоен удар' },
+  { id: 'processed_food', name_bg: 'Обработени храни (чипс, снаксове)', name_en: 'Processed Snacks', category: 'red', gl: 60, macros: { fat: 30, protein: 5, carbs: 55, fiber: 2 }, servingSize: '50g', notes_bg: 'Комбинация от семенни масла + рафинирани ВХ — двоен удар' },
   { id: 'corn_syrup', name_bg: 'Храни с добавен HFCS', name_en: 'High-Fructose Corn Syrup foods', category: 'red', gl: 70, macros: { fat: 0, protein: 0, carbs: 76, fiber: 0 }, servingSize: 'варира', notes_bg: 'Фруктозата прави черния дроб мазен за 1 седмица' },
 ];
 
@@ -146,7 +146,7 @@ export const fatGuides: FatGuide[] = [
   },
   {
     category: 'avoid_seed',
-    category_bg: 'ИЗБЯГВАЙ: преработени семенни олиа',
+    category_bg: 'ИЗБЯГВАЙ: преработени семенни масла',
     items: [
       { name_bg: 'Соево, царевично, слънчогледово, рапично олио', use_bg: 'Съдържат линолова киселина — най-лесно окислима' },
     ],

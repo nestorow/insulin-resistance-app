@@ -28,6 +28,7 @@ import {
   type Lens,
 } from "@/lib/onboarding";
 import { saveOnboarding, loadOnboarding } from "@/lib/onboarding-storage";
+import { getDay1Checks, toggleDay1Check } from "@/lib/onboarding-day1-storage";
 import {
   clearOnboardingDraft,
   isDraftSubstantive,
@@ -67,6 +68,8 @@ export default function OnboardingFlow() {
   const [hdl, setHdl] = useState("");
   const [waist, setWaist] = useState("");
   const [hip, setHip] = useState("");
+  // Day-1 checklist state — same persisted-toggle pattern as /plan.
+  const [day1Checks, setDay1Checks] = useState<Record<string, boolean>>({});
 
   // Ref-guarded mount-once hydration. Next 15's useRouter() returns a
   // fresh object on every render, so a naive `[router]` dep on this
@@ -101,6 +104,7 @@ export default function OnboardingFlow() {
         setStep(draft.step);
       }
     }
+    setDay1Checks(getDay1Checks());
     setChecking(false);
   }, [router]);
 
@@ -146,6 +150,12 @@ export default function OnboardingFlow() {
       return next;
     });
   }
+
+  function toggleDay1(id: string) {
+    setDay1Checks(toggleDay1Check(id));
+  }
+
+  const day1Done = DAY1_TASKS.filter((t) => day1Checks[t.id]).length;
 
   if (checking) return null;
 
@@ -406,6 +416,12 @@ export default function OnboardingFlow() {
                 </p>
               )}
 
+              <div className="mt-3">
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-600">
+                  {day1Done} / {DAY1_TASKS.length} изпълнени
+                </span>
+              </div>
+
               <div className="mt-5 space-y-4">
                 {PERIODS.map(({ key, label, Icon }) => {
                   const tasks = DAY1_TASKS.filter((t) => t.period === key);
@@ -417,15 +433,34 @@ export default function OnboardingFlow() {
                         {label}
                       </div>
                       <ul className="space-y-1.5">
-                        {tasks.map((t) => (
-                          <li
-                            key={t.id}
-                            className="flex items-start gap-2 rounded-lg border border-teal-100 bg-white p-3 text-sm text-slate-700"
-                          >
-                            <span className="mt-0.5 h-4 w-4 shrink-0 rounded border border-teal-300" />
-                            {t.text_bg}
-                          </li>
-                        ))}
+                        {tasks.map((t) => {
+                          const done = !!day1Checks[t.id];
+                          return (
+                            <li key={t.id}>
+                              <button
+                                type="button"
+                                onClick={() => toggleDay1(t.id)}
+                                aria-pressed={done}
+                                className={`flex w-full items-start gap-2.5 rounded-lg border p-3 text-left text-sm transition-colors ${
+                                  done
+                                    ? "border-teal-300 bg-teal-50 text-slate-500 line-through"
+                                    : "border-teal-100 bg-white text-slate-700 hover:border-teal-200"
+                                }`}
+                              >
+                                <span
+                                  className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
+                                    done
+                                      ? "border-teal-500 bg-teal-500 text-white"
+                                      : "border-teal-300"
+                                  }`}
+                                >
+                                  {done && <Check className="h-3 w-3" />}
+                                </span>
+                                {t.text_bg}
+                              </button>
+                            </li>
+                          );
+                        })}
                       </ul>
                     </div>
                   );

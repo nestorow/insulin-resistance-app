@@ -10,6 +10,7 @@ import { clearOnboardingAction } from "@/lib/actions/onboarding";
 import { tierFromYesCount, LENSES } from "@/lib/onboarding";
 import type { OnboardingResult } from "@/lib/onboarding";
 import { showToast } from "@/lib/toast";
+import { formatDateBg } from "@/lib/date-format";
 import PushOptIn from "@/components/settings/PushOptIn";
 import EmailDigestOptIn from "@/components/settings/EmailDigestOptIn";
 import BadgeGallery from "@/components/settings/BadgeGallery";
@@ -83,7 +84,7 @@ export default function SettingsModule() {
         ) : (
           <dl className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <dt className="text-slate-500">Профил (lens)</dt>
+              <dt className="text-slate-500">Профил</dt>
               <dd className="font-medium text-slate-800">
                 {lens?.title_bg ?? onboarding.lens}
               </dd>
@@ -95,7 +96,7 @@ export default function SettingsModule() {
               </dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-slate-500">Tier</dt>
+              <dt className="text-slate-500">Ниво на риск</dt>
               <dd className="font-medium text-slate-800">
                 {tier?.risk_bg ?? "—"}
               </dd>
@@ -103,7 +104,7 @@ export default function SettingsModule() {
             <div className="flex justify-between">
               <dt className="text-slate-500">Започнато на</dt>
               <dd className="font-medium text-slate-800">
-                {new Date(onboarding.completedAt).toLocaleDateString("bg-BG")}
+                {formatDateBg(onboarding.completedAt)}
               </dd>
             </div>
           </dl>
@@ -131,10 +132,10 @@ export default function SettingsModule() {
           Преоцени теста
         </h2>
         <p className="mb-4 text-sm leading-relaxed text-slate-600">
-          Стартира нов 90-дневен цикъл — броячът се връща на Ден 1, tier-ът
-          и lens-ът се преизчисляват. <strong>Дневникът, кръвните маркери
-          и историята на чеклиста се запазват</strong> — само профилът се
-          опреснява.
+          Стартира нов 90-дневен цикъл — броячът се връща на Ден 1, нивото
+          на риск и профилът се преизчисляват. <strong>Дневникът, кръвните
+          маркери и историята на чеклиста се запазват</strong> — само
+          профилът се опреснява.
         </p>
 
         <Dialog.Root open={confirmOpen} onOpenChange={setConfirmOpen}>
@@ -169,8 +170,8 @@ export default function SettingsModule() {
                     Сигурен ли си?
                   </Dialog.Title>
                   <Dialog.Description className="mt-2 text-sm leading-relaxed text-slate-600">
-                    Текущият tier и броячът „Ден N / 90“ ще се нулират.
-                    Историята на дневника и кръвните маркери остават.
+                    Текущото ниво на риск и броячът „Ден N / 90“ ще се
+                    нулират. Историята на дневника и кръвните маркери остават.
                   </Dialog.Description>
                 </div>
               </div>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import * as Dialog from "@radix-ui/react-dialog";
 import {
   Home,
   ClipboardList,
@@ -145,31 +146,25 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </button>
       </nav>
 
-      {/* "Още" sheet — the secondary modules */}
-      {moreOpen && (
-        <div
-          className="fixed inset-0 z-50 md:hidden"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Още модули"
-        >
-          <div
-            className="absolute inset-0 bg-slate-900/40"
-            onClick={() => setMoreOpen(false)}
-          />
-          <div className="absolute inset-x-0 bottom-0 rounded-t-2xl bg-white p-4 pb-6 shadow-2xl">
+      {/* "Още" sheet — the secondary modules. Radix Dialog gives us focus
+          trapping, Esc-to-close, body scroll-lock and ARIA wiring for free. */}
+      <Dialog.Root open={moreOpen} onOpenChange={setMoreOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 z-50 bg-slate-900/40 md:hidden" />
+          <Dialog.Content
+            aria-describedby={undefined}
+            className="fixed inset-x-0 bottom-0 z-50 rounded-t-2xl bg-white p-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-2xl focus:outline-none md:hidden"
+          >
             <div className="mb-3 flex items-center justify-between">
-              <span className="text-sm font-semibold text-slate-800">
+              <Dialog.Title className="text-sm font-semibold text-slate-800">
                 Още модули
-              </span>
-              <button
-                type="button"
-                onClick={() => setMoreOpen(false)}
+              </Dialog.Title>
+              <Dialog.Close
                 aria-label="Затвори"
                 className="rounded-full p-1 text-slate-500 hover:bg-slate-100"
               >
                 <X className="h-5 w-5" />
-              </button>
+              </Dialog.Close>
             </div>
             <div className="grid grid-cols-3 gap-2">
               {SECONDARY.map(({ href, label, Icon }) => {
@@ -192,9 +187,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 );
               })}
             </div>
-          </div>
-        </div>
-      )}
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     </>
   );
 }

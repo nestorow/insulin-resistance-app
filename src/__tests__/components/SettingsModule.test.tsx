@@ -24,7 +24,7 @@ function seedOnboarding(yesCount = 2): OnboardingResult {
       .fill(false)
       .map((_, i) => i < yesCount),
     quizYesCount: yesCount,
-    tier: yesCount <= 0 ? "none" : yesCount === 1 ? "moderate" : "keto",
+    tier: yesCount <= 1 ? "none" : yesCount <= 4 ? "moderate" : "keto",
     tgHdlRatio: null,
     whr: null,
     completedAt: "2026-01-15T00:00:00.000Z",
@@ -46,7 +46,7 @@ describe("SettingsModule — current profile", () => {
 
     expect(await screen.findByText(/Имам диагноза/)).toBeInTheDocument();
     expect(screen.getByText(/2 \/ 8 положителни/)).toBeInTheDocument();
-    expect(screen.getByText(/Почти сигурна/)).toBeInTheDocument();
+    expect(screen.getByText(/Умерен риск/)).toBeInTheDocument();
     // bg-BG date locale; year is enough to anchor
     expect(screen.getByText(/2026/)).toBeInTheDocument();
   });

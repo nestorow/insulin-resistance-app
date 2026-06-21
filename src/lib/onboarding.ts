@@ -53,22 +53,29 @@ export interface TierInfo {
   carbCap: number | null; // grams/day
 }
 
-// Legacy `getRecommendation`: 0 -> low risk, 1 -> moderate, 2+ -> keto.
+// Risk banding from the 8-question self-assessment. A single "Да" out of 8
+// is NOT a meaningful signal, so flagging it as probable insulin resistance
+// was medically misleading. Bands now match `inferredLens` below:
+//   0-1 "Да" -> нисък риск / профилактика
+//   2-4 "Да" -> умерен риск
+//   5-8 "Да" -> висок риск (вероятна ИР)
+// The diet tier (carb cap) scales with the band — only a high score earns
+// the strict ketogenic cap.
 export function tierFromYesCount(yesCount: number): TierInfo {
-  if (yesCount <= 0) {
+  if (yesCount <= 1) {
     return {
       tier: "none",
-      risk_bg: "Нисък риск",
+      risk_bg: "Нисък риск / профилактика",
       recommendation_bg:
-        "Засега нисък риск — продължавай да се грижиш за метаболитното си здраве.",
+        "Засега нисък риск — продължавай да се грижиш за метаболитното си здраве и поддържай добрите навици.",
       macros_bg: "Балансирано хранене, ограничи рафинираните въглехидрати.",
       carbCap: null,
     };
   }
-  if (yesCount === 1) {
+  if (yesCount <= 4) {
     return {
       tier: "moderate",
-      risk_bg: "Вероятна инсулинова резистентност",
+      risk_bg: "Умерен риск",
       recommendation_bg: "Умерено нисковъглехидратен подход.",
       macros_bg: "~55% мазнини · 25% протеин · 20% въглехидрати (под 100 г/ден)",
       carbCap: 100,
@@ -76,8 +83,9 @@ export function tierFromYesCount(yesCount: number): TierInfo {
   }
   return {
     tier: "keto",
-    risk_bg: "Почти сигурна инсулинова резистентност",
-    recommendation_bg: "Кетогенен подход за бързо сваляне на инсулина.",
+    risk_bg: "Висок риск — вероятна ИР",
+    recommendation_bg:
+      "Кетогенен подход за бързо сваляне на инсулина. Обмисли консултация с лекар.",
     macros_bg: "~70% мазнини · 25% протеин · 5% въглехидрати (под 50 г/ден)",
     carbCap: 50,
   };

@@ -54,7 +54,7 @@ export default function CgmManualEntry({ onSubmit }: Props) {
         Ръчно въвеждане
       </h2>
       <p className="mb-3 text-xs text-slate-500">
-        За фингерстик измервания между upload-ите — напр. 1h след хранене.
+        За измервания с глюкомер между качванията — напр. 1 час след хранене.
       </p>
       <div className="grid grid-cols-2 gap-3">
         <label className="block">
