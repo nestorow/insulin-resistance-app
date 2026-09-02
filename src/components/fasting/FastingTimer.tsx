@@ -142,7 +142,7 @@ export default function FastingTimer() {
               }`}
             >
               <span
-                className="flex h-12 w-14 shrink-0 items-center justify-center rounded-lg text-sm font-bold text-white"
+                className="flex h-12 w-14 shrink-0 items-center justify-center rounded-lg text-sm font-bold text-slate-900"
                 style={{ backgroundColor: p.color }}
               >
                 {p.minHours}-{p.maxHours}ч

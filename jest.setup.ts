@@ -28,3 +28,8 @@ jest.mock("next-auth/react", () => ({
   signOut: jest.fn(),
   SessionProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
+
+// Canonical production origin so metadata / sitemap / robots tests are
+// deterministic (ES imports are hoisted, so a per-file assignment runs too
+// late for modules that resolve the origin at load time).
+process.env.NEXT_PUBLIC_SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://insulin-reset.bg";

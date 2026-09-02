@@ -91,7 +91,7 @@ export default function FoodsModule() {
                   GL {f.gl}
                 </span>
               </div>
-              <p className="mt-1 text-xs text-slate-400">
+              <p className="mt-1 text-xs text-slate-600">
                 {f.name_en} · {f.servingSize}
               </p>
               <div className="mt-2 flex gap-3 text-xs text-slate-600">
@@ -108,7 +108,7 @@ export default function FoodsModule() {
         })}
       </div>
       {shown.length === 0 && (
-        <p className="py-8 text-center text-sm text-slate-400">
+        <p className="py-8 text-center text-sm text-slate-600">
           Няма намерени храни.
         </p>
       )}

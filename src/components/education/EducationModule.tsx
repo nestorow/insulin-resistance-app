@@ -193,7 +193,7 @@ export default function EducationModule() {
           {hasQuery ? "Намерени заболявания" : "Заболявания, свързани с ИР"}
         </h2>
         {!hasQuery && (
-          <p className="mb-4 text-sm text-slate-500">
+          <p className="mb-4 text-sm text-slate-600">
             Кликни регион от тялото или избери система — за да видиш свързаните
             заболявания.
           </p>

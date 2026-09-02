@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
+import { privateMetadata } from "@/lib/site";
 import TrendsPrintView from "@/components/trends/TrendsPrintView";
 
-export const metadata: Metadata = {
-  title: "Тренд за лекар — InsulinReset",
-  description: "Print-friendly преглед на показателите за последните 90 дни.",
-  robots: { index: false, follow: false }, // private view, never indexed
-};
+export const metadata: Metadata = privateMetadata("Тренд за лекар");
 
 // Print-friendly /trends — no ModuleNav, no global footer, no toasts,
 // minimal interactivity. Designed to render cleanly via the browser's

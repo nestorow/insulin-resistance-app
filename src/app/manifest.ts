@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { SITE_DESCRIPTION } from "@/lib/site";
 
 // PWA manifest — makes the app installable to home screen on supported
 // platforms. Both SVG (modern Android Chrome / desktop installs) and PNG
@@ -9,8 +10,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "InsulinReset — 90-дневен протокол",
     short_name: "InsulinReset",
-    description:
-      "InsulinReset — 90-дневно обръщане на инсулиновата резистентност, базирано на работата на д-р Benjamin Bikman.",
+    description: SITE_DESCRIPTION,
     start_url: "/",
     display: "standalone",
     background_color: "#F0FAF6",

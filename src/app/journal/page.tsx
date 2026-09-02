@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
+import { privateMetadata } from "@/lib/site";
 import SymptomJournalModule from "@/components/journal/SymptomJournalModule";
 
-export const metadata: Metadata = {
-  title: "Дневник на симптомите — InsulinReset",
-  description: "Проследявай енергия, brain fog, тегло, талия и кръвна захар през 90-те дни.",
-};
+export const metadata: Metadata = privateMetadata("Дневник на симптомите");
 
 export default function JournalPage() {
   return (

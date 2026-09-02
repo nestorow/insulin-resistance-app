@@ -32,7 +32,7 @@ export default function HowItWorks() {
         <h2 className="mb-2 text-center text-2xl font-bold text-teal-700 sm:text-3xl">
           Как работи за 90 дни
         </h2>
-        <p className="mx-auto mb-10 max-w-xl text-center text-sm text-slate-500 sm:text-base">
+        <p className="mx-auto mb-10 max-w-xl text-center text-sm text-slate-600 sm:text-base">
           Три стъпки — без приложение за изтегляне, без абонамент.
         </p>
         <div className="grid gap-4 sm:gap-6 md:grid-cols-3">

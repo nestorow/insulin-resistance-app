@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
+import { privateMetadata } from "@/lib/site";
 import TrendsModule from "@/components/trends/TrendsModule";
 
-export const metadata: Metadata = {
-  title: "Тренд — InsulinReset",
-  description:
-    "Всичките ти показатели на една времева линия — HOMA-IR, HbA1c, CGM TIR, симптоми и дневна изпълняемост за последните 90 дни.",
-};
+export const metadata: Metadata = privateMetadata("Тренд");
 
 export default function TrendsPage() {
   return (

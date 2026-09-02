@@ -17,7 +17,7 @@ const SIGNALS = [
 
 export default function TrustStrip() {
   return (
-    <div className="mx-auto mt-6 flex max-w-2xl flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-slate-500 sm:text-sm">
+    <div className="mx-auto mt-6 flex max-w-2xl flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-slate-600 sm:text-sm">
       {SIGNALS.map((s, i) => (
         <span key={s.label} className="flex items-center gap-2">
           <s.Icon className="h-3.5 w-3.5 text-teal-600" strokeWidth={2} />

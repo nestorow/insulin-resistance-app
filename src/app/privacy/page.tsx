@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/site";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "Политика за поверителност — InsulinReset",
+export const metadata: Metadata = pageMetadata({
+  title: "Политика за поверителност",
   description:
-    "Каква информация събираме, как я пазим, и какви права имаш по GDPR.",
-};
+    "Каква информация събира InsulinReset, как я пази (криптиране в покой, база в EU) и какви права имаш по GDPR — достъп, изтриване, преносимост.",
+  path: "/privacy",
+});
 
 // Update this when the policy changes substantively (data flows, third
 // parties, retention). Plain ISO string — easy to diff in git.
@@ -26,7 +28,7 @@ export default function PrivacyPage() {
         <h1 className="mt-4 text-3xl font-extrabold text-teal-700">
           Политика за поверителност
         </h1>
-        <p className="mt-2 text-sm text-slate-500">
+        <p className="mt-2 text-sm text-slate-600">
           Последна редакция: {LAST_UPDATED}
         </p>
       </header>

@@ -34,7 +34,7 @@ export default function FourPillars() {
         <h2 className="mb-2 text-center text-2xl font-bold text-teal-700 sm:text-3xl">
           4-те стълба на протокола
         </h2>
-        <p className="mx-auto mb-8 max-w-xl text-center text-sm text-slate-500 sm:text-base">
+        <p className="mx-auto mb-8 max-w-xl text-center text-sm text-slate-600 sm:text-base">
           От д-р Benjamin Bikman, „Why We Get Sick“ — всеки от тях работи в
           различна посока, заедно свалят инсулина.
         </p>

@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Nunito+Sans:wght@300;400;500;600;700&display=swap&subset=cyrillic');
+/* Fonts are self-hosted through next/font/google in app/layout.tsx and
+   arrive as --font-montserrat / --font-nunito-sans on <html>. */
 @import "tailwindcss";
 
 /* ── Light teal design system (ported from thyroid-rehab) ──────────────── */
@@ -31,19 +32,19 @@
   --color-warning: #D97706;
   --color-success: #1B7A6E;
 
-  --font-heading: 'Montserrat', sans-serif;
-  --font-body: 'Nunito Sans', sans-serif;
+  --font-heading: var(--font-montserrat), 'Montserrat', sans-serif;
+  --font-body: var(--font-nunito-sans), 'Nunito Sans', sans-serif;
 }
 
 body {
   background: var(--color-background);
   color: var(--color-foreground);
-  font-family: 'Nunito Sans', sans-serif;
+  font-family: var(--font-nunito-sans), 'Nunito Sans', sans-serif;
   min-height: 100dvh;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Montserrat', sans-serif;
+  font-family: var(--font-montserrat), 'Montserrat', sans-serif;
 }
 
 @keyframes shimmer {

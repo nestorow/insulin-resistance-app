@@ -1,21 +1,21 @@
 import type { MetadataRoute } from "next";
-import { siteUrl } from "@/lib/site-url";
+import { SITE_URL } from "@/lib/site";
 
-// robots.txt — allow all crawlers on public content, block auth + API
-// (no useful indexable content there, and prevents crawler noise on
-// callback URLs). Sitemap pointer ensures discovery.
-
-const BASE_URL = siteUrl();
-
+// robots.txt — user-data pages (/plan, /journal, /markers, /trends, /settings,
+// /onboarding, /trends/print) are kept out of the index with a meta robots
+// noindex (privateMetadata in src/lib/site.ts) rather than a Disallow here,
+// so crawlers can actually read the directive. Only the non-HTML API surface
+// is blocked. The sitemap pointer ensures discovery.
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/", "/journal", "/markers", "/plan", "/onboarding"],
+        disallow: ["/api/"],
       },
     ],
-    sitemap: `${BASE_URL}/sitemap.xml`,
+    sitemap: `${SITE_URL}/sitemap.xml`,
+    host: SITE_URL,
   };
 }

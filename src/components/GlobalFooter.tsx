@@ -7,13 +7,13 @@ import Link from "next/link";
 
 export default function GlobalFooter() {
   return (
-    <footer className="mt-auto border-t border-teal-100 bg-white/60 px-6 py-6 text-center text-xs text-slate-500">
+    <footer className="mt-auto border-t border-teal-100 bg-white/60 px-6 py-6 text-center text-xs text-slate-600">
       <p className="mx-auto mb-3 max-w-xl leading-relaxed">
         Информацията е с образователна цел и не е медицински съвет.
         Консултирай се с лекар преди да правиш промени, особено ако имаш
         диагноза, приемаш лекарства или си бременна.
       </p>
-      <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-slate-400">
+      <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-slate-600">
         <Link href="/" className="hover:text-teal-600">
           Начало
         </Link>
@@ -30,7 +30,7 @@ export default function GlobalFooter() {
           Образование
         </Link>
       </nav>
-      <p className="mt-3 text-xs text-slate-400">
+      <p className="mt-3 text-xs text-slate-600">
         © {new Date().getFullYear()} InsulinReset · Базирано на работата на д-р Benjamin Bikman
       </p>
     </footer>

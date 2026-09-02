@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/site";
 import Link from "next/link";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "Условия за ползване — InsulinReset",
+export const metadata: Metadata = pageMetadata({
+  title: "Условия за ползване",
   description:
-    "Условия за ползване на InsulinReset — медицински дисклеймер, отговорност, прекратяване.",
-};
+    "Условия за ползване на InsulinReset — медицински дисклеймер, образователен характер на съдържанието, отговорност и прекратяване.",
+  path: "/terms",
+});
 
 const LAST_UPDATED = "2026-05-28";
 const CONTACT_EMAIL = "nestorow@gmail.com";
@@ -24,7 +26,7 @@ export default function TermsPage() {
         <h1 className="mt-4 text-3xl font-extrabold text-teal-700">
           Условия за ползване
         </h1>
-        <p className="mt-2 text-sm text-slate-500">
+        <p className="mt-2 text-sm text-slate-600">
           Последна редакция: {LAST_UPDATED}
         </p>
       </header>
@@ -32,7 +34,7 @@ export default function TermsPage() {
       {/* The medical disclaimer comes FIRST and lives in a high-contrast
           card — this is the single most important thing on the page. */}
       <section className="mb-8 rounded-2xl border-2 border-warning/40 bg-warm-light/50 p-5">
-        <h2 className="mb-3 flex items-center gap-2 text-base font-bold text-warning">
+        <h2 className="mb-3 flex items-center gap-2 text-base font-bold text-amber-800">
           <AlertTriangle className="h-5 w-5 shrink-0" />
           Медицински дисклеймер — прочети първо
         </h2>

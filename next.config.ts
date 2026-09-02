@@ -1,5 +1,11 @@
 import type { NextConfig } from "next";
 
+// Canonical public host. www.insulin-reset.bg → apex is a Vercel-level
+// domain redirect (308); the Vercel-issued production alias below is only
+// reachable through Next, so it is redirected here.
+const CANONICAL_HOST = "insulin-reset.bg";
+const LEGACY_HOSTS = ["insulin-resistance-app.vercel.app"];
+
 // Security headers — apply to every response.
 // HSTS lock-in waits one year; preload list submission is a manual
 // step at hstspreload.org once a custom domain is stable.
@@ -43,6 +49,18 @@ const nextConfig: NextConfig = {
   // (e.g. hrana-client LICENSE). Keep it external so the bundler doesn't
   // try to parse its internals.
   serverExternalPackages: ["@libsql/client"],
+
+  async redirects() {
+    // Legacy hosts → canonical apex, permanently (308). /api/ is excluded on
+    // purpose: Vercel cron and NextAuth callbacks hit the deployment host
+    // directly, and /_next/ assets must keep resolving on any host.
+    return LEGACY_HOSTS.map((host) => ({
+      source: "/:path((?!api/|_next/).*)",
+      has: [{ type: "host" as const, value: host }],
+      destination: `https://${CANONICAL_HOST}/:path`,
+      permanent: true,
+    }));
+  },
 
   async headers() {
     return [

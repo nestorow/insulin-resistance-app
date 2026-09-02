@@ -61,7 +61,7 @@ export default function SupplementsModule() {
                 </span>
                 <div>
                   <span className="font-semibold text-slate-800">{s.name_bg}</span>
-                  <span className="ml-2 text-xs text-slate-400">{s.name_en}</span>
+                  <span className="ml-2 text-xs text-slate-600">{s.name_en}</span>
                 </div>
               </div>
               <span

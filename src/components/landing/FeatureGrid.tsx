@@ -156,7 +156,7 @@ export default function FeatureGrid() {
           </button>
         ))}
       </div>
-      <p className="mt-3 text-xs text-slate-400">
+      <p className="mt-3 text-xs text-slate-600">
         Натисни функция, за да видиш какво включва
       </p>
 

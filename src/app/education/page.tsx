@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/site";
 import EducationModule from "@/components/education/EducationModule";
 import { educationJsonLd } from "@/lib/education-schema";
 
-export const metadata: Metadata = {
-  title: "Образование — InsulinReset",
+export const metadata: Metadata = pageMetadata({
+  title: "Какво е инсулинова резистентност",
   description:
-    "Заболявания, свързани с инсулинова резистентност, и 4-те стълба по д-р Benjamin Bikman.",
-};
+    "Инсулинова резистентност, обяснена по д-р Benjamin Bikman: 4-те стълба на протокола и болестите зад високия инсулин — преддиабет, диабет тип 2, PCOS.",
+  path: "/education",
+});
 
 export default function EducationPage() {
   const jsonLd = educationJsonLd();

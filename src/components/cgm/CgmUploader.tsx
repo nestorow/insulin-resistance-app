@@ -81,7 +81,7 @@ export default function CgmUploader({ onParsed }: Props) {
       </label>
 
       <div className="mt-3 flex items-center gap-3 text-xs">
-        <span className="text-slate-400">или</span>
+        <span className="text-slate-600">или</span>
         <button
           onClick={onSample}
           disabled={busy}
@@ -89,7 +89,7 @@ export default function CgmUploader({ onParsed }: Props) {
         >
           Зареди примерни данни
         </button>
-        <span className="text-slate-400">
+        <span className="text-slate-600">
           (14 синтетични дни — за да видиш как изглежда анализът)
         </span>
       </div>
