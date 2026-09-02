@@ -4,7 +4,7 @@
 > базиран на работата на д-р Benjamin Bikman (*"Why We Get Sick"*).
 > Research-backed, peer-reviewed, медицински сериозен тон. Bulgarian UI.
 
-**Repo:** `nestorow/insulin-resistance-app` · **Deploy:** `insulin-resistance-app.vercel.app`
+**Repo:** `nestorow/insulin-resistance-app` · **Deploy:** `https://insulin-reset.bg` (apex канон; www + vercel.app → 308)
 **Бранд:** InsulinReset
 **Статус:** Phase 2 завършена + полирано + Phase 2.6 (conversion / прогресия / SEO) + Phase 2.7 (UX полиране + security + engagement) — всичките 8 модула + onboarding в production, Google sign-in работи, DB persistence за логнати потребители (Turso), localStorage остава cache за анонимни. PWA manifest + iOS PNG icons. Landing-ът има conversion scaffolding, дневният план е **прогресивен** в 4 фази, сайтът е discoverable (OG + sitemap + robots + MedicalWebPage + chapter/disease JSON-LD). Re-test опция, бележки в дневник, физиологични clamp-и, shimmer skeletons. **Trust layer**: blood markers AES-256-GCM enkriptirani at rest, Upstash rate limiting (30 writes/мин), append-only audit_log. **Push notifications**: VAPID + service worker + opt-in UI + Vercel Cron сутрешен reminder. **Email digest**: Resend + opt-in + неделен HTML email с прогрес + Vercel Cron. **Gamification**: streak/XP/badge engine с 5 badges, ProgressCard на /plan, BadgeGallery в /settings. **Optimistic rollback** при rate-limit. **Phase 8 в ход**: AI food assistant (Claude Haiku 4.5 BYOK + multi-turn + per-tier cache, 5/мин rate limit) в /foods; legal pages (/privacy + /terms); custom-domain prep + security headers; **CGM integration в /cgm** — LibreView + Dexcom Clarity CSV import, AGP analytics (TIR + CV + GMI + 24h profile), auto spike detection с meal labels, encrypted at rest; **CGM polish bundle (Phase 8.1)** — sample dataset demo button, ръчно single-reading въвеждане, CGM section в weekly email digest, два нови CGM badges (first_cgm + cgm_week); **Trends дашборд (`/trends`)** — cross-module 90-day timeline с phase progress card + hero strip + 8 sparkline grid + 6-rule insight engine + day annotations overlay; **Performance pass** (recharts lazy-load на 4 route-а, -50% First Load); **GDPR export** (JSON dump в /settings + /trends/print за лекар); **Landing conversion** (TrustStrip + 5-question FAQ + sharper hero); **Component test + a11y pass** (44 нови component тест-а за CGM + Trends, skip link, aria-pressed на plan checks). **Education search** (client-side диагнози+глави, английски заявки match-ват). **Onboarding save+resume** (draft auto-persist mid-flow, 7-day TTL). **357 unit + component теста (40 suites).** **UI редизайн**: app shell навигация (десктоп sidebar + мобилна долна лента с „Още"), всички емоджита заменени с lucide икони (вкл. имейли + push), по-дискретна геймификация. **Cutover tracks (в ход)**: custom domain → `insulin-reset.bg` (apex канон — кодът авто-следва env, чака registrar/Vercel/OAuth) + TWA → Play Store (`/.well-known/assetlinks.json` endpoint готов + runtime-проверен, чака Bubblewrap build + Play Console); runbook-ове в `docs/`.
 
@@ -281,7 +281,7 @@ Seam-ове: `lib/onboarding-storage.ts`, `daily-plan-storage.ts`,
 
 ### Бъдещи фази (Phase 8+)
 - [ ] TWA build → Play Store — assetlinks endpoint готов (`/.well-known/assetlinks.json`, env-driven); останалото е Android-side (Bubblewrap + signing + Play Console); чеклист: `docs/twa-playstore.md`
-- [ ] Custom домейн → **insulin-reset.bg** (apex канон, www→apex) — cutover-ът е account-side (registrar + Vercel + Google OAuth); чеклист: `docs/custom-domain-cutover.md`
+- [x] ~~Custom домейн → **insulin-reset.bg**~~ → live от 2026-06; SEO пас 02.09.2026 (виж секцията)
 - [x] ~~CGM integration за biohacker lens~~ → /cgm + LibreView/Dexcom CSV parsers, AGP analytics, meal-annotated spikes (Phase 8)
 - [x] ~~AI асистент за хранителни въпроси~~ → Claude Haiku 4.5 + per-{tier, query} cache + 5/min rate limit, /foods (Phase 8)
 
@@ -480,7 +480,7 @@ Cross-module view, който проектира 4 модула върху об�
 
 ### Custom domain → `insulin-reset.bg` (apex канон)
 - ✅ **Код готов** — `siteUrl()` resolver (`NEXT_PUBLIC_SITE_URL → NEXTAUTH_URL → vercel.app`), canonical `<link>`, security headers; всички downstream callers (sitemap / robots / OG / JSON-LD / email / manifest) авто-следват env var-а → cutover-ът е само env swap + redeploy
-- ⏳ **Чака**: домейнът е платен, чака provider-а; после Vercel (apex+www, www→apex) → DNS → `NEXT_PUBLIC_SITE_URL` + `NEXTAUTH_URL` → Google OAuth redirect URI → redeploy → verify
+- ✅ **Live** (проверено 02.09.2026): apex 200, www → 308 apex, http → 308 https, `NEXT_PUBLIC_SITE_URL=https://insulin-reset.bg` в production; SEO пасът е в отделна секция по-долу
 - 📋 Чеклист: `docs/custom-domain-cutover.md`
 
 ### TWA → Google Play (`bg.insulinreset.twa`)
@@ -489,6 +489,42 @@ Cross-module view, който проектира 4 модула върху об�
 - 📋 Чеклист: `docs/twa-playstore.md`
 
 Препоръчителен ред: **домейн → TWA**.
+
+## SEO пас — insulin-reset.bg (02.09.2026)
+
+Същата верига като за thyroidrehab.bg: одит → код (TDD) → локална верификация →
+деплой → Search Console → IndexNow. Commit `cd31a22`.
+
+### Одит — какво беше счупено
+- ❌ `alternates.canonical: "/"` в root layout — Next го наследява във **всяка** вложена страница, т.е. всичките 17 страници (и og:url / og:title) казваха на Google, че са дубликат на началната. DuckDuckGo знаеше 1 URL.
+- ❌ `insulin-resistance-app.vercel.app` отговаряше 200 без redirect (пълен дубликат на сайта)
+- ❌ Заглавие без лай-ключова дума („InsulinReset — 90-дневен протокол“); FAQ отговорите се рендираха само след клик — не бяха в HTML-а
+- ❌ robots.txt с Disallow на /plan /journal /markers /onboarding (през Disallow Google не вижда noindex); sitemap с `lastModified: new Date()` при всеки build
+- ❌ Google Fonts `@import` в globals.css — 2.2 s render-blocking верига (LCP 4.0 s); контраст 4.47:1 на slate-500 върху мента, 2.5:1 на slate-400
+
+### Код
+- ✅ **`src/lib/site.ts`** — единен източник: `SITE_URL` (през `siteUrl()`), `SITE_TITLE` = „InsulinReset — 90-дневен протокол за инсулинова резистентност“ (61 зн.), `SITE_DESCRIPTION` (160 зн.), `OG_IMAGE`, `absoluteUrl()`, **`pageMetadata()`** (canonical + index,follow + OG/Twitter за конкретната страница) и **`privateMetadata()`** (noindex,follow)
+- ✅ Root layout: title template `%s — InsulinReset`, **без** canonical, **без** og:title/og:url (падат към страницата), googleBot preview hints, `verification.google`, WebSite + Organization JSON-LD (`components/JsonLd.tsx`)
+- ✅ 9 публични страници с `pageMetadata` — /, /education, /foods, /exercise, /fasting, /supplements, /cgm, /privacy, /terms; заглавия „… при инсулинова резистентност“, описания ≤160 зн. 7 потребителски/funnel страници с `privateMetadata` — /plan, /journal, /markers, /trends, /settings, /onboarding, /trends/print
+- ✅ `robots.ts` — Disallow само `/api/` (+ Host + Sitemap); `sitemap.ts` — 9 URL-а на apex, pinned lastModified (CONTENT 02.09.2026, PRIVACY 10.06, TERMS 28.05)
+- ✅ `next.config.ts` — 308 host redirect `insulin-resistance-app.vercel.app` → apex; `/api/` и `/_next/` изключени (cron + OAuth callbacks удрят deployment host-а). www → apex е Vercel-level 308 (беше вече)
+- ✅ Landing: един H1 (бранд + „90-дневен протокол за инсулинова резистентност“), hero copy с „тест за инсулинова резистентност“ / „HOMA-IR и инсулин на гладно“; MedicalWebPage JSON-LD преместен тук; **FAQ = сървърен `<details>` + FAQPage JSON-LD** (`data/landing-faq.ts`, 7 въпроса — нови: „Какво е инсулинова резистентност?“ и „Как се измерва?“ с HOMA-IR формулата и консервативни граници)
+- ✅ Шрифтове през `next/font/google` (Montserrat + Nunito Sans, cyrillic, self-hosted, CSS променливи → `--font-heading` / `--font-body`) вместо `@import`
+- ✅ Контраст: slate-500/400 → slate-600 върху мента (landing, footer, /foods, /supplements, /education, /cgm, /privacy, /terms); fasting баджовете с тъмен текст; /terms дисклеймер заглавие amber-800
+- ✅ `public/googled0e6f48913f6dd21.html` (Search Console HTML file) + `public/c1b20d4200e458ea401d148fca11236e.txt` (IndexNow ключ) — **не ги трий**
+- ✅ Тестове: `lib/site`, `app/seo-routes` (sitemap/robots), `app/host-redirects`, `app/page-metadata` (regression guard за наследения canonical), `app/fonts`, `components/landing-faq` → **420 теста / 46 suites**
+
+### Верификация (локално, `next start -p 3005` с `NEXT_PUBLIC_SITE_URL`)
+- ✅ canonical + og:url per page, noindex на 7-те частни, robots/sitemap, FAQ текст в HTML, 308 за vercel.app host (curl с Host header; `/api/health` остава 200), BG 404, verification meta + файл
+- ✅ Lighthouse: home Perf 81 → 93 (LCP 4.0 → 3.0 s, FCP 1.8 s), A11y 96 → 100, SEO 100, Best Practices 100; **A11y 100 на всичките 9 публични страници**
+- ⚠️ Node `fetch` мълчаливо изхвърля custom `Host` header (undici) — host redirect-ите се проверяват с curl
+
+### Search Console / IndexNow / Bing (02.09.2026)
+- ✅ Deploy `cd31a22` READY; live проверка: per-page canonical/og:url, noindex на /plan, vercel.app → 308 apex, verification файл + meta, pinned sitemap, без външни шрифтове
+- ✅ **Search Console**: URL-prefix property `https://insulin-reset.bg/` — „Ownership auto verified“ (HTML file + HTML tag; файлът/метата бяха live преди добавянето). `sitemap.xml` подаден (9 URL-а). Request indexing: **/** (беше индексирана — recrawl заради новото заглавие), **/education** (беше „Discovered – not indexed“), **/foods**, **/fasting**, **/supplements** (бяха „URL is unknown to Google“ — последствие от canonical бъга). /fasting вече обходена от Googlebot smartphone в 11:00. **Квотата за деня свърши** (споделена с thyroidrehab.bg) → /exercise и /cgm — да се заявят утре
+- ✅ **IndexNow** (Bing/Yandex/Seznam/Naver): ключ `c1b20d4200e458ea401d148fca11236e`, 9 URL-а → 202 Accepted (`node C:/projects/_seo-tools/indexnow-submit.mjs insulin-reset.bg <key>`)
+- ⏳ **Bing Webmaster Tools** — иска Microsoft login (не може да се автоматизира) → Add site → „Import from Google Search Console“
+- ⏳ Следващи лостове: backlinks от nestorow.com / up2u.bg / thyroidrehab.bg; Search Console recheck след ~1 седмица (Pages report — 9 очаквани); OG image tagline вече съвпада със заглавието
 
 ## Стил на работа
 
@@ -501,7 +537,8 @@ Cross-module view, който проектира 4 модула върху об�
 ```
 TURSO_DATABASE_URL=        # libsql://...turso.io
 TURSO_AUTH_TOKEN=
-NEXTAUTH_URL=              # http://localhost:3000 (dev) / https://insulin-resistance-app.vercel.app (prod)
+NEXTAUTH_URL=              # http://localhost:3000 (dev) / https://insulin-reset.bg (prod)
+NEXT_PUBLIC_SITE_URL=      # https://insulin-reset.bg (prod) — canonical origin за sitemap/robots/OG/JSON-LD
 NEXTAUTH_SECRET=          # openssl rand -base64 32
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
